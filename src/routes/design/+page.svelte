@@ -64,7 +64,46 @@
 			items: [
 				['Card', 'Card', 'card'],
 				['Avatar', 'Avatar', 'user'],
-				['NavItem', 'NavItem', 'home']
+				['NavItem', 'NavItem', 'home'],
+				['Disclosure', 'Disclosure', 'chevron-down'],
+				['EmptyState', 'EmptyState', 'folder'],
+				['Message', 'Message', 'message']
+			]
+		},
+		{
+			title: 'Navegação',
+			items: [
+				['Tabs', 'Tabs', 'list'],
+				['Breadcrumb', 'Breadcrumb', 'chevron-right'],
+				['Pagination', 'Pagination', 'arrow-right'],
+				['Stepper', 'Stepper', 'check-circle'],
+				['Menu', 'Menu', 'more'],
+				['Popover', 'Popover', 'info'],
+				['Tooltip', 'Tooltip', 'help'],
+				['Toast', 'Toast', 'bell']
+			]
+		},
+		{
+			title: 'Dados',
+			items: [
+				['Table', 'Table', 'grid'],
+				['Timeline', 'Timeline', 'clock'],
+				['Checklist', 'Checklist', 'check'],
+				['Chart', 'Chart', 'trending'],
+				['LessonList', 'LessonList', 'book'],
+				['VideoFrame', 'VideoFrame', 'play']
+			]
+		},
+		{
+			title: 'Do sistema',
+			items: [
+				['Money', 'Money', 'wallet'],
+				['DateTime', 'DateTime', 'calendar'],
+				['Stat', 'Stat', 'receipt'],
+				['StatusBadge', 'StatusBadge', 'shield'],
+				['FileUpload', 'FileUpload', 'upload'],
+				['ColorField', 'ColorField', 'image'],
+				['CopyField', 'CopyField', 'copy']
 			]
 		}
 	];

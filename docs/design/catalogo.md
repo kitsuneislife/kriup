@@ -52,9 +52,33 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Skeleton` | Reservar o espaço do conteúdo que vai chegar | Ação do usuário (use `loading`) | `shape`: `text`, `block`, `circle`; `lines` |
 | `Dialog` | Decisão que bloqueia a tela: confirmar, pedir um dado | Aviso que não exige resposta (use `Alert`) | `open`, `title`, `footer` |
 | `Swatch` | Mostrar uma cor de token em `/design` e docs | Interface do produto | `token`, `scheme`, `value` |
+| `Disclosure` | Seção que abre e fecha: editor da página de vendas, perguntas frequentes | Conteúdo que precisa estar sempre visível | `icon`, `summary`, `open` |
+| `EmptyState` | Lista ou tabela sem itens: diz o que fazer a seguir | Erro (use `Alert`) | `icon`, `action` |
+| `Message` | Mensagem da conversa de um reembolso ou do suporte | Aviso do sistema (use `Alert`) | `own`, `time` |
+| `Tabs` | Alternar entre painéis da mesma tela | Filtro que só muda a lista (use `SegmentedControl`) | `tabs` com `icon` e `count`; setas, Home e End |
+| `Breadcrumb` | Mostrar onde a pessoa está em níveis de 3 ou mais | Menu principal | `items` |
+| `Pagination` | Navegar entre páginas de uma lista longa | Lista curta ou rolagem infinita | `page`, `count` |
+| `Stepper` | Etapas do assistente: criação do produto, checkout | Andamento em porcentagem (use `Progress`) | `steps`, `current` |
+| `Menu` | Lista de ações de um item: editar, arquivar, sair | Navegação principal (use `NavItem`) | `items` com `icon`, `danger`, `disabled`, `separator`, `href`; `align` |
+| `Popover` | Conteúdo extra preso a um botão: filtros, ajuda | Decisão que bloqueia (use `Dialog`) | `align`, `open` |
+| `Tooltip` | Nome curto de um botão só com ícone | Informação essencial: ela precisa estar visível | `text`, `placement` |
+| `Toast` | Confirmação rápida que some sozinha. Monte uma vez no layout e chame `toast.show` | Erro que exige ação (use `Alert`) | `tone`, `duration` |
+| `Table` | Dados comparáveis em colunas: vendas, extrato, alunos | Poucos dados sem colunas (use `Card`) | `sort`, `loading`, `empty`, `cell`, `align` |
+| `Timeline` | Histórico ou próximos passos: reembolso, liberações, auditoria | Lista sem ordem no tempo | `state`: `done`, `current`, `upcoming`; `tone`; `extra` |
+| `Checklist` | Pendências com link para resolver | Etapas ordenadas (use `Stepper`) | `done`, `href`, `reason` |
+| `Chart` | Tendência ou comparação simples, sem eixos | Dado que exige leitura exata (use `Table`) | `kind`: `line`, `bar`; `tone` |
+| `LessonList` | Módulos e aulas do player do aluno | Lista de produtos | `current`, `done`, `duration` |
+| `VideoFrame` | Moldura 16:9 do vídeo da aula | Imagem de capa | Slot para `video` ou `iframe` |
+| `Money` | Todo valor em reais. Recebe centavos inteiros (RNF-01) | Número que não é dinheiro | `variant`, `tone`, `weight` |
+| `DateTime` | Toda data e hora. Recebe UTC e mostra America/Sao_Paulo (RNF-11) | Datas escolhidas pela pessoa (use `TextField type="date"`) | `format`: `date`, `datetime`, `time`, `relative` |
+| `Stat` | Número em destaque: saldo retido, liberado, sacado | Valor dentro de tabela (use `Money`) | `icon`, `tone`, `hint` |
+| `StatusBadge` | Estado de pedido, reembolso ou saldo, com a cor certa | Categoria livre (use `Badge`) | `status` (15 estados), `size` |
+| `FileUpload` | Logo e anexos: arrastar ou escolher | Imagem já enviada | `accept`, `maxBytes`, `multiple`, `error`, `onreject` |
+| `ColorField` | Cor da marca do produtor | Cor do sistema (use token) | `value` `#rrggbb`, `error` |
+| `CopyField` | Texto para copiar: Pix copia e cola, link de afiliado | Texto que a pessoa edita | `copyLabel`, `copiedLabel` |
 
 Formato da linha: o nome entre crases, igual à pasta e ao arquivo.
 
 ## Ainda não existe
 
-Menu e popover, tooltip, abas, tabela, toast, calendário, upload, gráfico. Entram quando uma tela pedir, pelo fluxo do `README.md` seção 4, com padrões de `principios.md` seção 8.
+Calendário com grade de dias (por ora, `TextField type="date"` usa o seletor do navegador), QR code do Pix (vem pronto do servidor como imagem) e avaliação por estrelas. Entram quando uma tela pedir, pelo fluxo do `README.md` seção 4, com padrões de `principios.md` seção 8.

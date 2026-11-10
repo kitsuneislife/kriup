@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onNavigate } from '$app/navigation';
-	import '#lib/ui';
+	import { Toast } from '#lib/ui';
 
 	let { children } = $props();
 
@@ -17,3 +17,4 @@
 </script>
 
 {@render children()}
+<Toast closeLabel="Fechar aviso" />
