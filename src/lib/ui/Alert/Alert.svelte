@@ -28,7 +28,7 @@
 	data-tone={tone}
 	role={tone === 'danger' || tone === 'warning' ? 'alert' : 'status'}
 >
-	<span class="icon"><Icon name={icons[tone]} /></span>
+	<span class="icon"><Icon name={icons[tone]} size="sm" /></span>
 	<div class="body">
 		{#if title}<p class="title">{title}</p>{/if}
 		<div class="message">{@render children()}</div>
@@ -41,20 +41,34 @@
 		display: flex;
 		align-items: flex-start;
 		gap: var(--space-3);
-		padding: var(--space-3) var(--space-4);
+		padding: var(--space-3);
 		border-radius: var(--radius-lg);
-		background: color-mix(in srgb, var(--_c) 11%, var(--color-bg-raised));
-		border: var(--border-width) solid color-mix(in srgb, var(--_c) 32%, transparent);
-		box-shadow: inset 0 1px 0 var(--color-highlight);
+		/* a whisper of the tone over the raised surface; the icon chip carries the color */
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--_c) 7%, var(--color-bg-raised)),
+			color-mix(in srgb, var(--_c) 3%, var(--color-bg-raised))
+		);
+		border: var(--border-width) solid color-mix(in srgb, var(--_c) 16%, var(--color-border));
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			var(--shadow-1);
 		animation: enter var(--duration-base) var(--ease-enter) both;
 	}
 	.icon {
-		display: inline-flex;
-		padding-block: 0.125rem;
+		display: grid;
+		place-items: center;
+		flex: none;
+		inline-size: var(--control-sm);
+		block-size: var(--control-sm);
+		border-radius: var(--radius-sm);
 		color: var(--_c);
+		background: color-mix(in srgb, var(--_c) 16%, transparent);
+		box-shadow: inset 0 0 0 var(--border-width) color-mix(in srgb, var(--_c) 22%, transparent);
 	}
 	.body {
 		flex: 1;
+		align-self: center;
 		min-width: 0;
 		font-size: var(--text-subhead-size);
 		line-height: var(--text-subhead-leading);
