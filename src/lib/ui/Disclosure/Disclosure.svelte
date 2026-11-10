@@ -30,7 +30,25 @@
 		border-radius: var(--radius-lg);
 		background: var(--color-bg-raised);
 		border: var(--border-width) solid var(--color-border);
-		box-shadow: inset 0 1px 0 var(--color-highlight);
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			0 0 0 var(--border-width) var(--color-edge);
+		/* lets the content height animate from 0 to auto */
+		interpolate-size: allow-keywords;
+	}
+	/* the panel slides open and closed; browsers without ::details-content just snap */
+	.disclosure::details-content {
+		block-size: 0;
+		overflow: clip;
+		opacity: 0;
+		transition:
+			block-size var(--duration-base) var(--ease-standard),
+			opacity var(--duration-base) var(--ease-standard),
+			content-visibility var(--duration-base) allow-discrete;
+	}
+	.disclosure[open]::details-content {
+		block-size: auto;
+		opacity: 1;
 	}
 	.summary {
 		display: flex;
@@ -67,7 +85,11 @@
 	.chevron {
 		display: inline-flex;
 		color: var(--color-text-secondary);
-		transition: transform var(--duration-base) var(--ease-standard);
+		transition: transform var(--duration-base) var(--ease-spring);
+	}
+	[open] .summary {
+		border-end-start-radius: 0;
+		border-end-end-radius: 0;
 	}
 	[open] .chevron {
 		transform: rotate(180deg);

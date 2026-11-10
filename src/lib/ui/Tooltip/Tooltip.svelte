@@ -27,16 +27,24 @@
 		inset-inline-start: 50%;
 		z-index: var(--z-popover);
 		padding: var(--space-1) var(--space-2);
-		border-radius: var(--radius-xs);
-		background: var(--color-text);
-		color: var(--color-bg-app);
+		border-radius: var(--radius-sm);
+		/* same material and double border as menus, so floating things look alike */
+		background: var(--color-bg-material);
+		backdrop-filter: blur(var(--blur-material)) saturate(1.8);
+		border: var(--border-width) solid var(--color-border);
+		box-shadow:
+			0 0 0 var(--border-width) var(--color-edge),
+			inset 0 1px 0 var(--color-highlight),
+			var(--shadow-2);
+		color: var(--color-text);
+		font-weight: var(--weight-medium);
 		font-size: var(--text-caption-size);
 		line-height: var(--text-caption-leading);
 		letter-spacing: var(--text-caption-tracking);
 		white-space: nowrap;
 		pointer-events: none;
 		opacity: 0;
-		transform: translate(-50%, var(--_from));
+		transform: translate(-50%, var(--_from)) scale(0.96);
 		transition:
 			opacity var(--duration-fast) var(--ease-exit),
 			transform var(--duration-fast) var(--ease-exit);
@@ -61,6 +69,7 @@
 	.tooltip:focus-within .bubble {
 		opacity: 1;
 		transform: translate(-50%, 0);
+		transition-timing-function: var(--ease-enter);
 	}
 	.tooltip:focus-within .bubble {
 		transition-delay: 0s;

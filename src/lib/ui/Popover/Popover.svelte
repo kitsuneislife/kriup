@@ -49,11 +49,17 @@
 		expanded: open,
 		controls: panelId
 	})}
-	{#if open}
-		<div id={panelId} class="panel" data-align={align} role="dialog" aria-label={label}>
-			<div class="surface">{@render children(close)}</div>
-		</div>
-	{/if}
+	<!-- always in the DOM so the panel can animate out; display: none hides it when closed -->
+	<div
+		id={panelId}
+		class="panel"
+		data-align={align}
+		data-open={open}
+		role="dialog"
+		aria-label={label}
+	>
+		{@render children(close)}
+	</div>
 </span>
 
 <style>
@@ -61,39 +67,53 @@
 		position: relative;
 		display: inline-flex;
 	}
+	/*
+	 * Translucent material with a tight double border: a light rim inside, a dark edge outside.
+	 * Opens with a short drop and scale from the trigger, closes with a quicker fade.
+	 */
 	.panel {
 		position: absolute;
 		inset-block-start: calc(100% + var(--space-2));
 		z-index: var(--z-popover);
+		display: none;
 		min-inline-size: 12rem;
-		padding: var(--space-1);
-		border-radius: var(--radius-lg);
-		background: var(--color-bg-app);
-		border: var(--border-width) solid var(--color-border);
-		box-shadow: var(--shadow-3);
-		animation: enter var(--duration-fast) var(--ease-enter) both;
-	}
-	[data-align='start'] {
-		inset-inline-start: 0;
-	}
-	[data-align='end'] {
-		inset-inline-end: 0;
-	}
-	/* concentric radii: the inner surface is 4px smaller than the shell */
-	.surface {
 		padding: var(--space-3);
-		border-radius: calc(var(--radius-lg) - var(--space-1));
-		background: var(--color-bg-raised);
+		border-radius: var(--radius-lg);
+		background: var(--color-bg-material);
+		backdrop-filter: blur(var(--blur-material)) saturate(1.8);
 		border: var(--border-width) solid var(--color-border);
-		box-shadow: inset 0 1px 0 var(--color-highlight);
+		box-shadow:
+			0 0 0 var(--border-width) var(--color-edge),
+			inset 0 1px 0 var(--color-highlight),
+			var(--shadow-3);
 		font-size: var(--text-subhead-size);
 		line-height: var(--text-subhead-leading);
 		letter-spacing: var(--text-subhead-tracking);
+		opacity: 0;
+		transform: translateY(calc(var(--shift) * -0.5)) scale(0.97);
+		transition:
+			opacity var(--duration-fast) var(--ease-exit),
+			transform var(--duration-fast) var(--ease-exit),
+			display var(--duration-fast) allow-discrete;
 	}
-	@keyframes enter {
-		from {
+	.panel[data-open='true'] {
+		display: block;
+		opacity: 1;
+		transform: none;
+		transition-timing-function: var(--ease-enter);
+	}
+	@starting-style {
+		.panel[data-open='true'] {
 			opacity: 0;
-			transform: translateY(var(--shift)) scale(0.98);
+			transform: translateY(calc(var(--shift) * -0.5)) scale(0.97);
 		}
+	}
+	[data-align='start'] {
+		inset-inline-start: 0;
+		transform-origin: top left;
+	}
+	[data-align='end'] {
+		inset-inline-end: 0;
+		transform-origin: top right;
 	}
 </style>

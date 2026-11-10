@@ -113,7 +113,8 @@
 		min-block-size: var(--control-sm);
 		padding: 0 var(--space-3);
 		border: 0;
-		border-radius: var(--radius-sm);
+		/* concentric with the panel: its radius minus the 4px left around the items */
+		border-radius: calc(var(--radius-lg) - var(--space-1));
 		background: none;
 		color: var(--color-text);
 		font: inherit;
