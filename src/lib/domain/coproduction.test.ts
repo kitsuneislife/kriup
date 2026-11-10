@@ -1,4 +1,25 @@
 import { describe, expect, it } from 'vitest';
+import { contractText } from './coproduction';
+
+describe('contractText', () => {
+	const terms = {
+		productName: 'Curso de pão',
+		producerName: 'Ana',
+		coproducerName: 'Bia',
+		coproducerEmail: 'bia@example.com',
+		percentBp: 2_550,
+		durationDays: 90,
+		version: 2
+	};
+
+	it('states the version, percentage and duration', () => {
+		const text = contractText(terms);
+		expect(text).toContain('versão 2');
+		expect(text).toContain('25,5%');
+		expect(text).toContain('por 90 dias');
+		expect(contractText({ ...terms, durationDays: null })).toContain('prazo indeterminado');
+	});
+});
 import { termsInForce, withinShareLimit, type CoproductionTerm } from './coproduction';
 
 const at = (iso: string) => new Date(`${iso}T12:00:00Z`);

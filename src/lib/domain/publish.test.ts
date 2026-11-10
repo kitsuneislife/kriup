@@ -1,5 +1,11 @@
 import { expect, it } from 'vitest';
-import { publishPendencies } from './publish';
+import { isPageFilled, publishPendencies } from './publish';
+
+it('counts a page as filled with a section and no blank field', () => {
+	expect(isPageFilled({ sections: [] })).toBe(false);
+	expect(isPageFilled({ sections: [{ fields: { title: ' ' } }] })).toBe(false);
+	expect(isPageFilled({ sections: [{ fields: { title: 'Pão' } }] })).toBe(true);
+});
 
 const ready = {
 	offerCount: 1,
