@@ -5,6 +5,8 @@
 export const PLATFORM_FEE_BP = 500;
 /** RN-02: fixed fee per sale (hipótese). */
 export const PLATFORM_FIXED_FEE_CENTS = 249;
+/** Lowest offer price (modelo-de-dados section 2, hipótese); stays above the RN-02 fee. */
+export const OFFER_MIN_PRICE_CENTS = 500;
 /** RN-03: calendar days of guarantee; also the legal floor (CDC art. 49). */
 export const GUARANTEE_DAYS = 7;
 /** RN-08: days the producer has to answer a refund outside the guarantee (hipótese). */

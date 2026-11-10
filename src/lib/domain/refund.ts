@@ -3,7 +3,8 @@ import { PRODUCER_RESPONSE_DAYS, SUPPORT_RESPONSE_DAYS } from './params';
 import { isWithinGuarantee } from './retention';
 import { assertTransition, DomainError, REFUND_TRANSITIONS, type RefundStatus } from './states';
 
-export type RefundOwner = 'producer' | 'platform';
+export const REFUND_OWNERS = ['producer', 'platform'] as const;
+export type RefundOwner = (typeof REFUND_OWNERS)[number];
 
 /**
  * A refund request (RN-08 to RN-10). It always has an owner and a deadline: while a
