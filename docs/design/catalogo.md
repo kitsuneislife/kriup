@@ -12,8 +12,10 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | Cinzas | `--gray` a `--gray-6` | Estrutura: bordas, fundos e preenchimentos |
 | Texto | `--color-text`, `-secondary`, `-tertiary`, `-quaternary`, `-on-accent`, `--color-link` | Hierarquia por opacidade, como na Apple |
 | Superfícies | `--color-bg-app` < `--color-bg-panel` < `--color-bg-raised`, `--color-bg-field`, `--color-bg-overlay` | Três níveis de profundidade, do fundo ao cartão |
+| Material | `--color-bg-material`, `--blur-material` | Fundo translúcido do que flutua: menu, popover, tooltip, toast, lista do select |
+| Linhas | `--color-row-alt` | Fundo das linhas alternadas de tabela e checklist |
 | Preenchimentos | `--color-fill-subtle`, `--color-fill`, `--color-fill-strong` | Cinza com transparência: hover, pressionado, selecionado |
-| Bordas | `--color-border`, `--color-border-strong`, `--color-hairline`, `--color-highlight` | Borda dupla: borda por fora, fio e brilho por dentro |
+| Bordas | `--color-border`, `--color-border-strong`, `--color-hairline`, `--color-highlight`, `--color-edge` | Borda dupla: borda por fora, fio e brilho por dentro; `--color-edge` é o aro escuro externo do que flutua |
 | Significado | `--color-accent`, `-success`, `-warning`, `-danger`, `-info` | Azul age, verde liberou, laranja espera, vermelho falhou |
 | Espaçamento | `--space-1` a `--space-24` (4, 8, 12, 16, 24, 32, 48, 64, 96) | Escala fechada |
 | Raio | `--radius-xs` a `--radius-xl`, `--radius-pill` | Interno = externo menos o preenchimento |
@@ -66,7 +68,7 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Toast` | Confirmação rápida que some sozinha. Monte uma vez no layout e chame `toast.show` | Erro que exige ação (use `Alert`) | `tone`, `duration` |
 | `Table` | Dados comparáveis em colunas: vendas, extrato, alunos | Poucos dados sem colunas (use `Card`) | `sort`, `loading`, `empty`, `cell`, `align` |
 | `Timeline` | Histórico ou próximos passos: reembolso, liberações, auditoria | Lista sem ordem no tempo | `state`: `done`, `current`, `upcoming`; `tone`; `extra` |
-| `Checklist` | Pendências com link para resolver | Etapas ordenadas (use `Stepper`) | `done`, `href`, `reason` |
+| `Checklist` | Pendências com link para resolver | Etapas ordenadas (use `Stepper`) | `done`, `href`, `reason`, `count` |
 | `Chart` | Tendência ou comparação simples, sem eixos | Dado que exige leitura exata (use `Table`) | `kind`: `line`, `bar`; `tone` |
 | `LessonList` | Módulos e aulas do player do aluno | Lista de produtos | `current`, `done`, `duration` |
 | `VideoFrame` | Moldura 16:9 do vídeo da aula | Imagem de capa | Slot para `video` ou `iframe` |

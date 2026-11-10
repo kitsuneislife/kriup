@@ -103,3 +103,13 @@ Antes de criar ou mudar qualquer peça de interface, responda na descrição do 
 - Botões com borda mais clara e gradiente discreto, que dão relevo sem virar "botão antigo".
 - Barra lateral sobre o fundo, conteúdo em painel arredondado afastado das bordas (`Shell`).
 - Fluidez: tudo responde ao toque, nada aparece seco.
+
+## 9. Superfícies e detalhes
+
+- **Botão de cor.** `primary` e `danger` usam o tom um degrau mais escuro, gradiente curto, aro mais claro e um brilho fino no topo. Relevo sem brilho de plástico; o texto branco fica calmo.
+- **Cor pontual, superfície neutra.** `Alert` e `Toast` não tingem o cartão inteiro: a cor vai num ícone sólido e numa luz suave que sai dele, como uma notificação do macOS.
+- **Volume nos pequenos.** `Badge`, ícone do `Stat`, marcas de `Checklist`, `LessonList`, `Stepper` e pontos da `Timeline` têm gradiente vertical, aro no tom e brilho no topo. Nada de chapado.
+- **Material flutuante.** Menu, popover, tooltip, toast e a lista do select usam `--color-bg-material` com `--blur-material` e borda dupla justa: aro claro por dentro, `--color-edge` escuro por fora.
+- **Linhas alternadas.** Tabela e checklist alternam o fundo das linhas com `--color-row-alt`, como no Finder e no Numbers, em vez de linhas divisórias.
+- **Elementos nativos.** `base.css` veste o que o navegador desenha: barra de rolagem fina, seleção, cursor de texto, `accent-color`, autofill, ícone de data e hora, spinners de número, botão de arquivo, `range`, `kbd`, `mark`, `code`, `hr` e `abbr`. O `Select` usa `appearance: base-select` para desenhar a própria lista; navegadores sem suporte mostram a lista do sistema.
+- **Entrada e saída.** Painéis flutuantes abrem com queda curta e escala e fecham mais rápido que abrem (`@starting-style` e `display` com `allow-discrete`). `Disclosure` anima a altura com `::details-content`. Toasts sobem ao entrar, encolhem ao sair e os outros deslizam para o lugar.
