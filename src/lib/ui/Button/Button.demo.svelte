@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { Button, Cluster, Stack, Text } from '../index';
 
-	const variants = ['primary', 'neutral', 'ghost', 'danger'] as const;
+	const variants = [
+		['primary', 'Principal'],
+		['neutral', 'Neutro'],
+		['ghost', 'Discreto'],
+		['danger', 'Perigo']
+	] as const;
 	const sizes = ['sm', 'md', 'lg'] as const;
 </script>
 
@@ -9,8 +14,8 @@
 	<Stack gap={3}>
 		<Text variant="footnote" tone="secondary" weight="medium">Variantes</Text>
 		<Cluster gap={3}>
-			{#each variants as variant (variant)}
-				<Button {variant}>{variant}</Button>
+			{#each variants as [variant, name] (variant)}
+				<Button {variant}>{name}</Button>
 			{/each}
 		</Cluster>
 	</Stack>
