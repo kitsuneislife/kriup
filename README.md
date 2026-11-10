@@ -20,16 +20,16 @@ O Postgres local usa a porta **5433** (a 5432 costuma estar ocupada por uma inst
 
 ## Comandos
 
-| Comando | O que faz |
-| --- | --- |
-| `pnpm dev` | Servidor de desenvolvimento |
-| `pnpm lint` | Prettier e ESLint |
-| `pnpm check` | Tipos (svelte-check, TypeScript strict) |
-| `pnpm test` | Testes unitários (sem banco) |
-| `pnpm test:int` | Testes de integração (exigem `pnpm db:up` e `pnpm db:migrate`) |
-| `pnpm db:generate` | Gera migração a partir de `src/lib/server/db/schema.ts` |
-| `pnpm db:migrate` | Aplica migrações |
-| `pnpm build` | Build de produção |
+| Comando            | O que faz                                                      |
+| ------------------ | -------------------------------------------------------------- |
+| `pnpm dev`         | Servidor de desenvolvimento                                    |
+| `pnpm lint`        | Prettier e ESLint                                              |
+| `pnpm check`       | Tipos (svelte-check, TypeScript strict)                        |
+| `pnpm test`        | Testes unitários (sem banco)                                   |
+| `pnpm test:int`    | Testes de integração (exigem `pnpm db:up` e `pnpm db:migrate`) |
+| `pnpm db:generate` | Gera migração a partir de `src/lib/server/db/schema.ts`        |
+| `pnpm db:migrate`  | Aplica migrações                                               |
+| `pnpm build`       | Build de produção                                              |
 
 O CI (`.github/workflows/ci.yml`) roda lint, check, testes, migração, testes de integração e build.
 
