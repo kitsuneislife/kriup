@@ -18,6 +18,10 @@
 		type?: 'button' | 'submit' | 'reset';
 		disabled?: boolean;
 		fullWidth?: boolean;
+		/** For buttons that open a Menu or Popover: sets aria-expanded, aria-haspopup, aria-controls. */
+		expanded?: boolean;
+		haspopup?: 'menu' | 'dialog';
+		controls?: string;
 		onclick?: (event: MouseEvent) => void;
 		children?: Snippet;
 	};
@@ -33,6 +37,9 @@
 		type = 'button',
 		disabled = false,
 		fullWidth = false,
+		expanded,
+		haspopup,
+		controls,
 		onclick,
 		children
 	}: Props = $props();
@@ -78,6 +85,9 @@
 		disabled={inert}
 		aria-label={label}
 		aria-busy={loading !== undefined ? true : undefined}
+		aria-expanded={expanded}
+		aria-haspopup={haspopup}
+		aria-controls={controls}
 		{onclick}
 	>
 		{@render inside()}

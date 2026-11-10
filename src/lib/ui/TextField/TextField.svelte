@@ -7,7 +7,7 @@
 		label: string;
 		value?: string;
 		name?: string;
-		type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'number';
+		type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'number' | 'date' | 'time';
 		placeholder?: string;
 		hint?: string;
 		error?: string;
