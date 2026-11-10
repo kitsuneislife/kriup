@@ -5,4 +5,6 @@ build
 .env.*
 !.env.example
 graphify-out
+test-results
+playwright-report
 .claude

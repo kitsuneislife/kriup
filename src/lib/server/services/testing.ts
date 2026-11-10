@@ -1,9 +1,10 @@
-// Shared setup for the service integration tests (*.int.test.ts). Never imported by app code.
+// Shared setup for the service integration tests (*.int.test.ts) and the e2e fixtures
+// (e2e/fixtures.ts). Never imported by app code. No Vitest import: Playwright loads it too.
 
 import 'dotenv/config';
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { sql } from 'drizzle-orm';
-import { expect } from 'vitest';
 import { DomainError, type DomainErrorCode } from '../../domain/states';
 import type { SessionUser } from '../auth/session';
 import type { Ctx } from '../context';
@@ -64,11 +65,12 @@ export function testCtx(): TestCtx {
 
 export async function newUser(
 	email: string,
-	platformRole: 'user' | 'support' = 'user'
+	platformRole: 'user' | 'support' = 'user',
+	name = email.split('@')[0]!
 ): Promise<SessionUser> {
 	const [row] = await db
 		.insert(user)
-		.values({ email, name: email.split('@')[0]!, passwordHash: 'x', platformRole })
+		.values({ email, name, passwordHash: 'x', platformRole })
 		.returning({
 			id: user.id,
 			email: user.email,
@@ -120,8 +122,8 @@ export async function rejectsCode(work: Promise<unknown>, code: DomainErrorCode)
 		() => null,
 		(e: unknown) => e
 	);
-	expect(err).toBeInstanceOf(DomainError);
-	expect((err as DomainError).code).toBe(code);
+	assert.ok(err instanceof DomainError, `expected DomainError(${code}), got ${String(err)}`);
+	assert.equal(err.code, code);
 }
 
 export const days = (from: Date, n: number) => new Date(from.getTime() + n * 86_400_000);
