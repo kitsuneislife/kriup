@@ -73,7 +73,9 @@ export default ts.config(
 					patterns: [
 						'$app/*',
 						'$env/*',
-						'#lib/server/*',
+						'\\#lib/server/*',
+						'\\#lib/ui',
+						'\\#lib/ui/*',
 						'@sveltejs/*',
 						'drizzle-orm*',
 						'postgres',
