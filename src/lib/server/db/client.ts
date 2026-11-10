@@ -7,3 +7,5 @@ export function createDb(url: string) {
 }
 
 export type Db = ReturnType<typeof createDb>;
+/** The handle inside `db.transaction`; queries shared by both take `Db | Tx`. */
+export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
