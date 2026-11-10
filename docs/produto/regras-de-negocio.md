@@ -52,11 +52,13 @@ stateDiagram-v2
     aguardando --> pago: pagamento confirmado
     aguardando --> expirado: prazo do Pix venceu
     aguardando --> recusado: cartão recusado
+    expirado --> pago: Pix pago depois do prazo
+    recusado --> pago: nova tentativa de cartão aprovada
     pago --> reembolsado: reembolso aprovado
     reembolsado --> [*]
-    expirado --> [*]
-    recusado --> [*]
 ```
+
+Um pedido expirado ou recusado ainda pode virar pago: o dinheiro chegou, então o aluno recebe o acesso. O pedido abandonado (sem cobrança criada) expira no job diário depois de um dia.
 
 ## 4. Estados do pedido de reembolso
 

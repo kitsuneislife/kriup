@@ -19,7 +19,9 @@ describe('order', () => {
 		expect(canTransition(ORDER_TRANSITIONS, 'pending', 'paid')).toBe(true);
 		expect(canTransition(ORDER_TRANSITIONS, 'paid', 'paid')).toBe(false);
 		expect(canTransition(ORDER_TRANSITIONS, 'pending', 'refunded')).toBe(false);
-		expect(canTransition(ORDER_TRANSITIONS, 'expired', 'paid')).toBe(false);
+		expect(canTransition(ORDER_TRANSITIONS, 'expired', 'paid')).toBe(true);
+		expect(canTransition(ORDER_TRANSITIONS, 'declined', 'paid')).toBe(true);
+		expect(canTransition(ORDER_TRANSITIONS, 'refunded', 'paid')).toBe(false);
 	});
 });
 

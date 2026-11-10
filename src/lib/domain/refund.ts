@@ -56,7 +56,9 @@ export function decline(
 	now: Date
 ): Refund {
 	const declineReason = reason.trim();
-	if (declineReason === '') throw new DomainError('a decline needs a reason for the student');
+	if (declineReason === '') {
+		throw new DomainError('decline_reason_required', 'a decline needs a reason for the student');
+	}
 	assertTurn(refund, actor, now);
 	const status = actor === 'producer' ? 'declined' : 'final_declined';
 	assertTransition(REFUND_TRANSITIONS, refund.status, status);
@@ -70,9 +72,11 @@ export function decline(
 export function escalate(refund: Readonly<Refund>, now: Date): Refund {
 	assertDate('now', now);
 	if (refund.status !== 'with_producer') {
-		throw new DomainError(`a ${refund.status} refund does not escalate`);
+		throw new DomainError('invalid_transition', `a ${refund.status} refund does not escalate`);
 	}
-	if (now < refund.dueAt) throw new DomainError('the producer deadline has not passed');
+	if (now < refund.dueAt) {
+		throw new DomainError('deadline_not_passed', 'the producer deadline has not passed');
+	}
 	return {
 		...refund,
 		status: 'with_platform',
@@ -84,9 +88,12 @@ export function escalate(refund: Readonly<Refund>, now: Date): Refund {
 /** RN-09: the student can contest a producer's decline once; it goes straight to support. */
 export function contest(refund: Readonly<Refund>, now: Date): Refund {
 	assertDate('now', now);
-	if (refund.contested) throw new DomainError('a refund can be contested only once');
-	if (refund.status !== 'declined')
-		throw new DomainError('only a declined refund can be contested');
+	if (refund.contested) {
+		throw new DomainError('already_contested', 'a refund can be contested only once');
+	}
+	if (refund.status !== 'declined') {
+		throw new DomainError('not_contestable', 'only a declined refund can be contested');
+	}
 	return {
 		...refund,
 		status: 'with_platform',
@@ -107,10 +114,15 @@ export function complete(refund: Readonly<Refund>): Refund {
 function assertTurn(refund: Readonly<Refund>, actor: RefundOwner, now: Date): void {
 	assertDate('now', now);
 	if (refund.status !== 'with_producer' && refund.status !== 'with_platform') {
-		throw new DomainError(`no decision is pending on a ${refund.status} refund`);
+		throw new DomainError(
+			'invalid_transition',
+			`no decision is pending on a ${refund.status} refund`
+		);
 	}
-	if (actor !== refund.owner) throw new DomainError(`the ${refund.owner} decides this refund`);
+	if (actor !== refund.owner) {
+		throw new DomainError('not_your_turn', `the ${refund.owner} decides this refund`);
+	}
 	if (actor === 'producer' && now >= refund.dueAt) {
-		throw new DomainError('the producer deadline has passed');
+		throw new DomainError('deadline_passed', 'the producer deadline has passed');
 	}
 }

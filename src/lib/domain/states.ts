@@ -1,17 +1,55 @@
 // State machines from docs/produto/regras-de-negocio.md, sections 3 to 5.
 
+import type { PayoutRefusal } from './payout';
+
 type Machine<S extends string> = Readonly<Record<S, readonly S[]>>;
+
+/**
+ * Why a rule refused an action. Stable, so the interface maps each one to its own text
+ * (convencoes.md section 1); the message is for logs.
+ */
+export type DomainErrorCode =
+	| 'invalid_transition'
+	| 'decline_reason_required'
+	| 'not_your_turn'
+	| 'deadline_passed'
+	| 'deadline_not_passed'
+	| 'already_contested'
+	| 'not_contestable'
+	| 'refund_exists'
+	| 'order_not_refundable'
+	| 'publish_pendencies'
+	| 'blocked'
+	| 'product_unavailable'
+	| 'recurrence_not_supported'
+	| 'offer_has_orders'
+	| 'already_invited'
+	| 'share_limit'
+	| 'self_coproduction'
+	| PayoutRefusal
+	| 'invalid_token'
+	| 'email_taken';
 
 /** A rule forbids the action: the request is stale or forged, never a server fault. */
 export class DomainError extends Error {
 	override name = 'DomainError';
+	constructor(
+		readonly code: DomainErrorCode,
+		message: string = code
+	) {
+		super(message);
+	}
 }
 
+/**
+ * A provider may still accept a charge after it expired (late Pix) or after a refused
+ * card attempt, so both can still become paid; the money arrived and must be honored.
+ */
 export const ORDER_TRANSITIONS = {
 	pending: ['paid', 'expired', 'declined'],
 	paid: ['refunded'],
-	expired: [],
-	declined: [],
+	expired: ['paid'],
+	declined: ['paid'],
 	refunded: []
 } as const satisfies Machine<string>;
 
@@ -87,5 +125,7 @@ export function canTransition<S extends string>(machine: Machine<S>, from: S, to
 }
 
 export function assertTransition<S extends string>(machine: Machine<S>, from: S, to: S): void {
-	if (!canTransition(machine, from, to)) throw new DomainError(`cannot go from ${from} to ${to}`);
+	if (!canTransition(machine, from, to)) {
+		throw new DomainError('invalid_transition', `cannot go from ${from} to ${to}`);
+	}
 }
