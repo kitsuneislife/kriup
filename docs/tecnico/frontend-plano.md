@@ -91,6 +91,8 @@ Concluída em 10/11/2026. Como ficou: `convencoes.md` seção 6. Duas decisões 
 
 E2e: cadastrar, entrar, sair; senha errada; link expirado; usuário logado sem papel de suporte recebe 404 em `/support`.
 
+Concluída em 10/11/2026. Cadastro e login saíram das rotas para `auth/accounts.ts` (`register`, `authenticate`), com o código novo `invalid_credentials`. Um e-mail que já tem conta sem senha (comprador ou convidado) conta como ocupado: a pessoa entra pelo link de senha, nunca se cadastrando de novo. `/` usa `homeProfile`: suporte vai para a fila; quem só comprou ou foi convidado, sem produto próprio, vai para essa área; o resto vai para Produtos. A página do link (`passwordTokenOwner`) já diz na abertura se o link expirou e se é a primeira senha. No caminho, o link e o texto de erro do kit passaram a ter contraste AA nos dois temas (`design/cores.md`).
+
 ### Fase 2. Criação do produto, UC-01 (17 a 42%)
 
 | Lote | Telas | Serviços | % |
