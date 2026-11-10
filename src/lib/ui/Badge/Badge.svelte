@@ -34,8 +34,16 @@
 			color-mix(in oklab, var(--black) 40%, var(--_c)),
 			color-mix(in oklab, var(--white) 22%, var(--_c))
 		);
-		background: color-mix(in srgb, var(--_c) 15%, transparent);
-		box-shadow: inset 0 0 0 var(--border-width) color-mix(in srgb, var(--_c) 22%, transparent);
+		/* a tinted pill with body: lighter at the top, a tone rim and a glint on the upper edge */
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--_c) 22%, transparent),
+			color-mix(in srgb, var(--_c) 12%, transparent)
+		);
+		box-shadow:
+			inset 0 0 0 var(--border-width) color-mix(in srgb, var(--_c) 30%, transparent),
+			inset 0 1px 0 light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.1)),
+			0 1px 2px color-mix(in srgb, var(--_c) 14%, transparent);
 	}
 	[data-size='sm'] {
 		--_h: 1.25rem;
@@ -50,5 +58,7 @@
 		block-size: 0.375rem;
 		border-radius: var(--radius-pill);
 		background: var(--_c);
+		/* the dot glows a little, like a status light */
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--_c) 22%, transparent);
 	}
 </style>

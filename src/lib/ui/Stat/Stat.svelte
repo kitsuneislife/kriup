@@ -43,14 +43,44 @@
 		line-height: var(--text-footnote-leading);
 		letter-spacing: var(--text-footnote-tracking);
 	}
+	/* tinted tile with body: lighter top, tone rim, glint; the same family as Badge */
 	.icon {
 		display: grid;
 		place-items: center;
 		inline-size: var(--control-sm);
 		block-size: var(--control-sm);
-		border-radius: var(--radius-pill);
-		background: color-mix(in srgb, var(--_c) 14%, transparent);
+		border-radius: var(--radius-sm);
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--_c) 24%, transparent),
+			color-mix(in srgb, var(--_c) 10%, transparent)
+		);
+		box-shadow:
+			inset 0 0 0 var(--border-width) color-mix(in srgb, var(--_c) 28%, transparent),
+			inset 0 1px 0 light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.1));
 		color: var(--_c);
+	}
+	.value {
+		animation: rise var(--duration-slow) var(--ease-enter) both;
+	}
+	.hint {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+	/* a tone dot ties the hint to the icon */
+	.hint::before {
+		content: '';
+		inline-size: 0.375rem;
+		block-size: 0.375rem;
+		border-radius: var(--radius-pill);
+		background: var(--_c);
+	}
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(calc(var(--shift) / 2));
+		}
 	}
 	.hint {
 		color: var(--color-text-secondary);

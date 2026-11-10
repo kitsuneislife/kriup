@@ -43,15 +43,21 @@
 		gap: var(--space-3);
 		padding: var(--space-3);
 		border-radius: var(--radius-lg);
-		/* a whisper of the tone over the raised surface; the icon chip carries the color */
-		background: linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--_c) 7%, var(--color-bg-raised)),
-			color-mix(in srgb, var(--_c) 3%, var(--color-bg-raised))
-		);
-		border: var(--border-width) solid color-mix(in srgb, var(--_c) 16%, var(--color-border));
+		/*
+		 * Neutral surface, like a macOS notification: the tone lives in a solid icon tile and in
+		 * a soft light that spreads from it, never as a wash over the whole card.
+		 */
+		background:
+			radial-gradient(
+				circle at var(--space-6) var(--space-6),
+				color-mix(in srgb, var(--_c) 14%, transparent),
+				transparent 9rem
+			),
+			var(--surface, var(--color-bg-raised));
+		border: var(--border-width) solid var(--color-border);
 		box-shadow:
 			inset 0 1px 0 var(--color-highlight),
+			0 0 0 var(--border-width) var(--color-edge),
 			var(--shadow-1);
 		animation: enter var(--duration-base) var(--ease-enter) both;
 	}
@@ -62,9 +68,16 @@
 		inline-size: var(--control-sm);
 		block-size: var(--control-sm);
 		border-radius: var(--radius-sm);
-		color: var(--_c);
-		background: color-mix(in srgb, var(--_c) 16%, transparent);
-		box-shadow: inset 0 0 0 var(--border-width) color-mix(in srgb, var(--_c) 22%, transparent);
+		color: var(--white);
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--_c) 88%, var(--white)),
+			color-mix(in oklab, var(--_c) 88%, var(--black))
+		);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.25),
+			inset 0 0 0 var(--border-width) rgb(255 255 255 / 0.08),
+			0 2px 8px -2px color-mix(in srgb, var(--_c) 60%, transparent);
 	}
 	.body {
 		flex: 1;
