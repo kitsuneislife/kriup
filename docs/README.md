@@ -5,7 +5,7 @@ A documentação é em português. Código, pastas, arquivos, banco e API são e
 | Pasta | Conteúdo |
 | --- | --- |
 | `produto/` | O que construir: `visao-e-escopo.md`, `requisitos.md`, `regras-de-negocio.md` |
-| `tecnico/` | Como construir: `arquitetura.md`, `modelo-de-dados.md`, `convencoes.md`, `telas-testes-roadmap.md` |
+| `tecnico/` | Como construir: `arquitetura.md`, `modelo-de-dados.md`, `pagamentos.md`, `convencoes.md`, `telas-testes-roadmap.md` |
 | `design/` | Design kit: `README.md` (estrutura e fluxo), `principios.md` (direção, medidas, movimento), `regras.md` (regras de uso), `catalogo.md` (tokens e componentes) |
 | `pesquisa/` | Material de base: Lean Canvas e matriz de dores, levantamento da plataforma de referência |
 

@@ -38,6 +38,8 @@
 | Sessão | `session` | |
 | Chamado | `ticket` | contato de suporte ligado a um pedido |
 | Token de senha | `password_token` | link para definir ou recuperar a senha |
+| CPF/CNPJ | `tax_id` | pedido no checkout para o provedor; não é gravado |
+| Cobrança | `charge` | cobrança no provedor de pagamento, ligada ao pedido por `external_id` |
 
 Estados e enums também em inglês. As máquinas de estado vivem em `src/lib/domain/states.ts` e os enums do banco são gerados a partir delas (`statesOf`):
 
@@ -76,8 +78,9 @@ O pedido de reembolso nasce já decidido (`approved`, dentro da garantia) ou com
 
 - `src/lib/domain`: funções puras. Não importa banco, SvelteKit nem nada de `server`.
 - `src/lib/server`: tudo que toca banco, segredo ou rede. Só importado por `routes` e por outros arquivos de `server`.
-- `src/routes`: orquestra. Valida a entrada (Zod), checa papel e dono do recurso, chama `domain` e `server`.
-- Testes ficam ao lado do código: `split.ts` e `split.test.ts`. Testes com banco usam o sufixo `.int.test.ts`.
+- `src/lib/server/services`: casos de uso. Validam a entrada (Zod), checam papel e dono do recurso e gravam em transação.
+- `src/routes`: fina. Lê a sessão (`requireUser`), chama um serviço dentro de `act()` e devolve o resultado.
+- Testes ficam ao lado do código: `split.ts` e `split.test.ts`. Testes com banco usam o sufixo `.int.test.ts`, rodam em sequência e começam com `resetDb()` de `services/testing.ts`.
 - Dinheiro é inteiro em centavos. Nunca `number` com fração.
 
 Versão do framework: SvelteKit 3. Importe de `src/lib` com `#lib/...` (o alias `$lib` foi removido) e leia variáveis de ambiente por `$app/env/private`, declaradas em `src/env.ts`. Em produção o adaptador Node assume HTTPS: defina a origem pública do site, senão formulários POST recebem 403 (proteção CSRF).
