@@ -40,7 +40,7 @@ export default ts.config(
 		files: [
 			'src/routes/(public)/login/+page.svelte',
 			'src/routes/(public)/register/+page.svelte',
-			'src/routes/account/+page.svelte'
+			'src/routes/(app)/account/+page.svelte'
 		],
 		rules: { 'svelte/no-restricted-html-elements': 'off' }
 	},
