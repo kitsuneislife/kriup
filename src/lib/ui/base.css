@@ -1,0 +1,98 @@
+/* Global base: reset, font and page defaults. Component styling lives in each component. */
+@import '@fontsource-variable/inter/opsz.css';
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	min-height: 100dvh;
+	background: var(--color-bg-app);
+	color: var(--color-text);
+	font-family: var(--font-sans);
+	font-size: var(--text-body-size);
+	line-height: var(--text-body-leading);
+	letter-spacing: var(--text-body-tracking);
+	font-optical-sizing: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+	transition: background-color var(--duration-base) var(--ease-standard);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+	margin: 0;
+	font: inherit;
+}
+
+ul,
+ol {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+a {
+	color: var(--color-link);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+
+img,
+svg {
+	display: block;
+	max-width: 100%;
+}
+
+::selection {
+	background: var(--color-accent-tint);
+}
+
+:focus-visible {
+	outline: var(--focus-width) solid var(--focus-color);
+	outline-offset: var(--focus-offset);
+}
+
+/* Page transitions (View Transitions API, started in the root layout) */
+::view-transition-old(root) {
+	animation: fade-out var(--duration-fast) var(--ease-exit) both;
+}
+
+::view-transition-new(root) {
+	animation: fade-in var(--duration-base) var(--ease-enter) both;
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(var(--shift));
+	}
+}
+
+@keyframes fade-out {
+	to {
+		opacity: 0;
+	}
+}

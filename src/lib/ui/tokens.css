@@ -1,0 +1,215 @@
+/*
+ * Design tokens. The only file that defines raw color, size, duration and curve values.
+ * Layers: primitives (Apple system palette) -> semantic (role in the interface) -> component.
+ * Every color uses light-dark(): one declaration, both themes. The theme follows the system,
+ * and [data-theme] on <html> overrides it. See docs/design/cores.md for the reasoning.
+ */
+
+:root {
+	color-scheme: light dark;
+
+	/* ---------- Primitives: Apple system colors, Default (light | dark) ---------- */
+	--red: light-dark(rgb(255 56 60), rgb(255 66 69));
+	--orange: light-dark(rgb(255 141 40), rgb(255 146 48));
+	--yellow: light-dark(rgb(255 204 0), rgb(255 214 0));
+	--green: light-dark(rgb(52 199 89), rgb(48 209 88));
+	--mint: light-dark(rgb(0 200 179), rgb(0 218 195));
+	--teal: light-dark(rgb(0 195 208), rgb(0 210 224));
+	--cyan: light-dark(rgb(0 192 232), rgb(60 211 254));
+	--blue: light-dark(rgb(0 136 255), rgb(0 145 255));
+	--indigo: light-dark(rgb(97 85 245), rgb(109 124 255));
+	--purple: light-dark(rgb(203 48 224), rgb(219 52 242));
+	--pink: light-dark(rgb(255 45 85), rgb(255 55 95));
+	--brown: light-dark(rgb(172 127 94), rgb(183 138 102));
+
+	--white: rgb(255 255 255);
+	--black: rgb(0 0 0);
+
+	--gray: light-dark(rgb(142 142 147), rgb(142 142 147));
+	--gray-2: light-dark(rgb(174 174 178), rgb(99 99 102));
+	--gray-3: light-dark(rgb(199 199 204), rgb(72 72 74));
+	--gray-4: light-dark(rgb(209 209 214), rgb(58 58 60));
+	--gray-5: light-dark(rgb(229 229 234), rgb(44 44 46));
+	--gray-6: light-dark(rgb(242 242 247), rgb(28 28 30));
+
+	/* ---------- Semantic: text ---------- */
+	--color-text: light-dark(rgb(28 28 30), rgb(255 255 255));
+	--color-text-secondary: light-dark(rgb(60 60 67 / 0.6), rgb(235 235 245 / 0.6));
+	--color-text-tertiary: light-dark(rgb(60 60 67 / 0.3), rgb(235 235 245 / 0.3));
+	--color-text-quaternary: light-dark(rgb(60 60 67 / 0.18), rgb(235 235 245 / 0.16));
+	--color-text-on-accent: rgb(255 255 255);
+	--color-link: var(--blue);
+
+	/* ---------- Semantic: surfaces (three levels: app < panel < raised) ---------- */
+	--color-bg-app: light-dark(var(--gray-6), color-mix(in oklab, black 42%, rgb(28 28 30)));
+	--color-bg-panel: light-dark(rgb(255 255 255), var(--gray-6));
+	--color-bg-raised: light-dark(rgb(255 255 255), var(--gray-5));
+	--color-bg-field: light-dark(rgb(255 255 255), color-mix(in oklab, white 4%, rgb(28 28 30)));
+	--color-bg-overlay: light-dark(rgb(0 0 0 / 0.3), rgb(0 0 0 / 0.55));
+
+	/* Fills: gray with alpha, so they work on any surface (hover, pressed, selected) */
+	--color-fill-subtle: light-dark(rgb(120 120 128 / 0.08), rgb(120 120 128 / 0.18));
+	--color-fill: light-dark(rgb(120 120 128 / 0.12), rgb(120 120 128 / 0.24));
+	--color-fill-strong: light-dark(rgb(120 120 128 / 0.2), rgb(120 120 128 / 0.36));
+
+	/* Borders: the double border is `--color-border` outside + `--color-hairline` inside */
+	--color-border: light-dark(var(--gray-5), var(--gray-4));
+	--color-border-strong: light-dark(var(--gray-4), var(--gray-3));
+	--color-hairline: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.06));
+	--color-highlight: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.08));
+
+	/* ---------- Semantic: meaning ---------- */
+	--color-accent: var(--blue);
+	--color-accent-tint: color-mix(in srgb, var(--blue) 14%, transparent);
+	--color-success: var(--green);
+	--color-warning: var(--orange);
+	--color-danger: var(--red);
+	--color-info: var(--cyan);
+
+	/* ---------- Button surfaces ---------- */
+	--button-neutral-top: light-dark(rgb(255 255 255), color-mix(in oklab, white 9%, rgb(44 44 46)));
+	--button-neutral-bottom: light-dark(rgb(246 246 249), rgb(44 44 46));
+	--button-neutral-border: light-dark(rgb(209 209 214), rgb(72 72 74));
+	--button-neutral-ring: light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.5));
+
+	/* ---------- Focus ---------- */
+	--focus-color: color-mix(in srgb, var(--blue) 70%, transparent);
+	--focus-width: 3px;
+	--focus-offset: 2px;
+
+	/* ---------- Spacing (4 px base, closed scale) ---------- */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--space-24: 6rem;
+
+	/* ---------- Radius (inner = outer - padding) ---------- */
+	--radius-xs: 0.375rem;
+	--radius-sm: 0.5rem;
+	--radius-md: 0.75rem;
+	--radius-lg: 1rem;
+	--radius-xl: 1.5rem;
+	--radius-pill: 62.4375rem;
+
+	/* ---------- Controls ---------- */
+	--control-sm: 2rem;
+	--control-md: 2.5rem;
+	--control-lg: 3rem;
+	--border-width: 1px;
+	--icon-sm: 1rem;
+	--icon-md: 1.25rem;
+	--icon-lg: 1.5rem;
+	--switch-width: 2.75rem;
+	--switch-height: 1.75rem;
+	--glint: rgb(255 255 255 / 0.3);
+	--blur-overlay: 0.5rem;
+
+	/* ---------- Typography (Apple text styles, tracking from the SF Pro table) ---------- */
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, 'SF Pro', 'Inter Variable', system-ui, 'Segoe UI', Roboto,
+		sans-serif;
+	--font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+	--text-caption-size: 0.75rem;
+	--text-caption-leading: 1rem;
+	--text-caption-tracking: 0em;
+	--text-footnote-size: 0.8125rem;
+	--text-footnote-leading: 1.125rem;
+	--text-footnote-tracking: -0.006em;
+	--text-subhead-size: 0.9375rem;
+	--text-subhead-leading: 1.25rem;
+	--text-subhead-tracking: -0.016em;
+	--text-body-size: 1rem;
+	--text-body-leading: 1.4375rem;
+	--text-body-tracking: -0.02em;
+	--text-title3-size: 1.25rem;
+	--text-title3-leading: 1.5625rem;
+	--text-title3-tracking: -0.023em;
+	--text-title2-size: 1.375rem;
+	--text-title2-leading: 1.75rem;
+	--text-title2-tracking: -0.012em;
+	--text-title1-size: 1.75rem;
+	--text-title1-leading: 2.125rem;
+	--text-title1-tracking: 0.014em;
+	--text-large-size: 2.125rem;
+	--text-large-leading: 2.5625rem;
+	--text-large-tracking: 0.012em;
+	--text-display-size: 3rem;
+	--text-display-leading: 3.25rem;
+	--text-display-tracking: 0.008em;
+
+	--weight-regular: 400;
+	--weight-medium: 500;
+	--weight-semibold: 600;
+	--weight-bold: 700;
+
+	/* ---------- Elevation ---------- */
+	--shadow-color: light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.45));
+	--shadow-1: 0 1px 2px var(--shadow-color);
+	--shadow-2: 0 4px 16px -2px var(--shadow-color), 0 1px 3px var(--shadow-color);
+	--shadow-3: 0 24px 64px -12px var(--shadow-color), 0 4px 16px var(--shadow-color);
+
+	/* ---------- Layers ---------- */
+	--z-sticky: 10;
+	--z-overlay: 100;
+	--z-popover: 200;
+	--z-toast: 300;
+
+	/* ---------- Layout ---------- */
+	--width-text: 42.5rem;
+	--width-page: 70rem;
+	--width-sidebar: 16.25rem;
+	--width-dialog: 28rem;
+	--width-column-sm: 14rem;
+	--width-column-md: 18rem;
+	--width-column-lg: 24rem;
+	/* Media queries cannot read variables. The only two breakpoints are 40rem and 64rem. */
+
+	/* ---------- Motion ---------- */
+	--duration-fast: 150ms;
+	--duration-base: 220ms;
+	--duration-slow: 340ms;
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+	--ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-exit: cubic-bezier(0.4, 0, 0.68, 0.06);
+	--ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+	--shift: 0.5rem;
+	--press-scale: 0.97;
+}
+
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+}
+
+/* Increase Contrast: the grays move apart, as the Apple palette defines */
+@media (prefers-contrast: more) {
+	:root {
+		--gray: light-dark(rgb(108 108 112), rgb(174 174 178));
+		--gray-2: light-dark(rgb(142 142 147), rgb(124 124 128));
+		--gray-3: light-dark(rgb(174 174 178), rgb(84 84 86));
+		--gray-4: light-dark(rgb(188 188 192), rgb(68 68 70));
+		--gray-5: light-dark(rgb(216 216 220), rgb(54 54 56));
+		--gray-6: light-dark(rgb(235 235 240), rgb(36 36 38));
+		--color-text-secondary: light-dark(rgb(60 60 67 / 0.8), rgb(235 235 245 / 0.8));
+		--color-border: light-dark(var(--gray-3), var(--gray-2));
+	}
+}
+
+/* Reduce Motion: no travel, only a quick fade */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--shift: 0rem;
+		--press-scale: 1;
+		--duration-base: 100ms;
+		--duration-slow: 150ms;
+	}
+}
