@@ -8,6 +8,8 @@
 		/** Id of the native control inside, so the label points at it. */
 		id: string;
 		label: string;
+		/** Keeps the label for screen readers only. For search fields whose purpose the icon shows. */
+		labelHidden?: boolean;
 		hint?: string;
 		error?: string;
 		size?: Size;
@@ -22,6 +24,7 @@
 	let {
 		id,
 		label,
+		labelHidden = false,
 		hint,
 		error,
 		size = 'md',
@@ -40,7 +43,7 @@
 	data-disabled={disabled}
 	data-multiline={multiline}
 >
-	<label class="label" for={id}>{label}</label>
+	<label class="label" for={id} data-hidden={labelHidden}>{label}</label>
 	<div class="shell">
 		{#if icon}<span class="icon"><Icon name={icon} size="sm" /></span>{/if}
 		{@render children()}
@@ -64,6 +67,14 @@
 		letter-spacing: var(--text-footnote-tracking);
 		font-weight: var(--weight-medium);
 		color: var(--color-text);
+	}
+	.label[data-hidden='true'] {
+		position: absolute;
+		inline-size: var(--border-width);
+		block-size: var(--border-width);
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	.shell {

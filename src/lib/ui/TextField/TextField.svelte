@@ -5,6 +5,8 @@
 
 	type Props = {
 		label: string;
+		/** Label for screen readers only, see Field. */
+		labelHidden?: boolean;
 		value?: string;
 		name?: string;
 		type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'number' | 'date' | 'time';
@@ -22,6 +24,7 @@
 
 	let {
 		label,
+		labelHidden = false,
 		value = $bindable(''),
 		name,
 		type = 'text',
@@ -40,7 +43,17 @@
 	const describedby = $derived(error || hint ? `${id}-message` : undefined);
 </script>
 
-<Field {id} {label} {hint} {error} {size} {icon} {disabled} multiline={rows !== undefined}>
+<Field
+	{id}
+	{label}
+	{labelHidden}
+	{hint}
+	{error}
+	{size}
+	{icon}
+	{disabled}
+	multiline={rows !== undefined}
+>
 	{#if rows !== undefined}
 		<textarea
 			{id}
