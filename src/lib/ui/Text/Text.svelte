@@ -137,7 +137,7 @@
 		--tone: light-dark(color-mix(in oklab, var(--black) 38%, var(--orange)), var(--orange));
 	}
 	[data-tone='danger'] {
-		--tone: light-dark(color-mix(in oklab, var(--black) 18%, var(--red)), var(--red));
+		--tone: var(--color-danger-text);
 	}
 
 	[data-numeric='true'] {

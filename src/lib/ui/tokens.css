@@ -39,7 +39,16 @@
 	--color-text-tertiary: light-dark(rgb(60 60 67 / 0.3), rgb(235 235 245 / 0.3));
 	--color-text-quaternary: light-dark(rgb(60 60 67 / 0.18), rgb(235 235 245 / 0.16));
 	--color-text-on-accent: rgb(255 255 255);
-	--color-link: var(--blue);
+	/* Pure blue and red fall below WCAG AA as text: 3.6:1 on white, about 4.2:1 on a dark
+	   card. Darkened in light, lightened in dark, they pass on every surface. */
+	--color-link: light-dark(
+		color-mix(in oklab, var(--black) 16%, var(--blue)),
+		color-mix(in oklab, var(--white) 20%, var(--blue))
+	);
+	--color-danger-text: light-dark(
+		color-mix(in oklab, var(--black) 18%, var(--red)),
+		color-mix(in oklab, var(--white) 20%, var(--red))
+	);
 
 	/* ---------- Semantic: surfaces (three levels: app < panel < raised) ---------- */
 	--color-bg-app: light-dark(var(--gray-6), color-mix(in oklab, black 42%, rgb(28 28 30)));

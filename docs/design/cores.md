@@ -25,6 +25,7 @@ Consequências:
 - Azul nunca indica estado, e verde, laranja e vermelho nunca indicam clique. Link não é verde; "sucesso" não é azul.
 - A cor nunca é o único sinal: todo estado tem texto (`Badge` com ponto, ícone no `Alert`).
 - Texto de status usa a variante escurecida no tema claro (`Text tone`, `Badge`), porque verde, amarelo e laranja puros não têm contraste suficiente sobre branco.
+- Link (`--color-link`) e texto de erro (`--color-danger-text`) seguem a mesma ideia nos dois temas: azul e vermelho puros dão 3,6:1 sobre branco e cerca de 4,2:1 sobre um cartão escuro, abaixo do AA. No claro levam 16% e 18% de preto; no escuro, 20% de branco. Dentro de um parágrafo o link é sempre sublinhado, para não depender só da cor.
 - A paleta dos gráficos segue a ordem: blue, indigo, teal, orange, pink, mint, purple, yellow. Estado nunca é codificado só pela cor do gráfico.
 
 ## 2. Estrutura: cinzas e três níveis de superfície

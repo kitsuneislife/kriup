@@ -161,7 +161,7 @@
 		box-shadow: 0 0 0 var(--focus-width) color-mix(in srgb, var(--color-danger) 18%, transparent);
 	}
 	[data-invalid='true'] .message {
-		color: light-dark(color-mix(in oklab, var(--black) 18%, var(--red)), var(--red));
+		color: var(--color-danger-text);
 	}
 
 	[data-disabled='true'] {

@@ -55,7 +55,9 @@ a {
 	text-decoration: none;
 }
 
-a:hover {
+/* inside running text color alone does not mark a link (WCAG 1.4.1): always underlined */
+a:hover,
+p a {
 	text-decoration: underline;
 	text-underline-offset: 0.2em;
 }
