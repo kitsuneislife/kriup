@@ -2,7 +2,7 @@
 
 O design kit é a única biblioteca de componentes visuais do sistema. Toda tela é montada com ele. Esta pasta documenta como o kit funciona: `principios.md` (direção visual, medidas, movimento), `regras.md` (regras de uso) e `catalogo.md` (o que existe).
 
-Status: **tokens, base de estilo e a primeira leva de 25 componentes prontos** (layout, texto, ícones, botão, formulário, feedback, cartão e diálogo). Faltam menu, tooltip, abas, tabela, toast e os demais, que entram pelo fluxo da seção 4 quando uma tela pedir.
+Status: **tokens, base de estilo e 49 componentes prontos**: layout, texto, ícones, formulário, feedback, navegação (abas, menu, popover, tooltip, toast), dados (tabela, linha do tempo, gráfico) e peças do sistema (dinheiro, data, estado, upload). Falta o calendário com grade de dias e o que as telas ainda pedirem, pelo fluxo da seção 4.
 
 Leitura, nesta ordem: `principios.md` (direção), `cores.md`, `tipografia.md`, `regras.md`, `catalogo.md`.
 
