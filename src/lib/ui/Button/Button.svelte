@@ -193,20 +193,26 @@
 		place-items: center;
 	}
 
-	/* primary and danger: tinted gradient, light top edge, dark outer ring (double border) */
+	/*
+	 * primary and danger: the tone one step deeper, so white text sits calm on it; a short
+	 * gradient, a lighter rim and a soft top glint give it body without shine.
+	 */
 	[data-variant='primary'],
 	[data-variant='danger'] {
+		--_base: color-mix(in oklab, var(--_c) 84%, var(--black));
+		--_hover: 0.08;
 		color: var(--color-text-on-accent);
+		text-shadow: 0 1px 0 rgb(0 0 0 / 0.12);
 		background: linear-gradient(
 			180deg,
-			color-mix(in oklab, var(--white) 24%, var(--_c)),
-			var(--_c) 80%
+			color-mix(in oklab, var(--_base) 90%, var(--white)),
+			var(--_base)
 		);
-		border-color: color-mix(in oklab, var(--white) 32%, var(--_c));
+		border-color: color-mix(in oklab, var(--_base) 70%, var(--white));
 		box-shadow:
-			inset 0 1px 0 var(--glint),
-			0 0 0 var(--border-width) color-mix(in oklab, var(--black) 26%, var(--_c)),
-			var(--shadow-1);
+			inset 0 1px 0 rgb(255 255 255 / 0.14),
+			0 0 0 var(--border-width) var(--color-edge),
+			0 1px 3px color-mix(in srgb, var(--_base) 35%, transparent);
 	}
 	[data-variant='danger'] {
 		--_c: var(--color-danger);
