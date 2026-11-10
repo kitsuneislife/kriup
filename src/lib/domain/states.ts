@@ -1,34 +1,38 @@
 // State machines from docs/produto/regras-de-negocio.md, sections 3 to 5.
 
-import type { PayoutRefusal } from './payout';
+import { PAYOUT_REFUSALS } from './payout';
 
 type Machine<S extends string> = Readonly<Record<S, readonly S[]>>;
 
 /**
  * Why a rule refused an action. Stable, so the interface maps each one to its own text
- * (convencoes.md section 1); the message is for logs.
+ * (src/lib/error-text.ts); the message is for logs. A list, so a test can check every
+ * code has its text.
  */
-export type DomainErrorCode =
-	| 'invalid_transition'
-	| 'decline_reason_required'
-	| 'not_your_turn'
-	| 'deadline_passed'
-	| 'deadline_not_passed'
-	| 'already_contested'
-	| 'not_contestable'
-	| 'refund_exists'
-	| 'order_not_refundable'
-	| 'publish_pendencies'
-	| 'blocked'
-	| 'product_unavailable'
-	| 'recurrence_not_supported'
-	| 'offer_has_orders'
-	| 'already_invited'
-	| 'share_limit'
-	| 'self_coproduction'
-	| PayoutRefusal
-	| 'invalid_token'
-	| 'email_taken';
+export const DOMAIN_ERROR_CODES = [
+	'invalid_transition',
+	'decline_reason_required',
+	'not_your_turn',
+	'deadline_passed',
+	'deadline_not_passed',
+	'already_contested',
+	'not_contestable',
+	'refund_exists',
+	'order_not_refundable',
+	'publish_pendencies',
+	'blocked',
+	'product_unavailable',
+	'recurrence_not_supported',
+	'offer_has_orders',
+	'already_invited',
+	'share_limit',
+	'self_coproduction',
+	...PAYOUT_REFUSALS,
+	'invalid_token',
+	'email_taken'
+] as const;
+
+export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number];
 
 /** A rule forbids the action: the request is stale or forged, never a server fault. */
 export class DomainError extends Error {

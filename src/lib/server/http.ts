@@ -5,12 +5,14 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { ZodError } from 'zod';
 import { DomainError } from '../domain/states';
+import { issueText, type ErrorCode } from '../error-text';
 import type { SessionUser } from './auth/session';
 import { NotFoundError } from './errors';
 
 export type ActionFailure = {
-	code: string;
-	/** Field path to message, for invalid input. */
+	/** The screen shows `errorText(code)`. */
+	code: ErrorCode;
+	/** Field path to its text, for invalid input. Only the first issue of each field. */
 	fields?: Record<string, string>;
 };
 
@@ -24,7 +26,8 @@ export async function act<T>(work: () => Promise<T>) {
 	} catch (err) {
 		if (err instanceof DomainError) return fail(400, { code: err.code } satisfies ActionFailure);
 		if (err instanceof ZodError) {
-			const fields = Object.fromEntries(err.issues.map((i) => [i.path.join('.'), i.message]));
+			const fields: Record<string, string> = {};
+			for (const issue of err.issues) fields[issue.path.join('.')] ??= issueText(issue);
 			return fail(400, { code: 'invalid_input', fields } satisfies ActionFailure);
 		}
 		if (err instanceof NotFoundError) error(404);

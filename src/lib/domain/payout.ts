@@ -1,7 +1,12 @@
 import { assertCents, assertSignedCents } from './money';
 import { PAYOUT_FEE_CENTS, PAYOUT_MIN_CENTS } from './params';
 
-export type PayoutRefusal = 'negative_balance' | 'below_minimum' | 'insufficient_balance';
+export const PAYOUT_REFUSALS = [
+	'negative_balance',
+	'below_minimum',
+	'insufficient_balance'
+] as const;
+export type PayoutRefusal = (typeof PAYOUT_REFUSALS)[number];
 
 export type PayoutQuote =
 	| { ok: true; amountCents: number; feeCents: number; receivedCents: number }

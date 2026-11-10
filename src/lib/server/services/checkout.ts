@@ -28,7 +28,11 @@ export const checkoutSchema = z.object({
 	taxId: z.string().transform((value, issue) => {
 		const digits = normalizeTaxId(value);
 		if (digits === null) {
-			issue.addIssue({ code: 'custom', message: 'invalid CPF or CNPJ' });
+			issue.addIssue({
+				code: 'custom',
+				message: 'invalid CPF or CNPJ',
+				params: { code: 'invalid_tax_id' }
+			});
 			return z.NEVER;
 		}
 		return digits;
