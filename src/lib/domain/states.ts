@@ -29,7 +29,8 @@ export const DOMAIN_ERROR_CODES = [
 	'self_coproduction',
 	...PAYOUT_REFUSALS,
 	'invalid_token',
-	'email_taken'
+	'email_taken',
+	'invalid_credentials'
 ] as const;
 
 export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number];

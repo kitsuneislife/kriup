@@ -33,7 +33,8 @@ const errors = {
 	below_minimum: `O saque mínimo é de ${formatMoney(PAYOUT_MIN_CENTS)}.`,
 	insufficient_balance: 'O valor passa do seu saldo liberado.',
 	invalid_token: 'Este link é inválido ou expirou. Peça um novo.',
-	email_taken: 'Já existe uma conta com este e-mail. Entre ou recupere a senha.'
+	email_taken: 'Já existe uma conta com este e-mail. Entre ou recupere a senha.',
+	invalid_credentials: 'E-mail ou senha incorretos.'
 } satisfies Record<ErrorCode, string>;
 
 export function errorText(code: ErrorCode): string {
