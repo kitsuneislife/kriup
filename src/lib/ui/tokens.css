@@ -57,6 +57,12 @@
 	--color-border-strong: light-dark(var(--gray-4), var(--gray-3));
 	--color-hairline: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.06));
 	--color-highlight: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.08));
+	/* Outer dark edge of floating surfaces: the outside half of their double border */
+	--color-edge: light-dark(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.6));
+	/* Alternating rows of lists and tables, as on the Mac */
+	--color-row-alt: light-dark(rgb(0 0 0 / 0.025), rgb(255 255 255 / 0.03));
+	/* Translucent material of menus, tooltips and toasts, used with --blur-material */
+	--color-bg-material: light-dark(rgb(255 255 255 / 0.88), rgb(44 44 46 / 0.9));
 
 	/* ---------- Semantic: meaning ---------- */
 	--color-accent: var(--blue);
@@ -108,6 +114,7 @@
 	--switch-height: 1.75rem;
 	--glint: rgb(255 255 255 / 0.3);
 	--blur-overlay: 0.5rem;
+	--blur-material: 1.5rem;
 
 	/* ---------- Typography (Apple text styles, tracking from the SF Pro table) ---------- */
 	--font-sans:

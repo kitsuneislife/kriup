@@ -67,12 +67,163 @@ svg {
 }
 
 ::selection {
-	background: var(--color-accent-tint);
+	background: color-mix(in srgb, var(--color-accent) 28%, transparent);
 }
 
 :focus-visible {
 	outline: var(--focus-width) solid var(--focus-color);
 	outline-offset: var(--focus-offset);
+}
+
+/* ---------- Native elements: the browser's own widgets, dressed in the kit ---------- */
+
+:root {
+	/* checkbox, radio, range and progress fall back to the accent */
+	accent-color: var(--color-accent);
+	caret-color: var(--color-accent);
+	/* thin scrollbars on a clear track, like macOS; the color is inherited, the width is not */
+	scrollbar-color: var(--color-fill-strong) transparent;
+}
+
+* {
+	scrollbar-width: thin;
+}
+
+/* autofill keeps the field surface instead of the browser's yellow or blue */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+	-webkit-text-fill-color: var(--color-text);
+	box-shadow: 0 0 0 100vmax var(--color-bg-field) inset;
+	transition: background-color 0s 600000s;
+}
+
+/* date and time: the picker icon in the secondary tone, clickable */
+::-webkit-calendar-picker-indicator {
+	opacity: 0.55;
+	cursor: pointer;
+	transition: opacity var(--duration-fast) var(--ease-standard);
+}
+::-webkit-calendar-picker-indicator:hover {
+	opacity: 1;
+}
+
+/* number and search: no spinners or native clear button; the kit draws its own when needed */
+input[type='number'] {
+	-moz-appearance: textfield;
+	appearance: textfield;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button,
+::-webkit-search-cancel-button,
+::-webkit-search-decoration {
+	appearance: none;
+	margin: 0;
+}
+
+/* file input button looks like a neutral button */
+::file-selector-button {
+	margin-inline-end: var(--space-3);
+	padding: var(--space-1) var(--space-3);
+	border: var(--border-width) solid var(--button-neutral-border);
+	border-radius: var(--radius-pill);
+	background: linear-gradient(180deg, var(--button-neutral-top), var(--button-neutral-bottom));
+	color: var(--color-text);
+	font: inherit;
+	font-size: var(--text-footnote-size);
+	font-weight: var(--weight-medium);
+	cursor: pointer;
+}
+
+/* range: a fill track and a raised white knob */
+input[type='range'] {
+	appearance: none;
+	block-size: var(--icon-md);
+	background: none;
+	cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track {
+	block-size: 0.25rem;
+	border-radius: var(--radius-pill);
+	background: var(--color-fill-strong);
+}
+input[type='range']::-moz-range-track {
+	block-size: 0.25rem;
+	border-radius: var(--radius-pill);
+	background: var(--color-fill-strong);
+}
+input[type='range']::-moz-range-progress {
+	block-size: 0.25rem;
+	border-radius: var(--radius-pill);
+	background: var(--color-accent);
+}
+input[type='range']::-webkit-slider-thumb {
+	appearance: none;
+	inline-size: var(--icon-md);
+	block-size: var(--icon-md);
+	margin-block-start: -0.5rem;
+	border-radius: var(--radius-pill);
+	background: var(--white);
+	box-shadow:
+		0 0 0 var(--border-width) var(--color-edge),
+		var(--shadow-2);
+}
+input[type='range']::-moz-range-thumb {
+	inline-size: var(--icon-md);
+	block-size: var(--icon-md);
+	border: 0;
+	border-radius: var(--radius-pill);
+	background: var(--white);
+	box-shadow:
+		0 0 0 var(--border-width) var(--color-edge),
+		var(--shadow-2);
+}
+
+/* text-level elements */
+hr {
+	margin: 0;
+	border: 0;
+	border-block-start: var(--border-width) solid var(--color-hairline);
+}
+code,
+kbd,
+samp {
+	font-family: var(--font-mono);
+	font-size: 0.875em;
+	letter-spacing: 0;
+}
+kbd {
+	display: inline-block;
+	min-inline-size: 1.5em;
+	padding: 0 var(--space-1);
+	border: var(--border-width) solid var(--color-border-strong);
+	border-block-end-width: 2px;
+	border-radius: var(--radius-xs);
+	background: var(--color-bg-raised);
+	text-align: center;
+}
+mark {
+	padding-inline: 0.15em;
+	border-radius: 0.2em;
+	background: color-mix(in srgb, var(--yellow) 32%, transparent);
+	color: inherit;
+}
+abbr[title] {
+	text-decoration: underline dotted var(--color-text-tertiary);
+	text-underline-offset: 0.2em;
+	cursor: help;
+}
+summary {
+	cursor: pointer;
+}
+fieldset {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	min-inline-size: 0;
+}
+legend {
+	padding: 0;
 }
 
 /* Page transitions (View Transitions API, started in the root layout) */
