@@ -8,6 +8,20 @@
       "when": 1794330727044,
       "tag": "0000_narrow_puck",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794340308881,
+      "tag": "0001_mvp_model",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794340328259,
+      "tag": "0002_integrity_triggers",
+      "breakpoints": true
     }
   ]
 }

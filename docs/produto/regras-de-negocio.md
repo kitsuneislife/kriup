@@ -91,7 +91,7 @@ stateDiagram-v2
     estornado --> [*]
 ```
 
-Uma tarefa agendada (job diário) move de `retido` para `liberado` o que já passou da data de liberação.
+Uma tarefa agendada (job diário) move de `retido` para `liberado` o que já passou da data de liberação. Como cada lançamento muda o saldo no banco (estorno, saque, taxa) está em `../tecnico/modelo-de-dados.md`, seção 4.
 
 ## 6. Fluxo: criação guiada
 

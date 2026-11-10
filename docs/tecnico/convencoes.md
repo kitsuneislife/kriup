@@ -36,8 +36,10 @@
 | Auditoria | `audit_log` | |
 | Garantia | `guarantee` | |
 | Sessão | `session` | |
+| Chamado | `ticket` | contato de suporte ligado a um pedido |
+| Token de senha | `password_token` | link para definir ou recuperar a senha |
 
-Estados e enums também em inglês. As máquinas de estado vivem em `src/lib/domain/states.ts` e as migrações usam os mesmos valores:
+Estados e enums também em inglês. As máquinas de estado vivem em `src/lib/domain/states.ts` e os enums do banco são gerados a partir delas (`statesOf`):
 
 | Máquina | Português | Inglês (código) |
 | --- | --- | --- |
@@ -45,6 +47,14 @@ Estados e enums também em inglês. As máquinas de estado vivem em `src/lib/dom
 | `ledger_entry.state` | retido, liberado, sacado, estornado | `held`, `released`, `paid_out`, `reversed` |
 | `refund.status` | com produtor, recusado, com plataforma, aprovado, recusado final, concluído | `with_producer`, `declined`, `with_platform`, `approved`, `final_declined`, `completed` |
 | `refund.owner` | produtor, plataforma | `producer`, `platform` |
+| `product.status` | rascunho, publicado | `draft`, `published` |
+| `enrollment.status` | ativa, revogada | `active`, `revoked` |
+| `coproduction.status` | convidada, ativa, encerrada, cancelada | `invited`, `active`, `ended`, `canceled` |
+| `payout.status` | solicitado, concluído, recusado | `requested`, `completed`, `declined` |
+| `ticket.status` | aberto, fechado | `open`, `closed` |
+| `ledger_entry.type` | venda, estorno, saque, taxa de saque, ajuste | `sale`, `reversal`, `payout`, `payout_fee`, `adjustment` |
+
+Bloqueio não é estado do produto: fica em `block` (ver `modelo-de-dados.md`, seção 2).
 
 O pedido de reembolso nasce já decidido (`approved`, dentro da garantia) ou com o produtor (`with_producer`), então o estado "aberto" do diagrama não é gravado.
 
