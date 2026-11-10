@@ -37,7 +37,16 @@
 | Garantia | `guarantee` | |
 | Sessão | `session` | |
 
-Estados e enums também em inglês, por exemplo `order.status`: `pending`, `paid`, `expired`, `declined`, `refunded`. O mapa completo de estados é definido junto com cada migração e anotado aqui quando a tabela nascer.
+Estados e enums também em inglês. As máquinas de estado vivem em `src/lib/domain/states.ts` e as migrações usam os mesmos valores:
+
+| Máquina | Português | Inglês (código) |
+| --- | --- | --- |
+| `order.status` | aguardando, pago, expirado, recusado, reembolsado | `pending`, `paid`, `expired`, `declined`, `refunded` |
+| `ledger_entry.state` | retido, liberado, sacado, estornado | `held`, `released`, `paid_out`, `reversed` |
+| `refund.status` | com produtor, recusado, com plataforma, aprovado, recusado final, concluído | `with_producer`, `declined`, `with_platform`, `approved`, `final_declined`, `completed` |
+| `refund.owner` | produtor, plataforma | `producer`, `platform` |
+
+O pedido de reembolso nasce já decidido (`approved`, dentro da garantia) ou com o produtor (`with_producer`), então o estado "aberto" do diagrama não é gravado.
 
 ## 3. Nomenclatura
 

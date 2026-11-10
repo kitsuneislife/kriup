@@ -144,7 +144,7 @@ erDiagram
         uuid id PK
         uuid pedido_id FK
         text motivo_aluno
-        text status "aberto, com_produtor, com_plataforma, aprovado, recusado, concluido"
+        text status "com_produtor, recusado, com_plataforma, aprovado, recusado_final, concluido"
         text responsavel "produtor ou plataforma"
         timestamptz prazo_em
         bool contestado

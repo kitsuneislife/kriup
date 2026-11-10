@@ -77,7 +77,8 @@ Todo código, pasta e arquivo é em inglês (ver `convencoes.md`).
 src/
   lib/
     domain/       # funções puras e testadas; não importam banco nem framework
-      split.ts  retention.ts  refund.ts  coproduction.ts
+      params.ts  money.ts  split.ts  retention.ts  payout.ts
+      refund.ts  coproduction.ts  states.ts  publish.ts
     server/
       db/         # schema Drizzle, conexão, consultas
       auth/       # senha, sessão, cookie
