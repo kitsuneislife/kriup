@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { currentRoute } from './nav';
+import { currentRoute, homeRoute } from './nav';
+
+describe('homeRoute', () => {
+	it('opens the first screen of each profile', () => {
+		expect(homeRoute('producer')).toBe('/(app)/producer');
+		expect(homeRoute('student')).toBe('/(app)/student');
+		expect(homeRoute('coproducer')).toBe('/(app)/coproductions');
+		expect(homeRoute('support')).toBe('/(app)/support');
+	});
+});
 
 describe('currentRoute', () => {
 	const routes = ['/(app)/producer', '/(app)/producer/money', '/(app)/student'];

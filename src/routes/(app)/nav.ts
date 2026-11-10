@@ -5,8 +5,11 @@ import type { PageRouteId } from '$app/types';
 import type { Profile } from '#lib/server/services/profiles';
 import type { IconName } from '#lib/ui';
 
+/** A route without parameters, so `resolve(route)` needs nothing else. */
+type PlainRoute = Exclude<PageRouteId, `${string}[${string}`>;
+
 /** `route` is a route id, so `resolve` checks it and it matches `page.route.id`. */
-export type NavItem = { route: PageRouteId; label: string; icon: IconName };
+export type NavItem = { route: PlainRoute; label: string; icon: IconName };
 
 export const sections: { profile: Profile; title: string; items: NavItem[] }[] = [
 	{
@@ -30,6 +33,13 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 		items: [{ route: '/(app)/support', label: 'Fila', icon: 'shield' }]
 	}
 ];
+
+/** The first screen of a profile's section, where `/` sends the person (`homeProfile`). */
+export function homeRoute(profile: Profile): PlainRoute {
+	const section = sections.find((s) => s.profile === profile);
+	if (!section?.items[0]) throw new Error(`no section for profile ${profile}`);
+	return section.items[0].route;
+}
 
 /** The item to mark: the longest route that is the page's own route or one of its parents. */
 export function currentRoute(routeId: string | null, routes: readonly string[]) {
