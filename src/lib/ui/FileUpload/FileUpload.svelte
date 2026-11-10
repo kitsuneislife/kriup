@@ -107,8 +107,9 @@
 	.drop {
 		position: relative;
 		border-radius: var(--radius-lg);
-		border: var(--border-width) dashed var(--color-border-strong);
+		border: 1.5px dashed var(--color-border-strong);
 		background: var(--color-bg-field);
+		box-shadow: inset 0 1px 2px var(--color-hairline);
 		transition:
 			border-color var(--duration-fast) var(--ease-standard),
 			background-color var(--duration-fast) var(--ease-standard),
@@ -136,15 +137,36 @@
 		text-align: center;
 		cursor: pointer;
 	}
+	/* the icon is a raised key, like the neutral button; it lifts when a file hovers over */
 	.icon {
 		display: grid;
 		place-items: center;
-		inline-size: var(--control-md);
-		block-size: var(--control-md);
-		margin-block-end: var(--space-1);
-		border-radius: var(--radius-pill);
-		background: var(--color-fill);
+		inline-size: var(--control-lg);
+		block-size: var(--control-lg);
+		margin-block-end: var(--space-2);
+		border: var(--border-width) solid var(--button-neutral-border);
+		border-radius: var(--radius-md);
+		background: linear-gradient(180deg, var(--button-neutral-top), var(--button-neutral-bottom));
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			0 0 0 var(--border-width) var(--button-neutral-ring),
+			var(--shadow-1);
 		color: var(--color-text-secondary);
+		transition:
+			transform var(--duration-base) var(--ease-spring),
+			color var(--duration-base) var(--ease-standard),
+			box-shadow var(--duration-base) var(--ease-standard);
+	}
+	.drop:hover .icon {
+		color: var(--color-accent);
+	}
+	[data-dragging='true'] .icon {
+		color: var(--color-accent);
+		transform: translateY(calc(var(--shift) * -0.75)) scale(1.06);
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			0 0 0 var(--border-width) var(--button-neutral-ring),
+			var(--shadow-2);
 	}
 	.label {
 		font-size: var(--text-subhead-size);
@@ -182,16 +204,31 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
-		padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
-		border-radius: var(--radius-pill);
+		padding: var(--space-1) var(--space-1) var(--space-1) var(--space-1);
+		border-radius: var(--radius-md);
 		background: var(--color-bg-raised);
 		border: var(--border-width) solid var(--color-border);
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			var(--shadow-1);
 		font-size: var(--text-footnote-size);
 		line-height: var(--text-footnote-leading);
+		animation: rise var(--duration-base) var(--ease-enter) both;
 	}
 	.file-icon {
-		display: inline-flex;
-		color: var(--color-text-secondary);
+		display: grid;
+		place-items: center;
+		inline-size: var(--control-sm);
+		block-size: var(--control-sm);
+		border-radius: calc(var(--radius-md) - var(--space-1));
+		background: var(--color-accent-tint);
+		color: var(--color-accent);
+	}
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(calc(var(--shift) / 2));
+		}
 	}
 	.name {
 		flex: 1;

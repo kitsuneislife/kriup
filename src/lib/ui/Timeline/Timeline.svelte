@@ -61,31 +61,76 @@
 	.item:last-child {
 		padding-block-end: 0;
 	}
-	/* vertical rail between dots */
+	/* vertical rail between dots: tinted by the tone where the path is walked, gray ahead */
 	.item:not(:last-child)::before {
 		content: '';
 		position: absolute;
-		inset-block: calc(var(--space-3) + var(--space-2)) 0;
+		inset-block: calc(var(--space-1) + var(--space-3) + var(--space-1)) var(--space-1);
 		inset-inline-start: calc(var(--space-3) / 2 - 1px);
 		inline-size: 2px;
-		background: var(--color-fill-strong);
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--_c) 55%, transparent),
+			color-mix(in srgb, var(--_c) 20%, transparent)
+		);
 		border-radius: var(--radius-pill);
 	}
+	.item:is([data-state='current'], [data-state='upcoming'])::before {
+		background: var(--color-fill-strong);
+	}
+	.item[data-state='upcoming']::before {
+		background: repeating-linear-gradient(
+			180deg,
+			var(--color-fill-strong) 0 0.25rem,
+			transparent 0.25rem 0.5rem
+		);
+	}
+	/* dots are small gems: tone gradient with a glint */
 	.dot {
+		position: relative;
 		flex: none;
 		inline-size: var(--space-3);
 		block-size: var(--space-3);
 		margin-block-start: var(--space-1);
 		border-radius: var(--radius-pill);
-		background: var(--_c);
-		border: var(--border-width) solid var(--_c);
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--_c) 85%, var(--white)),
+			color-mix(in oklab, var(--_c) 90%, var(--black))
+		);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.3),
+			0 0 0 var(--border-width) color-mix(in srgb, var(--_c) 40%, transparent);
 	}
 	[data-state='upcoming'] .dot {
 		background: var(--color-bg-raised);
-		border-color: var(--color-border-strong);
+		box-shadow: inset 0 0 0 1.5px var(--color-border-strong);
 	}
-	[data-state='current'] .dot {
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--_c) 22%, transparent);
+	/* current: a halo that breathes, so the eye finds "now" */
+	[data-state='current'] .dot::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: var(--_c);
+		animation: breathe 2.4s var(--ease-standard) infinite;
+	}
+	@keyframes breathe {
+		from {
+			opacity: 0.45;
+			transform: scale(1);
+		}
+		to {
+			opacity: 0;
+			transform: scale(2.6);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		[data-state='current'] .dot::after {
+			animation: none;
+			opacity: 0.2;
+			transform: scale(1.8);
+		}
 	}
 	.body {
 		flex: 1;
@@ -108,9 +153,13 @@
 		color: var(--color-text-secondary);
 	}
 	.time {
-		color: var(--color-text-secondary);
+		color: var(--color-text-tertiary);
 		font-size: var(--text-footnote-size);
 		font-variant-numeric: tabular-nums;
+	}
+	[data-state='current'] .time {
+		color: var(--_c);
+		font-weight: var(--weight-medium);
 	}
 	.description {
 		margin: 0;

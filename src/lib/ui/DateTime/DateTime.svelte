@@ -24,4 +24,10 @@
 	time {
 		font-variant-numeric: tabular-nums;
 	}
+	/* a relative date hides the exact one in its title: a dotted underline says so */
+	time[title] {
+		text-decoration: underline dotted var(--color-text-tertiary);
+		text-underline-offset: 0.25em;
+		cursor: help;
+	}
 </style>

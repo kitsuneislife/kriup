@@ -18,7 +18,12 @@
 <nav class="lessons" aria-label={label}>
 	{#each modules as module (module.title)}
 		<section class="module">
-			<h3 class="module-title">{module.title}</h3>
+			<h3 class="module-title">
+				<span>{module.title}</span>
+				<span class="module-count"
+					>{module.lessons.filter((lesson) => lesson.done).length}/{module.lessons.length}</span
+				>
+			</h3>
 			<ul class="list">
 				{#each module.lessons as lesson (lesson.id)}
 					<li>
@@ -62,6 +67,14 @@
 		line-height: var(--text-footnote-leading);
 		letter-spacing: var(--text-footnote-tracking);
 		font-weight: var(--weight-semibold);
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-3);
+	}
+	.module-count {
+		color: var(--color-text-tertiary);
+		font-weight: var(--weight-medium);
+		font-variant-numeric: tabular-nums;
 	}
 	.list {
 		display: flex;
@@ -88,16 +101,26 @@
 		letter-spacing: var(--text-subhead-tracking);
 		text-align: start;
 		cursor: pointer;
-		transition: background-color var(--duration-fast) var(--ease-standard);
+		transition:
+			background-color var(--duration-fast) var(--ease-standard),
+			border-color var(--duration-base) var(--ease-standard),
+			box-shadow var(--duration-base) var(--ease-standard),
+			transform var(--duration-fast) var(--ease-standard);
 	}
 	.lesson:hover {
 		background: var(--color-fill-subtle);
 	}
-	/* the lesson being watched: accent border and halo */
+	.lesson:active {
+		transform: scale(0.99);
+	}
+	/* the lesson being watched: accent border and halo, over a raised surface */
 	.lesson[aria-current='true'] {
 		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 14%, transparent);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-raised));
+		box-shadow:
+			0 0 0 3px color-mix(in srgb, var(--color-accent) 14%, transparent),
+			inset 0 1px 0 var(--color-highlight);
+		font-weight: var(--weight-medium);
 	}
 	.mark {
 		display: grid;
@@ -106,13 +129,35 @@
 		inline-size: var(--icon-md);
 		block-size: var(--icon-md);
 		border-radius: var(--radius-pill);
-		border: var(--border-width) solid var(--color-border-strong);
+		box-shadow: inset 0 0 0 1.5px var(--color-border-strong);
 		color: var(--color-accent);
+		transition: box-shadow var(--duration-base) var(--ease-standard);
 	}
-	[data-done='true'] .mark {
-		border-color: var(--color-success);
-		background: var(--color-success);
+	/* done and playing are filled gems, the same family as the primary button */
+	[data-done='true'] .mark,
+	[aria-current='true'] .mark {
+		--_m: var(--color-success);
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--_m) 90%, var(--white)),
+			color-mix(in oklab, var(--_m) 88%, var(--black))
+		);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.25),
+			0 1px 3px color-mix(in srgb, var(--_m) 40%, transparent);
 		color: var(--color-text-on-accent);
+	}
+	[aria-current='true'] .mark {
+		--_m: var(--color-accent);
+	}
+	.mark :global(svg) {
+		animation: pop var(--duration-base) var(--ease-spring) both;
+	}
+	@keyframes pop {
+		from {
+			opacity: 0;
+			transform: scale(0.4);
+		}
 	}
 	.title {
 		flex: 1;
