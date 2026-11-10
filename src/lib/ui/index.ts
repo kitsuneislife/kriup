@@ -36,6 +36,7 @@ export { default as Progress } from './Progress/Progress.svelte';
 export { default as SegmentedControl } from './SegmentedControl/SegmentedControl.svelte';
 export { default as Select } from './Select/Select.svelte';
 export { default as Shell } from './Shell/Shell.svelte';
+export { default as Showcase } from './Showcase/Showcase.svelte';
 export { default as Skeleton } from './Skeleton/Skeleton.svelte';
 export { default as Spinner } from './Spinner/Spinner.svelte';
 export { default as Stack } from './Stack/Stack.svelte';

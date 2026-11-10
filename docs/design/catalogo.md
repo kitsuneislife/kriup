@@ -36,9 +36,9 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Text` | Todo texto: dá estilo, peso e tom | Texto dentro de componente que já o formata | `variant` (9 estilos), `weight`, `tone`, `numeric`, `truncate` |
 | `Icon` | Ícone do conjunto do kit | SVG solto em tela | `name`, `size`, `label` |
 | `Button` | Qualquer ação. Uma `primary` por tela | Navegação dentro de texto corrido (use link) | `variant`: `primary`, `neutral`, `ghost`, `danger`; `size`; `icon`; só ícone; `loading`; `href` |
-| `TextField` | Texto de uma ou várias linhas | Escolha entre opções (use `Select`) | `type`, `size`, `icon`, `rows`, `hint`, `error`, `disabled` |
+| `TextField` | Texto de uma ou várias linhas | Escolha entre opções (use `Select`) | `type`, `size`, `icon`, `rows`, `hint`, `error`, `disabled`, `labelHidden` (rótulo só para leitor de tela, como numa busca) |
 | `Select` | Escolher uma opção entre 4 ou mais | Duas ou três opções (use `SegmentedControl`) | `size`, `icon`, `hint`, `error` |
-| `Field` | Dar rótulo, ajuda e erro a um controle novo | Quando `TextField` ou `Select` servem | `size`, `icon`, `multiline` |
+| `Field` | Dar rótulo, ajuda e erro a um controle novo | Quando `TextField` ou `Select` servem | `size`, `icon`, `multiline`, `labelHidden` |
 | `Checkbox` | Marcar uma ou várias opções, em formulário | Efeito imediato (use `Switch`) | `hint`, `disabled` |
 | `Switch` | Ligar ou desligar com efeito imediato | Item de formulário que só vale ao enviar | `hint`, `disabled` |
 | `SegmentedControl` | Alternar entre 2 a 4 visões ou filtros | Navegação entre páginas | `size`, `iconOnly` |
@@ -51,7 +51,8 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Spinner` | Espera curta sem forma conhecida | Carregar conteúdo (use `Skeleton`) | `size` |
 | `Skeleton` | Reservar o espaço do conteúdo que vai chegar | Ação do usuário (use `loading`) | `shape`: `text`, `block`, `circle`; `lines` |
 | `Dialog` | Decisão que bloqueia a tela: confirmar, pedir um dado | Aviso que não exige resposta (use `Alert`) | `open`, `title`, `footer` |
-| `Swatch` | Mostrar uma cor de token em `/design` e docs | Interface do produto | `token`, `scheme`, `value` |
+| `Swatch` | Mostrar uma cor de token em `/design` e docs | Interface do produto | `token`, `name`, `light`, `dark`, `use`, `size`; o ladrilho mostra as duas metades, claro e escuro |
+| `Showcase` | Seção de documentação em `/design`: título, quando usar e um palco para as variantes | Interface do produto | `description` e `note` com trechos em crases como código |
 | `Disclosure` | Seção que abre e fecha: editor da página de vendas, perguntas frequentes | Conteúdo que precisa estar sempre visível | `icon`, `summary`, `open` |
 | `EmptyState` | Lista ou tabela sem itens: diz o que fazer a seguir | Erro (use `Alert`) | `icon`, `action` |
 | `Message` | Mensagem da conversa de um reembolso ou do suporte | Aviso do sistema (use `Alert`) | `own`, `time` |

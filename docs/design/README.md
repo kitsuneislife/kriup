@@ -24,6 +24,9 @@ Estilo mora em `src/lib/ui/tokens.css` (tokens), `src/lib/ui/base.css` (reset e 
 
 - Descobre as demos sozinha (`import.meta.glob` em `**/*.demo.svelte`). Criar a demo já publica o componente na página, sem registro manual.
 - Só responde em desenvolvimento (`dev`); em produção devolve 404.
+- Cada demo vira uma seção `Showcase`. O texto de "quando usar" e "evite" vem da linha do componente no `catalogo.md`, então o catálogo é a única fonte dessas frases.
+- A busca da barra lateral filtra por nome, título, grupo e uso, e fica na URL (`/design?q=Table`), o que serve para abrir ou fotografar uma seção sozinha.
+- A barra lateral marca a seção visível enquanto a página rola.
 - Serve de revisão visual: o componente só está pronto quando cada variante e estado aparece nela.
 
 ## 3. Garantias automáticas
