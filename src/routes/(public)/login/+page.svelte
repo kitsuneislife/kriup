@@ -1,17 +1,57 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import { errorText } from '#lib/error-text';
+	import { Submission } from '#lib/forms.svelte';
+	import { Alert, Button, Card, Page, Stack, Text, TextField } from '#lib/ui';
 
 	let { form } = $props();
+	const signIn = new Submission();
 </script>
 
-<h1>Entrar</h1>
+<svelte:head><title>Entrar</title></svelte:head>
 
-<form method="post" use:enhance>
-	<label>E-mail <input name="email" type="email" value={form?.email ?? ''} required /></label>
-	<label>Senha <input name="password" type="password" required /></label>
-	{#if form?.error}<p role="alert">{form.error}</p>{/if}
-	<button>Entrar</button>
-</form>
-
-<p>Ainda não tem conta? <a href={resolve('/(public)/register')}>Cadastre-se</a></p>
+<main>
+	<Page width="text">
+		<Stack gap={6}>
+			<Stack gap={2}>
+				<Text variant="title1" as="h1">Entrar</Text>
+				<Text tone="secondary">Use o e-mail e a senha da sua conta.</Text>
+			</Stack>
+			<Card padding="lg">
+				<form method="post" use:signIn.enhance>
+					<Stack gap={4}>
+						<TextField
+							name="email"
+							type="email"
+							label="E-mail"
+							autocomplete="email"
+							value={form?.email ?? ''}
+							error={form?.fields?.email}
+							required
+						/>
+						<TextField
+							name="password"
+							type="password"
+							label="Senha"
+							autocomplete="current-password"
+							error={form?.fields?.password}
+							required
+						/>
+						{#if form?.code}
+							<Alert tone="danger">{errorText(form.code)}</Alert>
+						{/if}
+						<Button type="submit" variant="primary" fullWidth loading={signIn.loading('Entrando')}>
+							Entrar
+						</Button>
+						<Text variant="subhead">
+							<a href={resolve('/(public)/password/forgot')}>Esqueci minha senha</a>
+						</Text>
+					</Stack>
+				</form>
+			</Card>
+			<Text variant="subhead" tone="secondary">
+				Ainda não tem conta? <a href={resolve('/(public)/register')}>Criar conta</a>
+			</Text>
+		</Stack>
+	</Page>
+</main>
