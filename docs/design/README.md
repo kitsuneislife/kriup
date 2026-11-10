@@ -2,7 +2,9 @@
 
 O design kit é a única biblioteca de componentes visuais do sistema. Toda tela é montada com ele. Esta pasta documenta como o kit funciona: `principios.md` (direção visual, medidas, movimento), `regras.md` (regras de uso) e `catalogo.md` (o que existe).
 
-Status: **base criada, sem componentes e sem estilo**. Os valores provisórios de `principios.md` aguardam as referências visuais. Os tokens e os primeiros componentes entram em commits próprios, seguindo o fluxo da seção 4.
+Status: **tokens, base de estilo e a primeira leva de 25 componentes prontos** (layout, texto, ícones, botão, formulário, feedback, cartão e diálogo). Faltam menu, tooltip, abas, tabela, toast e os demais, que entram pelo fluxo da seção 4 quando uma tela pedir.
+
+Leitura, nesta ordem: `principios.md` (direção), `cores.md`, `tipografia.md`, `regras.md`, `catalogo.md`.
 
 ## 1. Estrutura
 
@@ -16,7 +18,7 @@ Status: **base criada, sem componentes e sem estilo**. Os valores provisórios d
 | `docs/design/catalogo.md` | Índice de tokens e componentes, com quando usar cada um |
 | `docs/design/regras.md` | Regras estritas de uso |
 
-Estilo (quando existir) mora em `src/lib/ui/tokens.css` (tokens) e dentro de cada componente (`<style>` do Svelte). Nenhum outro lugar define cor, espaçamento, tipografia, raio ou sombra.
+Estilo mora em `src/lib/ui/tokens.css` (tokens), `src/lib/ui/base.css` (reset e fonte, carregados por `index.ts`) e dentro de cada componente (`<style>` do Svelte). Nenhum outro lugar define cor, espaçamento, tipografia, raio ou sombra. Claro e escuro usam `light-dark()`: o tema segue o sistema e `data-theme` em `<html>` força um deles.
 
 ## 2. A página `/design`
 

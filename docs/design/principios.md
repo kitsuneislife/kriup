@@ -1,6 +1,6 @@
 # Princípios de design
 
-Direção visual e padrões de consistência do sistema. Os **princípios e regras** abaixo estão decididos. Os **valores numéricos** marcados como _provisório_ são ponto de partida e serão fechados quando as referências visuais chegarem; ao fechar, o valor vira token em `src/lib/ui/tokens.css` e é registrado em `catalogo.md`.
+Direção visual e padrões de consistência do sistema. As referências são as Human Interface Guidelines da Apple (cor, tipografia, ícones, layout, movimento) e o visual do Lovable (cinzas, borda dupla, seleção, botões com gradiente). Os valores abaixo já são tokens em `src/lib/ui/tokens.css`, listados em `catalogo.md`. Detalhes: `cores.md` e `tipografia.md`.
 
 ## 1. Direção
 
@@ -21,20 +21,21 @@ Claro e escuro desde o início: todo token de cor semântico tem os dois valores
 
 Tudo cai numa escala fechada. Valor fora da escala não existe.
 
-| Item | Regra | Valores _provisório_ |
+| Item | Regra | Valores |
 | --- | --- | --- |
 | Espaçamento | Base de 4 px, escala fixa | 4, 8, 12, 16, 24, 32, 48, 64, 96 |
-| Altura de controle | 3 tamanhos (`sm`, `md`, `lg`), alvo de toque mínimo de 44 px no `md` e `lg` em telas de toque | 32, 40, 48 |
-| Raio | Escala curta; raio interno = raio externo menos o espaçamento (cantos concêntricos) | 8, 12, 16, 24, pílula |
-| Tipografia | Fonte do sistema (carrega na hora, sem salto); poucos tamanhos e pesos; altura de linha por tamanho | 12, 14, 16, 20, 28, 40 / pesos 400, 500, 600 |
-| Largura de conteúdo | Máximos fixos por tipo de página | texto 680, página 1120 |
-| Ícones | Um só conjunto, traço uniforme, tamanhos atrelados aos de controle | 16, 20, 24 |
-| Sombra e camadas | Poucos níveis nomeados, `z-index` só por token | 3 níveis |
+| Altura de controle | 3 tamanhos (`sm`, `md`, `lg`). Em telas de toque, alvo mínimo de 44 px no `md` e no `lg` | 32, 40, 48 |
+| Raio | Escala curta; raio interno = raio externo menos o espaçamento (cantos concêntricos). Controles de uma linha são pílula | 6, 8, 12, 16, 24, pílula |
+| Tipografia | Estilos de texto da Apple, tracking da tabela SF Pro (ver `tipografia.md`) | 12, 13, 15, 16, 20, 22, 28, 34, 48 / pesos 400 a 700 |
+| Largura de conteúdo | Máximos fixos por tipo de página | texto 680, página 1120, barra lateral 260 |
+| Ícones | Um só conjunto, traço de 1,75, pontas arredondadas; tamanho atrelado ao texto | 16, 20, 24 |
+| Sombra e camadas | Poucos níveis nomeados, `z-index` só por token | 3 sombras, 4 camadas |
+| Pontos de quebra | Só dois, escritos no `Shell`, no `Grid` e em `tokens.css` | 40rem, 64rem |
 
 ## 4. Layout e alinhamento
 
 - **O espaço entre coisas é do pai.** Quem agrupa define o `gap`. Componente nunca traz `margin` própria; assim ele se encaixa em qualquer lugar sem ajuste.
-- **Layout por componentes de layout** (`Stack`, `Cluster`, `Grid`, `Page`, `Section`), com `gap` vindo da escala. Tela não escreve CSS de layout.
+- **Layout por componentes de layout** (`Shell`, `Page`, `Stack`, `Cluster`, `Grid`), com `gap` vindo da escala. Tela não escreve CSS de layout.
 - **Tudo alinhado.** Bordas e textos se alinham à grade; ícone e texto se alinham pela linha de base ou centro óptico, nunca "no olho".
 - **Hierarquia por tipografia e espaço**, antes de cor, borda ou caixa. Uma ação primária por tela; as demais ficam em segundo plano.
 - **Responsivo por padrão.** Mobile primeiro, poucos pontos de quebra (definidos nos tokens), sem rolagem horizontal.
@@ -69,6 +70,7 @@ Movimento é parte do sistema, não enfeite. Valem para todo componente e toda t
 
 - Sem biblioteca de animação ou de componentes de terceiros: transições do Svelte, CSS e View Transitions.
 - Fonte do sistema, ícones em SVG inline, imagens com dimensões declaradas e carregamento preguiçoso.
+- Única exceção de terceiros: a fonte Inter (`@fontsource-variable/inter`), servida do próprio site e só usada fora dos dispositivos Apple.
 - Orçamento (_provisório_): LCP até 1,5 s, INP até 100 ms, CLS 0.
 - Todo componente novo é verificado em CPU lenta e com movimento reduzido.
 
@@ -81,3 +83,23 @@ Antes de criar ou mudar qualquer peça de interface, responda na descrição do 
 3. Usa só valores da escala e só tokens?
 4. Todos os estados e o movimento estão na demo?
 5. Funciona com teclado, leitor de tela, tema escuro, movimento reduzido e celular?
+
+## 8. O que absorvemos da Apple e do Lovable
+
+**Da Apple (HIG)**
+
+- _Color:_ cor com significado único, três níveis de fundo, texto por opacidade, contraste aumentado. Ver `cores.md`.
+- _Typography:_ estilos de texto com altura de linha e tracking próprios, hierarquia por peso e tom, nada abaixo de 12 px. Ver `tipografia.md`.
+- _Icons:_ um só traço para todos, peso igual ao do texto ao lado, formas simples e reconhecíveis, sem misturar contorno e preenchido.
+- _Layout:_ importante primeiro (topo e início), alinhar para facilitar a leitura, agrupar por espaço e separador, margens consistentes, alvos de toque de 44 px, cantos concêntricos.
+- _Motion:_ movimento com propósito, curto e preciso, cancelável, nunca o único meio de informar, e opcional (`prefers-reduced-motion`). Em ações muito frequentes, quase nenhum movimento.
+- _Patterns, components, inputs:_ rótulo sempre visível acima do campo, ajuda e erro no lugar da ajuda, um controle para cada tipo de escolha (duas a quatro opções: `SegmentedControl`; liga/desliga imediato: `Switch`; várias marcações em formulário: `Checkbox`), confirmação só para ação destrutiva ou irreversível (`Dialog`), carregamento com esqueleto, retorno imediato a cada toque.
+
+**Do Lovable**
+
+- Cinzas em camadas, bordas de um pixel em vez de sombras fortes, e a **borda dupla** como assinatura (`cores.md` seção 3).
+- Controles de uma linha em pílula; cartões e painéis com cantos grandes.
+- Seleção clara: preenchimento cinza no item de menu e na aba, borda e halo de acento nos cartões.
+- Botões com borda mais clara e gradiente discreto, que dão relevo sem virar "botão antigo".
+- Barra lateral sobre o fundo, conteúdo em painel arredondado afastado das bordas (`Shell`).
+- Fluidez: tudo responde ao toque, nada aparece seco.
