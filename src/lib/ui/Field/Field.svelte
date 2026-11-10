@@ -98,9 +98,38 @@
 		border-color: var(--color-accent);
 		box-shadow: 0 0 0 var(--focus-width) var(--color-accent-tint);
 	}
+	/* the native control sits bare inside the shell: the shell is the field */
+	.shell > :global(:is(input, select, textarea)) {
+		flex: 1;
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		outline: 0;
+		background: none;
+		color: var(--color-text);
+		font: inherit;
+		font-size: var(--text-subhead-size);
+		line-height: var(--text-subhead-leading);
+		letter-spacing: var(--text-subhead-tracking);
+	}
+	/* select picks its own appearance in Select */
+	.shell > :global(:is(input, textarea)) {
+		appearance: none;
+	}
+	.shell > :global(:is(input, select, textarea):disabled) {
+		cursor: not-allowed;
+	}
+	.shell > :global(:is(input, textarea)::placeholder) {
+		color: var(--color-text-tertiary);
+	}
 	.icon {
 		display: inline-flex;
 		color: var(--color-text-secondary);
+		transition: color var(--duration-base) var(--ease-standard);
+	}
+	.shell:focus-within .icon {
+		color: var(--color-accent);
 	}
 
 	[data-size='sm'] {

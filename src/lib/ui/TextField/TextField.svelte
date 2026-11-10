@@ -83,30 +83,9 @@
 </Field>
 
 <style>
-	input,
-	textarea {
-		flex: 1;
-		min-width: 0;
-		margin: 0;
-		padding: 0;
-		border: 0;
-		outline: 0;
-		background: none;
-		color: var(--color-text);
-		font: inherit;
-		font-size: var(--text-subhead-size);
-		line-height: var(--text-subhead-leading);
-		letter-spacing: var(--text-subhead-tracking);
-	}
+	/* bare control styles live in Field */
 	textarea {
 		resize: vertical;
 		field-sizing: content;
-	}
-	::placeholder {
-		color: var(--color-text-tertiary);
-	}
-	input:disabled,
-	textarea:disabled {
-		cursor: not-allowed;
 	}
 </style>
