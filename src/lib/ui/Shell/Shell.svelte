@@ -22,6 +22,8 @@
 	.shell {
 		display: grid;
 		grid-template-columns: var(--width-sidebar) minmax(0, 1fr);
+		/* one row capped at the viewport: without it the row grows to the content and nothing scrolls */
+		grid-template-rows: minmax(0, 1fr);
 		block-size: 100dvh;
 		overflow: hidden;
 	}
@@ -30,15 +32,21 @@
 		flex-direction: column;
 		gap: var(--space-2);
 		padding: var(--space-3);
+		overflow-x: hidden;
 		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-fill-strong) transparent;
 	}
 	.main {
 		min-width: 0;
+		min-height: 0;
 		padding: var(--space-2) var(--space-2) var(--space-2) 0;
 	}
 	.panel {
 		block-size: 100%;
 		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-fill-strong) transparent;
 		border-radius: var(--radius-xl);
 		background: var(--color-bg-panel);
 		border: var(--border-width) solid var(--color-border);
