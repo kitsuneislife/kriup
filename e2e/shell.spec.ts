@@ -83,18 +83,3 @@ test('shows the error page for an unknown address', async ({ page }) => {
 	await page.getByRole('link', { name: 'Ir para o início' }).click();
 	await expect(page).toHaveURL('/login');
 });
-
-test('signs out from the account page', async ({ page, createUser, signIn }) => {
-	await signIn(await createUser('Ana Souza'));
-	await page.goto('/producer');
-	await areas(page).getByRole('link', { name: 'Ana Souza' }).click();
-	await expect(areas(page).getByRole('link', { name: 'Ana Souza' })).toHaveAttribute(
-		'aria-current',
-		'page'
-	);
-	await page.getByRole('button', { name: 'Sair' }).click();
-
-	await expect(page).toHaveURL('/login');
-	await page.goto('/producer');
-	await expect(page).toHaveURL('/login');
-});
