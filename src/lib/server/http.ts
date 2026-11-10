@@ -2,7 +2,7 @@
 // screen turns into text; a missing or foreign resource is a 404; anything else is a bug
 // and stays a 500.
 
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect, type ActionFailure as Failure } from '@sveltejs/kit';
 import { ZodError } from 'zod';
 import { DomainError } from '../domain/states';
 import { issueText, type ErrorCode } from '../error-text';
@@ -16,11 +16,14 @@ export type ActionFailure = {
 	fields?: Record<string, string>;
 };
 
+/** `ok` is absent on a refusal, so `if (!result.ok)` narrows to it. */
+export type Acted<T> = { ok: true; value: T } | (Failure<ActionFailure> & { ok?: never });
+
 /**
  * Runs a service call inside a form action: DomainError and invalid input become a 400
  * with a code, NotFoundError a 404.
  */
-export async function act<T>(work: () => Promise<T>) {
+export async function act<T>(work: () => Promise<T>): Promise<Acted<T>> {
 	try {
 		return { ok: true as const, value: await work() };
 	} catch (err) {
