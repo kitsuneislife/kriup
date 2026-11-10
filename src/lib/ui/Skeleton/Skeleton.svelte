@@ -21,10 +21,14 @@
 {/if}
 
 <style>
+	/* text lines fill the available width, also inside a row (flex: 1 there, full width in a column) */
 	.lines {
 		display: flex;
+		flex: 1;
 		flex-direction: column;
 		gap: var(--space-2);
+		inline-size: 100%;
+		min-inline-size: 0;
 	}
 	.bone {
 		position: relative;
