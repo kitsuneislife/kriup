@@ -27,11 +27,14 @@ O Postgres local usa a porta **5433** (a 5432 costuma estar ocupada por uma inst
 | `pnpm check`       | Tipos (svelte-check, TypeScript strict)                        |
 | `pnpm test`        | Testes unitários (sem banco)                                   |
 | `pnpm test:int`    | Testes de integração (exigem `pnpm db:up` e `pnpm db:migrate`) |
+| `pnpm test:e2e`    | Testes de ponta a ponta com Playwright (exigem `pnpm db:up`)   |
 | `pnpm db:generate` | Gera migração a partir de `src/lib/server/db/schema.ts`        |
 | `pnpm db:migrate`  | Aplica migrações                                               |
 | `pnpm build`       | Build de produção                                              |
 
-O CI (`.github/workflows/ci.yml`) roda lint, check, testes, migração, testes de integração e build.
+O CI (`.github/workflows/ci.yml`) roda lint, check, testes, migração, testes de integração e build, e em paralelo os testes de ponta a ponta.
+
+Os testes de ponta a ponta usam um banco próprio ao lado do de desenvolvimento (`app_e2e`), criado, migrado e esvaziado a cada execução, e sobem o servidor na porta 4173. Na primeira vez, instale o navegador com `pnpm exec playwright install chromium`.
 
 ## Estrutura
 

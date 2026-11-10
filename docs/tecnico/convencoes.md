@@ -81,6 +81,7 @@ O pedido de reembolso nasce já decidido (`approved`, dentro da garantia) ou com
 - `src/lib/server/services`: casos de uso. Validam a entrada (Zod), checam papel e dono do recurso e gravam em transação.
 - `src/routes`: fina. Lê a sessão (`requireUser`), chama um serviço dentro de `act()` e devolve o resultado.
 - Testes ficam ao lado do código: `split.ts` e `split.test.ts`. Testes com banco usam o sufixo `.int.test.ts`, rodam em sequência e começam com `resetDb()` de `services/testing.ts`.
+- Testes de ponta a ponta ficam em `e2e/` (`*.spec.ts`) e importam `test` e `expect` de `e2e/fixtures.ts`: `createUser` cria uma conta com e-mail único, `signIn` entra por cookie de sessão sem passar pela tela de login, `ctx` cria dados pelos serviços (`publishedProduct`, `buy`) e `expectAccessible` roda o axe nos temas claro e escuro. Como cada teste cria seus próprios dados, eles rodam em paralelo sem limpar o banco. Cada um roda em desktop e em 375 px.
 - Dinheiro é inteiro em centavos. Nunca `number` com fração.
 
 Versão do framework: SvelteKit 3. Importe de `src/lib` com `#lib/...` (o alias `$lib` foi removido) e leia variáveis de ambiente por `$app/env/private`, declaradas em `src/env.ts`. Em produção o adaptador Node assume HTTPS: defina a origem pública do site, senão formulários POST recebem 403 (proteção CSRF).
@@ -90,3 +91,26 @@ Versão do framework: SvelteKit 3. Importe de `src/lib` com `#lib/...` (o alias 
 - TypeScript `strict`, mais `noUncheckedIndexedAccess`.
 - ESLint e Prettier são o único formatador. O CI falha se `pnpm lint`, `pnpm check` ou `pnpm test` falharem.
 - Commits no padrão Conventional Commits, em inglês.
+
+## 6. Telas
+
+- **Acesso.** As telas de quem entrou ficam no grupo `src/routes/(app)`, cujo layout exige sessão e monta o `Shell` com uma seção por perfil (`(app)/nav.ts`). `(app)/support` responde 404 a quem não é suporte. Ações de formulário não passam pelo `load` dos layouts, então toda ação chama `requireUser` ou `requireSupport` de novo, e o serviço confere papel e dono.
+- **Erros.** O texto de todo erro sai de `src/lib/error-text.ts`: `errorText(code)` para o código do serviço e `issueText` para cada campo inválido, que o `act()` já aplica. Código novo em `DOMAIN_ERROR_CODES` sem texto quebra `pnpm check` e `pnpm test`. Recurso de outra pessoa e endereço inexistente caem na mesma página 404 (`src/routes/+error.svelte`).
+- **Formulário.** Funciona sem JavaScript; com ele, `Submission` (`src/lib/forms.svelte.ts`) envia no lugar e põe o botão em carregamento. O erro geral vai num `Alert`, o de campo no `error` do próprio campo:
+
+```svelte
+<script lang="ts">
+	import { errorText } from '#lib/error-text';
+	import { Submission } from '#lib/forms.svelte';
+	import { Alert, Button, TextField } from '#lib/ui';
+
+	let { form } = $props();
+	const save = new Submission();
+</script>
+
+<form method="post" use:save.enhance>
+	<TextField name="name" label="Nome" error={form?.fields?.name} />
+	{#if form?.code}<Alert tone="danger">{errorText(form.code)}</Alert>{/if}
+	<Button type="submit" variant="primary" loading={save.loading('Salvando')}>Salvar</Button>
+</form>
+```

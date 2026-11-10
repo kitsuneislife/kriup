@@ -80,6 +80,8 @@ Uma conta pode ter vários perfis (RF-04). O `Shell` mostra na barra lateral as 
 | 0.2 | Tradução de `DomainErrorCode` para português num só lugar, com teste que falha se faltar código; padrão de formulário (`act()` + `use:enhance` + erro por campo) | 7 |
 | 0.3 | Layout autenticado com `Shell` e navegação por perfil, `Toast` montado, páginas de erro 404 e 500, guarda de papel por grupo de rota (`producer`, `student`, `support`) | 10 |
 
+Concluída em 10/11/2026. Como ficou: `convencoes.md` seção 6. Duas decisões no caminho: o botão de sair fica na página da conta (lote 1.2), porque o catálogo reserva `NavItem` para navegação; e o texto secundário claro do kit subiu de 60% para 76% de opacidade para passar no contraste AA do axe (`design/cores.md`). As telas de `/producer`, `/student`, `/coproductions` e `/support` são provisórias até os lotes 2.1, 4.1, 7.2 e 8.1.
+
 ### Fase 1. Conta e acesso (10 a 17%)
 
 | Lote | Telas | Serviços | % |
