@@ -46,15 +46,6 @@ export default ts.config(
 		}
 	},
 	{
-		// legacy screens written before the kit: only shrinks, remove each one when migrated
-		files: [
-			'src/routes/(public)/login/+page.svelte',
-			'src/routes/(public)/register/+page.svelte',
-			'src/routes/(app)/account/+page.svelte'
-		],
-		rules: { 'svelte/no-restricted-html-elements': 'off' }
-	},
-	{
 		// the kit is self-contained: no routes, server, domain or framework runtime
 		files: ['src/lib/ui/**'],
 		ignores: ['src/lib/ui/**/*.test.ts'],
