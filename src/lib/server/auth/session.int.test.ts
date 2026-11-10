@@ -1,18 +1,13 @@
-import 'dotenv/config';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { createDb } from '../db/client';
 import { session, user } from '../db/schema';
+import { db, resetDb } from '../services/testing';
 import { SESSION_TTL_MS, createSession, invalidateSession, validateSession } from './session';
-
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error('DATABASE_URL is not set');
-const db = createDb(url);
 
 let userId: string;
 
 beforeEach(async () => {
-	await db.delete(user);
+	await resetDb();
 	const [u] = await db
 		.insert(user)
 		.values({ email: 'a@example.com', name: 'A', passwordHash: 'x' })
@@ -20,9 +15,7 @@ beforeEach(async () => {
 	userId = u!.id;
 });
 
-afterAll(async () => {
-	await db.delete(user);
-});
+afterAll(resetDb);
 
 describe('session', () => {
 	it('validates a fresh token and stores only its hash', async () => {
