@@ -1,6 +1,10 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setPasswordWithToken, requestPasswordReset } from '../auth/password-token';
+import {
+	passwordTokenOwner,
+	setPasswordWithToken,
+	requestPasswordReset
+} from '../auth/password-token';
 import { createSession, validateSession } from '../auth/session';
 import { verifyPassword } from '../auth/password';
 import { auditLog, order, user } from '../db/schema';
@@ -72,12 +76,18 @@ describe('password links (RF-02, RF-03)', () => {
 		const { ctx, student } = await enrolled();
 		const token = ctx.mail.sent[0]!.text.match(/\/password\/([\w-]+)/)![1]!;
 		const { token: session } = await createSession(db, student.id);
+		expect(await passwordTokenOwner(ctx, token)).toEqual({
+			name: student.name,
+			email: student.email,
+			hasPassword: false
+		});
 
 		const userId = await setPasswordWithToken(ctx, { token, password: 'pão quentinho' });
 		expect(userId).toBe(student.id);
 		const [row] = await db.select().from(user).where(eq(user.id, student.id));
 		expect(await verifyPassword(row!.passwordHash!, 'pão quentinho')).toBe(true);
 		expect(await validateSession(db, session)).toBeNull();
+		expect(await passwordTokenOwner(ctx, token)).toBeNull();
 		await rejectsCode(
 			setPasswordWithToken(ctx, { token, password: 'outra senha' }),
 			'invalid_token'
@@ -93,6 +103,8 @@ describe('password links (RF-02, RF-03)', () => {
 		expect(ctx.mail.sent).toHaveLength(0);
 		await requestPasswordReset(ctx, 'A@example.com', now);
 		const token = ctx.mail.sent[0]!.text.match(/\/password\/([\w-]+)/)![1]!;
+		expect(await passwordTokenOwner(ctx, token, now)).toMatchObject({ hasPassword: true });
+		expect(await passwordTokenOwner(ctx, token, days(now, 1))).toBeNull();
 		await rejectsCode(
 			setPasswordWithToken(ctx, { token, password: '12345678' }, days(now, 1)),
 			'invalid_token'

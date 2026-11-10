@@ -31,6 +31,19 @@ export async function createPasswordToken(
 
 export const setPasswordLink = (ctx: Ctx, token: string) => link(ctx, `/password/${token}`);
 
+/**
+ * Who a live link belongs to, so the screen greets them and says whether it sets the first
+ * password or a new one; null when it is unknown or expired. Does not use the link up.
+ */
+export async function passwordTokenOwner(ctx: Ctx, token: string, now = new Date()) {
+	const [row] = await ctx.db
+		.select({ name: user.name, email: user.email, passwordHash: user.passwordHash })
+		.from(passwordToken)
+		.innerJoin(user, eq(passwordToken.userId, user.id))
+		.where(and(eq(passwordToken.id, hashToken(token)), gt(passwordToken.expiresAt, now)));
+	return row ? { name: row.name, email: row.email, hasPassword: row.passwordHash !== null } : null;
+}
+
 const setPasswordInput = z.object({ token: z.string().min(1), password: passwordSchema });
 
 /**
