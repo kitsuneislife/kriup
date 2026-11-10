@@ -25,6 +25,19 @@ Valem para qualquer pessoa ou agente que mexa na interface. "Tela" é qualquer a
 - **R13. Acessível por padrão.** Elemento semântico correto, rótulo para todo controle, foco visível, navegação por teclado, contraste conforme os tokens. Acessibilidade faz parte do "pronto", não é extra.
 - **R14. Texto fora do componente.** O kit não tem texto fixo de produto. Rótulos e mensagens chegam por prop, como manda `tecnico/convencoes.md` seção 1.
 
+## Medidas, layout e movimento
+
+Detalhes e valores em `principios.md`.
+
+- **R17. Só valores da escala.** Espaçamento, tamanhos, raios e tipografia saem das escalas fechadas dos tokens. Valor intermediário não existe; se falta um, a escala é revista para todos.
+- **R18. Espaço é do pai.** Componente não tem `margin`. O `gap` vem de quem agrupa, por componentes de layout do kit.
+- **R19. Nada muda seco.** Todo elemento que aparece, some, muda de estado, tamanho ou posição faz transição, com duração e curva dos tokens de movimento. A demo prova isso.
+- **R20. Só `transform` e `opacity`.** Animação não mexe em largura, altura, `top` nem `left`. Respeita `prefers-reduced-motion`.
+- **R21. Espera tem forma.** Carregamento usa esqueleto ou `loading` no próprio controle, com espaço reservado. Tela em branco e salto de layout são defeitos.
+- **R22. Estados não mudam o tamanho.** Foco, carregando, erro e vazio ocupam o mesmo espaço do estado normal.
+- **R23. Sem biblioteca de terceiros** de animação ou de componentes. Svelte, CSS e View Transitions bastam; exceção segue a seção "Exceções".
+- **R24. Tema claro e escuro.** Todo token de cor tem os dois valores; a demo mostra os dois.
+
 ## Nomes e idioma
 
 - **R15. Nomes em inglês, `PascalCase`**, o mesmo conceito com o mesmo nome em kit, código e catálogo (`Button`, `TextField`, `Card`). Props em `camelCase`.

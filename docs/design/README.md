@@ -1,8 +1,8 @@
 # Design kit
 
-O design kit é a única biblioteca de componentes visuais do sistema. Toda tela é montada com ele. Esta pasta documenta como o kit funciona; a lista do que existe está em `catalogo.md` e as regras de uso em `regras.md`.
+O design kit é a única biblioteca de componentes visuais do sistema. Toda tela é montada com ele. Esta pasta documenta como o kit funciona: `principios.md` (direção visual, medidas, movimento), `regras.md` (regras de uso) e `catalogo.md` (o que existe).
 
-Status: **base criada, sem componentes e sem estilo**. Os tokens e os primeiros componentes entram em commits próprios, seguindo o fluxo da seção 4.
+Status: **base criada, sem componentes e sem estilo**. Os valores provisórios de `principios.md` aguardam as referências visuais. Os tokens e os primeiros componentes entram em commits próprios, seguindo o fluxo da seção 4.
 
 ## 1. Estrutura
 
@@ -12,13 +12,13 @@ Status: **base criada, sem componentes e sem estilo**. Os tokens e os primeiros 
 | `src/lib/ui/<Name>/<Name>.svelte` | O componente |
 | `src/lib/ui/<Name>/<Name>.demo.svelte` | Demonstração com todas as variantes e estados |
 | `src/lib/ui/index.ts` | Única porta de entrada: reexporta todos os componentes |
-| `src/routes/design-kit/` | Página que lista todas as demos, só em desenvolvimento |
+| `src/routes/design/` | Página que lista todas as demos, só em desenvolvimento |
 | `docs/design/catalogo.md` | Índice de tokens e componentes, com quando usar cada um |
 | `docs/design/regras.md` | Regras estritas de uso |
 
 Estilo (quando existir) mora em `src/lib/ui/tokens.css` (tokens) e dentro de cada componente (`<style>` do Svelte). Nenhum outro lugar define cor, espaçamento, tipografia, raio ou sombra.
 
-## 2. A página `/design-kit`
+## 2. A página `/design`
 
 - Descobre as demos sozinha (`import.meta.glob` em `**/*.demo.svelte`). Criar a demo já publica o componente na página, sem registro manual.
 - Só responde em desenvolvimento (`dev`); em produção devolve 404.
@@ -42,6 +42,6 @@ Telas anteriores ao kit (`login`, `register`, `account`) ficam isentas do bloque
 3. **Crie a pasta** `src/lib/ui/<Name>/` com `<Name>.svelte` e `<Name>.demo.svelte`.
 4. **Exporte** em `src/lib/ui/index.ts`.
 5. **Documente** no `catalogo.md`: nome, quando usar, quando não usar, variantes.
-6. **Verifique:** `pnpm lint`, `pnpm check`, `pnpm test`, e olhe a página `/design-kit`.
+6. **Verifique:** `pnpm lint`, `pnpm check`, `pnpm test`, e olhe a página `/design`.
 
 Componente, demo, exportação e catálogo entram no mesmo commit.
