@@ -55,10 +55,15 @@
 </nav>
 
 <style>
+	/* the pages sit in a fill track, like SegmentedControl; the current one is the raised thumb */
 	.pagination {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		gap: var(--space-1);
+		padding: var(--space-1);
+		border-radius: var(--radius-pill);
+		background: var(--color-fill-subtle);
+		box-shadow: inset 0 1px 1px var(--color-hairline);
 	}
 	.page {
 		display: grid;
@@ -76,19 +81,32 @@
 		cursor: pointer;
 		transition:
 			background-color var(--duration-fast) var(--ease-standard),
-			color var(--duration-fast) var(--ease-standard);
+			color var(--duration-fast) var(--ease-standard),
+			transform var(--duration-fast) var(--ease-standard);
 	}
 	.page:hover:not(:disabled) {
 		background: var(--color-fill);
 		color: var(--color-text);
 	}
-	/* selected: accent border and a soft halo, like every selected control */
+	/* current: the neutral button surface with depth, number in the accent */
 	.page[aria-current='page'] {
-		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 16%, transparent);
-		color: var(--color-text);
+		border-color: var(--button-neutral-border);
+		background: linear-gradient(180deg, var(--button-neutral-top), var(--button-neutral-bottom));
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			0 0 0 var(--border-width) var(--button-neutral-ring),
+			var(--shadow-1);
+		color: var(--color-accent);
 		font-weight: var(--weight-semibold);
+		animation: settle var(--duration-base) var(--ease-spring);
+	}
+	.page:active:not(:disabled) {
+		transform: scale(var(--press-scale));
+	}
+	@keyframes settle {
+		from {
+			transform: scale(0.85);
+		}
 	}
 	.page:disabled {
 		opacity: 0.4;

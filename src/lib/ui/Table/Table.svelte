@@ -122,7 +122,9 @@
 		border-radius: calc(var(--radius-xl) - var(--space-1));
 		background: var(--color-bg-raised);
 		border: var(--border-width) solid var(--color-border);
-		box-shadow: inset 0 1px 0 var(--color-highlight);
+		box-shadow:
+			inset 0 1px 0 var(--color-highlight),
+			var(--shadow-1);
 	}
 	table {
 		inline-size: 100%;
@@ -148,12 +150,12 @@
 		font-weight: var(--weight-medium);
 		border-block-end: var(--border-width) solid var(--color-hairline);
 	}
+	/* alternating rows instead of lines between them, as in Finder and Numbers */
 	td {
-		border-block-end: var(--border-width) solid var(--color-hairline);
 		transition: background-color var(--duration-fast) var(--ease-standard);
 	}
-	tbody tr:last-child td {
-		border-block-end: 0;
+	tbody tr:nth-child(even) td {
+		background: var(--color-row-alt);
 	}
 	tbody tr:hover td {
 		background: var(--color-fill-subtle);

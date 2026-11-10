@@ -5,6 +5,7 @@
 <Card>
 	<Checklist
 		label="Pendências para publicar"
+		count={(done, total) => `${done} de ${total} prontos`}
 		items={[
 			{ label: 'Nome e descrição do produto', done: true },
 			{ label: 'Preço definido', done: true },
