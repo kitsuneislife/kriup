@@ -1,8 +1,8 @@
-import { error, fail } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { move } from '#lib/domain/page';
 import { ctx } from '#lib/server/app';
-import { act, orNotFound, requireUser, type Acted, type ActionFailure } from '#lib/server/http';
+import { act, orNotFound, requireUser } from '#lib/server/http';
 import {
 	addLesson,
 	addModule,
@@ -15,11 +15,11 @@ import {
 	reorderModules,
 	updateLesson
 } from '#lib/server/services/catalog';
+import { answer, formText as text, idOf } from '../answer';
 import type { Actions, PageServerLoad } from './$types';
 
-// RF-14. Each form names its module or lesson in the action address (`?/renameModule&id=…`)
-// and every answer says which form it is for: `module:<id>`, `lesson:<id>`, `new-module`,
-// `new-lesson:<module id>`, `move:<id>` or `delete:<id>`. The screen shows it on that form.
+// RF-14. The answers are for `module:<id>`, `lesson:<id>`, `new-module`,
+// `new-lesson:<module id>`, `move:<id>` or `delete:<id>` (see ../answer.ts).
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const editor = await orNotFound(getProductEditor(ctx, requireUser(locals).id, params.id));
@@ -39,30 +39,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
-/** The id in the action address; a missing or malformed one is a 404, like a foreign one. */
-function idOf(url: URL): string {
-	const id = z.uuid().safeParse(url.searchParams.get('id'));
-	if (!id.success) error(404);
-	return id.data;
-}
-
-const text = (form: FormData, key: string) => {
-	const value = form.get(key);
-	return typeof value === 'string' ? value : '';
-};
-
 const direction = (form: FormData) => z.enum(['up', 'down']).parse(form.get('direction'));
-
-/** Turns a refusal into one that names its form, with what was typed. */
-function answer(result: Acted<unknown>, target: string, typed?: Record<string, string>) {
-	if (!result.ok) {
-		return fail(result.status, { ...result.data, for: target, typed } satisfies ActionFailure & {
-			for: string;
-			typed?: Record<string, string>;
-		});
-	}
-	return { for: target, saved: true as const };
-}
 
 /** A lesson as the form sends it: the optional fields left empty become null. */
 const lessonForm = z.object({
