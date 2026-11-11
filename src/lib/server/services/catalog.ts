@@ -85,10 +85,12 @@ const idList = z.array(z.uuid()).max(500);
 // Ownership
 
 async function ownedProduct(db: Db | Tx, producerId: string, productId: string) {
+	// The id comes from the address: a malformed one fails here, never in the database.
+	const id = z.uuid().parse(productId);
 	const [row] = await db
 		.select()
 		.from(product)
-		.where(and(eq(product.id, productId), eq(product.producerId, producerId)));
+		.where(and(eq(product.id, id), eq(product.producerId, producerId)));
 	return assertFound(row, 'product');
 }
 

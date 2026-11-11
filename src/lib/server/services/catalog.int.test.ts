@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { ZodError } from 'zod';
 import { lesson, module } from '../db/schema';
 import { NotFoundError } from '../errors';
 import {
@@ -89,6 +90,13 @@ describe('editor and ownership (RNF-05)', () => {
 		await expect(getProductEditor(ctx, other.id, id)).rejects.toBeInstanceOf(NotFoundError);
 		await expect(addModule(ctx, other.id, id, 'Extra')).rejects.toBeInstanceOf(NotFoundError);
 		await expect(publishProduct(ctx, other.id, id)).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('refuses a malformed product id before the database', async () => {
+		const owner = await newUser('p@example.com');
+		await expect(getProductEditor(testCtx(), owner.id, 'not-a-uuid')).rejects.toBeInstanceOf(
+			ZodError
+		);
 	});
 
 	it('lists only the own products, newest first, with offer count and lowest price', async () => {
