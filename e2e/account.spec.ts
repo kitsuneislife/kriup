@@ -16,6 +16,9 @@ async function fillLogin(page: Page, email: string, secret: string) {
 }
 
 test('signs up, signs out and signs back in', async ({ page }) => {
+	// The longest journey of the suite: three screens and six axe passes. Alone it takes
+	// about 8 s; with every worker on the one dev server it went past the 30 s default.
+	test.slow();
 	const email = uniqueEmail('ana');
 	await page.goto('/register');
 	await expectAccessible(page);
