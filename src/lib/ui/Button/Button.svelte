@@ -16,6 +16,9 @@
 		loading?: string;
 		href?: string;
 		type?: 'button' | 'submit' | 'reset';
+		/** Sent with the form when this submit button is the one pressed. */
+		name?: string;
+		value?: string;
 		disabled?: boolean;
 		fullWidth?: boolean;
 		/** For buttons that open a Menu or Popover: sets aria-expanded, aria-haspopup, aria-controls. */
@@ -35,6 +38,8 @@
 		loading,
 		href,
 		type = 'button',
+		name,
+		value,
 		disabled = false,
 		fullWidth = false,
 		expanded,
@@ -82,6 +87,8 @@
 		data-loading={loading !== undefined}
 		data-full={fullWidth}
 		{type}
+		{name}
+		{value}
 		disabled={inert}
 		aria-label={label}
 		aria-busy={loading !== undefined ? true : undefined}
