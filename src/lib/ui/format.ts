@@ -25,6 +25,19 @@ export function parseCents(text: string, max = 99_999_999_99): number {
 	return Math.min(digits === '' ? 0 : Number(digits), max);
 }
 
+/**
+ * Reads a price typed in reais, the way people write it in Brazil: "97", "97,9",
+ * "1.234,56", "R$ 1234,56". Returns cents, or undefined when it is not a price.
+ */
+export function parseReais(text: string): number | undefined {
+	const value = text.replace(/^\s*R\$/, '').trim();
+	const match = /^(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/.exec(value);
+	if (!match) return undefined;
+	const cents =
+		Number(match[1]!.replaceAll('.', '')) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+	return Number.isSafeInteger(cents) ? cents : undefined;
+}
+
 export type DateFormat = 'date' | 'datetime' | 'time' | 'relative';
 
 const zone = 'America/Sao_Paulo';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDecimal, formatMoney, parseCents } from './format';
+import { formatDate, formatDecimal, formatMoney, parseCents, parseReais } from './format';
 
 const clean = (text: string) => text.replace(/\s/g, ' ');
 
@@ -25,6 +25,22 @@ describe('parseCents', () => {
 	});
 	it('caps at the maximum', () => {
 		expect(parseCents('99999999999999', 1000)).toBe(1000);
+	});
+});
+
+describe('parseReais', () => {
+	it('reads reais with an optional comma and thousands dots', () => {
+		expect(parseReais('97')).toBe(9700);
+		expect(parseReais('97,9')).toBe(9790);
+		expect(parseReais(' 97,90 ')).toBe(9790);
+		expect(parseReais('1.234,56')).toBe(123456);
+		expect(parseReais('1234,56')).toBe(123456);
+		expect(parseReais('R$ 1.000')).toBe(100000);
+	});
+	it('refuses what is not a price', () => {
+		for (const text of ['', 'abc', '97.90', '97,901', '1.23,00', '-5', '1,', ',50']) {
+			expect(parseReais(text), text).toBeUndefined();
+		}
 	});
 });
 

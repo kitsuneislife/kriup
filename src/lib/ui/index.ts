@@ -54,7 +54,7 @@ export { default as Toast } from './Toast/Toast.svelte';
 export { toast } from './Toast/store.svelte';
 export { default as Tooltip } from './Tooltip/Tooltip.svelte';
 export { default as VideoFrame } from './VideoFrame/VideoFrame.svelte';
-export { formatDate, formatDecimal, formatMoney, parseCents } from './format';
+export { formatDate, formatDecimal, formatMoney, parseCents, parseReais } from './format';
 export type { MenuItem } from './Menu/Menu.svelte';
 export type { Status } from './StatusBadge/status';
 export type { IconName } from './Icon/icons';
