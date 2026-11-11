@@ -127,7 +127,12 @@ async function ownedOffer(db: Db | Tx, producerId: string, offerId: string) {
 
 export async function listTemplates(ctx: Ctx) {
 	return ctx.db
-		.select({ slug: template.slug, name: template.name, productType: template.productType })
+		.select({
+			slug: template.slug,
+			name: template.name,
+			productType: template.productType,
+			structure: template.structure
+		})
 		.from(template)
 		.orderBy(asc(template.name));
 }

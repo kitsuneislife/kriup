@@ -38,7 +38,9 @@ test('asks one question per step and keeps the answers', async ({ page, createUs
 	await proceed(page);
 
 	await question(page, 'Escolha um modelo');
-	await expect(page.getByText('A escolha do modelo está chegando')).toBeVisible();
+	// the preview already carries the answers
+	await expect(page.getByText('Pão de fermentação natural', { exact: true })).toBeVisible();
+	await expect(page.getByText('Quero começar por R$ 97,90')).toBeVisible();
 	await expectAccessible(page);
 
 	// the answers survive a reload and going back
@@ -49,6 +51,45 @@ test('asks one question per step and keeps the answers', async ({ page, createUs
 	await expect(page.getByLabel('Cor principal', { exact: true })).toHaveValue('#c2410c');
 	await expect(page.getByLabel('Fonte')).toHaveValue('Lora');
 	await expect(page.getByLabel('Endereço da logo')).toHaveValue('https://example.com/logo.png');
+	await proceed(page);
+
+	// the choice creates the draft and opens it; the list shows it
+	await page.getByRole('button', { name: 'Criar com Curso online' }).click();
+	await expect(page).toHaveURL(/\/producer\/products\/[0-9a-f-]{36}$/);
+	await expect(page.getByRole('heading', { name: 'Pão de fermentação natural' })).toBeVisible();
+	await expect(page.getByText('Rascunho')).toBeVisible();
+	await page.goto('/producer');
+	await expect(page.getByText('Pão de fermentação natural')).toBeVisible();
+
+	// a new start begins empty
+	await page.goto('/producer/new');
+	await question(page, 'O que você vai vender?');
+});
+
+test('offers only the templates of the chosen type', async ({ page, createUser, signIn }) => {
+	await signIn(await createUser('Ana Souza'));
+	await page.goto('/producer/new');
+	await page.getByLabel('Tipo de produto').selectOption({ label: 'Mentoria' });
+	await proceed(page);
+	await page.getByLabel('Nome do produto').fill('Mentoria de vendas');
+	await proceed(page);
+	await page.getByLabel('Preço em reais').fill('500');
+	await proceed(page);
+	await page.getByLabel('Público').fill('quem vende pela internet');
+	await proceed(page);
+	await proceed(page);
+
+	await question(page, 'Escolha um modelo');
+	await expect(page.getByRole('button', { name: /^Criar com/ })).toHaveText(['Criar com Mentoria']);
+
+	// a template of another type sent by hand is refused
+	const response = await page.request.post('/producer/new?/create', {
+		form: { templateSlug: 'online-course' },
+		headers: { origin: new URL(page.url()).origin, 'x-sveltekit-action': 'true' }
+	});
+	const result = await response.json();
+	expect(result).toMatchObject({ type: 'failure', status: 400 });
+	expect(result.data).toContain('invalid_input');
 });
 
 test('refuses a wrong answer under its field', async ({ page, createUser, signIn }) => {

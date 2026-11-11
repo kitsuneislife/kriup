@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
 	import { productTypeText } from '#lib/product-text';
 	import {
+		Alert,
+		BrandHero,
 		Button,
 		Card,
 		ColorField,
-		EmptyState,
 		Page,
 		Select,
 		Stack,
@@ -18,6 +20,7 @@
 	let { data, form } = $props();
 	const next = new Submission();
 	const back = new Submission();
+	const create = new Submission();
 
 	// after a refusal the fields show what was just typed, with the reason under each one
 	const answers = $derived(form?.answers ?? data.answers);
@@ -115,12 +118,43 @@
 							</Button>
 						</Stack>
 					</form>
-				{:else}
-					<!-- Placeholder until batch 2.3 adds the template choice and creates the draft. -->
-					<Text variant="title2" as="h2">{steps[step]!.question}</Text>
-					<EmptyState icon="sparkles" title="A escolha do modelo está chegando">
-						Suas respostas ficam guardadas neste navegador por um dia.
-					</EmptyState>
+				{:else if data.brand}
+					<form method="post" action="?/create" use:create.enhance>
+						<Stack gap={6}>
+							<Stack gap={2}>
+								<Text variant="title2" as="h2">{steps[step]!.question}</Text>
+								<Text tone="secondary">
+									Veja como fica o topo da sua página de venda. O modelo também traz os textos,
+									as aulas e a política de reembolso, e você ajusta tudo depois.
+								</Text>
+							</Stack>
+							{#if form?.code}<Alert tone="danger">{errorText(form.code)}</Alert>{/if}
+							{#each data.previews as preview (preview.slug)}
+								<Stack gap={3}>
+									<Text variant="title3" as="h3">{preview.name}</Text>
+									<BrandHero
+										title={preview.title}
+										subtitle={preview.subtitle}
+										cta={preview.cta}
+										color={data.brand.color}
+										font={data.brand.font}
+										logoUrl={data.brand.logoUrl}
+									/>
+									<Button
+										type="submit"
+										name="templateSlug"
+										value={preview.slug}
+										variant={data.previews.length === 1 ? 'primary' : 'neutral'}
+										icon="sparkles"
+										fullWidth
+										loading={create.loading('Criando')}
+									>
+										Criar com {preview.name}
+									</Button>
+								</Stack>
+							{/each}
+						</Stack>
+					</form>
 				{/if}
 				{#if step > 0}
 					<form method="post" action="?/back" use:back.enhance>

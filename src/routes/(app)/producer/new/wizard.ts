@@ -43,7 +43,7 @@ const schemas = (types: ProductType[]) => [
 			.transform((text) => text || null)
 			.pipe(brandSchema.shape.logoUrl)
 	})
-];
+] as const;
 
 export type Checked = { step: number; fields?: Record<string, string> };
 
@@ -58,4 +58,19 @@ export function check(answers: Answers, through: number, types: ProductType[]): 
 		if (!result.success) return { step, fields: fieldErrors(result.error) };
 	}
 	return { step: Math.min(through + 1, steps.length - 1) };
+}
+
+/**
+ * Every answer as createProduct takes it, without the template. Throws ZodError if any
+ * step is wrong, so run `check` first to send the person back to it.
+ */
+export function productAnswers(answers: Answers, types: ProductType[]) {
+	const [type, name, price, audience, brand] = schemas(types);
+	return {
+		type: type.parse(answers).type,
+		name: name.parse(answers).name,
+		priceCents: price.parse(answers).price,
+		audience: audience.parse(answers).audience,
+		brand: brand.parse(answers)
+	};
 }

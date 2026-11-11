@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { check } from './wizard';
+import { ZodError } from 'zod';
+import { check, productAnswers } from './wizard';
 
 const types = ['course' as const, 'mentorship' as const];
 const answers = {
@@ -56,5 +57,21 @@ describe('check', () => {
 			step: 4,
 			fields: { color: 'Formato inválido.', logoUrl: 'Informe o endereço completo, com https://.' }
 		});
+	});
+});
+
+describe('productAnswers', () => {
+	it('turns the typed answers into what createProduct takes', () => {
+		expect(productAnswers(answers, types)).toEqual({
+			type: 'course',
+			name: 'Pão de fermentação natural',
+			priceCents: 9_790,
+			audience: 'quem nunca fez pão',
+			brand: { color: '#00aa88', font: 'Inter', logoUrl: null }
+		});
+	});
+
+	it('throws when a step is wrong', () => {
+		expect(() => productAnswers({ ...answers, price: '4,99' }, types)).toThrow(ZodError);
 	});
 });
