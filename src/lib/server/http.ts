@@ -29,13 +29,18 @@ export async function act<T>(work: () => Promise<T>): Promise<Acted<T>> {
 	} catch (err) {
 		if (err instanceof DomainError) return fail(400, { code: err.code } satisfies ActionFailure);
 		if (err instanceof ZodError) {
-			const fields: Record<string, string> = {};
-			for (const issue of err.issues) fields[issue.path.join('.')] ??= issueText(issue);
-			return fail(400, { code: 'invalid_input', fields } satisfies ActionFailure);
+			return fail(400, { code: 'invalid_input', fields: fieldErrors(err) } satisfies ActionFailure);
 		}
 		if (err instanceof NotFoundError) error(404);
 		throw err;
 	}
+}
+
+/** Field path to the text of its first issue, for `ActionFailure.fields`. */
+export function fieldErrors(err: ZodError): Record<string, string> {
+	const fields: Record<string, string> = {};
+	for (const issue of err.issues) fields[issue.path.join('.')] ??= issueText(issue);
+	return fields;
 }
 
 /** For `load` and API routes: NotFoundError becomes a 404, the rest is rethrown. */
