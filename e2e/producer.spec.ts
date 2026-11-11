@@ -28,6 +28,7 @@ test('lists the products newest first, with state, price and the next step', asy
 	createUser,
 	signIn
 }) => {
+	test.slow(); // two products, two axe checks, and it ends on the editor
 	const producer = await createUser('Paulo Lima');
 	const { productId } = await publishedProduct(ctx, producer.id, 10_000);
 	await addOffer(ctx, producer.id, productId, { name: 'Promoção', priceCents: 7_900 });
