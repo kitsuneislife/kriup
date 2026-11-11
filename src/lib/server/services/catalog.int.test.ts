@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
-import { lesson, module } from '../db/schema';
+import { textFields } from '../../domain/page';
+import { pageFieldText, sectionText } from '../../product-text';
+import { lesson, module, page } from '../db/schema';
 import { NotFoundError } from '../errors';
 import {
 	addLesson,
@@ -133,6 +135,83 @@ describe('editor and ownership (RNF-05)', () => {
 	});
 });
 
+describe('page editor (RF-13)', () => {
+	it('names every section and text field the templates draft, each kind once', async () => {
+		for (const { structure } of await listTemplates(testCtx())) {
+			for (const { sections } of Object.values(structure.pages)) {
+				const kinds = sections.map((s) => s.kind);
+				expect(new Set(kinds).size).toBe(kinds.length);
+				for (const section of sections) {
+					expect(sectionText[section.kind], section.kind).toBeDefined();
+					for (const key of textFields(section)) expect(() => pageFieldText(key)).not.toThrow();
+				}
+			}
+		}
+	});
+
+	it('reorders the sections, changes texts and adds an image', async () => {
+		const ctx = testCtx();
+		const producer = await newUser('p@example.com');
+		const id = await createProduct(ctx, producer.id, answers);
+		const [hero, ...rest] = (await getProductEditor(ctx, producer.id, id)).pages.sales.sections;
+		const edited = {
+			kind: hero!.kind,
+			fields: {
+				...hero!.fields,
+				title: 'Pão sem segredo',
+				image: 'https://img.example/pao.jpg',
+				imageAlt: 'Um pão saindo do forno'
+			}
+		};
+		await updatePage(ctx, producer.id, id, 'sales', { sections: [...rest, edited] });
+
+		const editor = await getProductEditor(ctx, producer.id, id);
+		expect(editor.pages.sales.sections.at(-1)).toEqual(edited);
+		expect(editor.pendencies).toEqual([]);
+	});
+
+	it('refuses to drop a section, add a field, blank a text or leave an image undescribed', async () => {
+		const ctx = testCtx();
+		const producer = await newUser('p@example.com');
+		const id = await createProduct(ctx, producer.id, answers);
+		const sections = (await getProductEditor(ctx, producer.id, id)).pages.sales.sections;
+		const [hero, ...rest] = sections;
+		const withHero = (fields: Record<string, string>) => ({
+			sections: [{ kind: hero!.kind, fields: { ...hero!.fields, ...fields } }, ...rest]
+		});
+
+		await rejectsCode(
+			updatePage(ctx, producer.id, id, 'sales', { sections: rest }),
+			'invalid_transition'
+		);
+		await rejectsCode(
+			updatePage(ctx, producer.id, id, 'sales', withHero({ extra: 'x' })),
+			'invalid_transition'
+		);
+		const refused = (fields: Record<string, string>) =>
+			updatePage(ctx, producer.id, id, 'sales', withHero(fields)).catch((err: unknown) => err);
+		expect(await refused({ title: '  ' })).toBeInstanceOf(ZodError);
+		expect(await refused({ image: 'ftp://img.example/a.png', imageAlt: 'a' })).toBeInstanceOf(
+			ZodError
+		);
+		expect(await refused({ image: 'https://img.example/a.png' })).toBeInstanceOf(ZodError);
+		expect(await refused({ imageAlt: 'sem imagem' })).toBeInstanceOf(ZodError);
+
+		expect((await getProductEditor(ctx, producer.id, id)).pages.sales.sections).toEqual(sections);
+	});
+
+	it("refuses another producer's page", async () => {
+		const ctx = testCtx();
+		const owner = await newUser('p@example.com');
+		const other = await newUser('o@example.com');
+		const id = await createProduct(ctx, owner.id, answers);
+		const { sales } = (await getProductEditor(ctx, owner.id, id)).pages;
+		await expect(updatePage(ctx, other.id, id, 'sales', sales)).rejects.toBeInstanceOf(
+			NotFoundError
+		);
+	});
+});
+
 describe('publish (RN-01, RF-15)', () => {
 	it('lists the pendencies and refuses to publish until they are solved', async () => {
 		const ctx = testCtx();
@@ -141,7 +220,11 @@ describe('publish (RN-01, RF-15)', () => {
 		for (const m of await db.select().from(module).where(eq(module.productId, id))) {
 			await deleteModule(ctx, producer.id, m.id);
 		}
-		await updatePage(ctx, producer.id, id, 'sales', { sections: [] });
+		// the editor cannot empty a page (RF-13); an old or broken one can still be
+		await db
+			.update(page)
+			.set({ content: { sections: [] } })
+			.where(eq(page.productId, id));
 
 		const editor = await getProductEditor(ctx, producer.id, id);
 		expect(editor.pendencies).toEqual(['lesson', 'sales_page']);

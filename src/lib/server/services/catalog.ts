@@ -4,6 +4,7 @@
 import { and, asc, count, desc, eq, min } from 'drizzle-orm';
 import { z } from 'zod';
 import { fillDeep } from '../../domain/draft';
+import { keepsSections } from '../../domain/page';
 import { GUARANTEE_DAYS, OFFER_MIN_PRICE_CENTS } from '../../domain/params';
 import { isPageFilled, publishPendencies } from '../../domain/publish';
 import { platformFee } from '../../domain/split';
@@ -54,13 +55,44 @@ export const updateProductSchema = z.object({
 	refundPolicy: z.string().trim().max(5_000).optional()
 });
 
+/** RF-13: every text filled; the image, when there is one, is a link with its description. */
 export const pageContentSchema = z.object({
 	sections: z
 		.array(
-			z.object({
-				kind: text(40),
-				fields: z.record(text(40), z.string().max(5_000))
-			})
+			z
+				.object({
+					kind: text(40),
+					fields: z.record(text(40), text(5_000))
+				})
+				.superRefine(({ fields }, issues) => {
+					if (fields.image === undefined) {
+						if (fields.imageAlt !== undefined) {
+							issues.addIssue({
+								code: 'custom',
+								message: 'no image',
+								path: ['fields', 'imageAlt']
+							});
+						}
+						return;
+					}
+					if (!httpsUrl.safeParse(fields.image).success) {
+						issues.addIssue({
+							code: 'invalid_format',
+							format: 'url',
+							message: 'not an http(s) url',
+							path: ['fields', 'image']
+						});
+					}
+					if (fields.imageAlt === undefined) {
+						issues.addIssue({
+							code: 'invalid_type',
+							expected: 'string',
+							input: undefined,
+							message: 'an image needs its description',
+							path: ['fields', 'imageAlt']
+						});
+					}
+				})
 		)
 		.max(30)
 });
@@ -305,11 +337,20 @@ export async function updatePage(
 ) {
 	const content = pageContentSchema.parse(input);
 	const pageKind = z.enum(pageType.enumValues).parse(type);
-	await ownedProduct(ctx.db, producerId, productId);
-	await ctx.db
-		.update(page)
-		.set({ content })
-		.where(and(eq(page.productId, productId), eq(page.type, pageKind)));
+	await ctx.db.transaction(async (tx) => {
+		await ownedProduct(tx, producerId, productId);
+		const where = and(eq(page.productId, productId), eq(page.type, pageKind));
+		const [current] = await tx
+			.select({ content: page.content })
+			.from(page)
+			.where(where)
+			.for('update');
+		// RF-13: the sections come from the template; the editor only orders and fills them
+		if (!keepsSections(assertFound(current, 'page').content.sections, content.sections)) {
+			throw new DomainError('invalid_transition', 'the page must keep its sections and fields');
+		}
+		await tx.update(page).set({ content }).where(where);
+	});
 }
 
 export async function addModule(ctx: Ctx, producerId: string, productId: string, title: string) {
