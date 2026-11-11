@@ -77,7 +77,7 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Stat` | Número em destaque: saldo retido, liberado, sacado | Valor dentro de tabela (use `Money`) | `icon`, `tone`, `hint` |
 | `StatusBadge` | Estado de pedido, reembolso ou saldo, com a cor certa | Categoria livre (use `Badge`) | `status` (15 estados), `size` |
 | `FileUpload` | Logo e anexos: arrastar ou escolher | Imagem já enviada | `accept`, `maxBytes`, `multiple`, `error`, `onreject` |
-| `ColorField` | Cor da marca do produtor | Cor do sistema (use token) | `value` `#rrggbb`, `error` |
+| `ColorField` | Cor da marca do produtor | Cor do sistema (use token) | `value` `#rrggbb`, `name`, `error` |
 | `CopyField` | Texto para copiar: Pix copia e cola, link de afiliado | Texto que a pessoa edita | `copyLabel`, `copiedLabel` |
 
 Formato da linha: o nome entre crases, igual à pasta e ao arquivo.

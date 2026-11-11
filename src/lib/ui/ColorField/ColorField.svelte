@@ -6,6 +6,8 @@
 		label: string;
 		/** "#rrggbb". Brand colors are data from the producer, the only hex the kit accepts. */
 		value?: string;
+		/** Form field name. The text input carries it, so the color is sent without JavaScript too. */
+		name?: string;
 		hint?: string;
 		error?: string;
 		/** Accessible name of the color picker. */
@@ -16,6 +18,7 @@
 	let {
 		label,
 		value = $bindable('#000000'),
+		name,
 		hint,
 		error,
 		pickerLabel,
@@ -30,6 +33,7 @@
 <Field {id} {label} {hint} {error} {disabled}>
 	<input
 		{id}
+		{name}
 		class="text"
 		type="text"
 		{disabled}
