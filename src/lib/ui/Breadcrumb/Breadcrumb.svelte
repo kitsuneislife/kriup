@@ -13,7 +13,8 @@
 <!-- eslint-disable svelte/no-navigation-without-resolve -- href comes from the caller, already resolved -->
 <nav aria-label={label}>
 	<ol class="list">
-		{#each items as item, index (item.label)}
+		<!-- keyed by position: two items may share a label, as a product named "Produtos" -->
+		{#each items as item, index (index)}
 			<li class="item">
 				{#if index < items.length - 1 && item.href}
 					<a class="link" href={item.href}>{item.label}</a>
