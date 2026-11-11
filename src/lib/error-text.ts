@@ -43,7 +43,8 @@ export function errorText(code: ErrorCode): string {
 
 /** Codes a schema puts in a custom issue (`params.code`), for rules Zod has no name for. */
 const custom: Record<string, string> = {
-	invalid_tax_id: 'CPF ou CNPJ inválido.'
+	invalid_tax_id: 'CPF ou CNPJ inválido.',
+	invalid_price: 'Informe o valor em reais, como 97,90.'
 };
 
 /** The text under a field for one Zod issue. */
