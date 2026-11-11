@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
-	import { productTypeText } from '#lib/product-text';
+	import { brandFonts, productTypeText } from '#lib/product-text';
 	import {
 		Alert,
 		BrandHero,
@@ -15,7 +15,7 @@
 		Text,
 		TextField
 	} from '#lib/ui';
-	import { brandFonts, defaultBrandColor, steps } from './steps';
+	import { defaultBrandColor, steps } from './steps';
 
 	let { data, form } = $props();
 	const next = new Submission();

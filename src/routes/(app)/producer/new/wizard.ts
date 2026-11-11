@@ -3,9 +3,9 @@
 
 import { z } from 'zod';
 import type { productType } from '#lib/server/db/schema';
+import { brandForm } from '#lib/server/brand-form';
 import { fieldErrors } from '#lib/server/http';
-import { brandSchema, createProductSchema } from '#lib/server/services/catalog';
-import { normalizeHex } from '#lib/ui/ColorField/hex';
+import { createProductSchema } from '#lib/server/services/catalog';
 import { parseReais } from '#lib/ui/format';
 import { steps, type Answers } from './steps';
 
@@ -31,18 +31,7 @@ const schemas = (types: ProductType[]) => [
 	createProductSchema.pick({ name: true }),
 	z.object({ price }),
 	createProductSchema.pick({ audience: true }),
-	z.object({
-		color: z
-			.string()
-			.transform((text) => normalizeHex(text) ?? text)
-			.pipe(brandSchema.shape.color),
-		font: brandSchema.shape.font,
-		logoUrl: z
-			.string()
-			.trim()
-			.transform((text) => text || null)
-			.pipe(brandSchema.shape.logoUrl)
-	})
+	brandForm
 ] as const;
 
 export type Checked = { step: number; fields?: Record<string, string> };

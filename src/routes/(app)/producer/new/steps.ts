@@ -17,6 +17,4 @@ export type Answers = Partial<Record<Field, string>>;
 
 export const fields: Field[] = steps.flatMap((step) => step.fields);
 
-export const brandFonts = ['Inter', 'Roboto', 'Montserrat', 'Lora', 'Playfair Display'];
-
 export const defaultBrandColor = '#0a84ff';

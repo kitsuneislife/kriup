@@ -16,3 +16,6 @@ export const productStatusText: Record<Product['status'], { label: string; tone:
 	draft: { label: 'Rascunho', tone: 'neutral' },
 	published: { label: 'Publicado', tone: 'success' }
 };
+
+/** The fonts a producer can pick for the brand (RF-12). */
+export const brandFonts = ['Inter', 'Roboto', 'Montserrat', 'Lora', 'Playfair Display'];
