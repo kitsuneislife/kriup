@@ -1,8 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
 import { ctx } from '#lib/server/app';
-import { brandForm } from '#lib/server/brand-form';
 import { act, fieldErrors, orNotFound, requireUser, type ActionFailure } from '#lib/server/http';
+import { brandForm } from '#lib/server/product-form';
 import {
 	getProductEditor,
 	updateProduct,

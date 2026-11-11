@@ -3,27 +3,12 @@
 
 import { z } from 'zod';
 import type { productType } from '#lib/server/db/schema';
-import { brandForm } from '#lib/server/brand-form';
 import { fieldErrors } from '#lib/server/http';
+import { brandForm, priceForm as price } from '#lib/server/product-form';
 import { createProductSchema } from '#lib/server/services/catalog';
-import { parseReais } from '#lib/ui/format';
 import { steps, type Answers } from './steps';
 
 export type ProductType = (typeof productType.enumValues)[number];
-
-const price = z
-	.string()
-	.trim()
-	.min(1)
-	.transform((text, issue) => {
-		const cents = parseReais(text);
-		if (cents === undefined) {
-			issue.addIssue({ code: 'custom', message: 'not a price', params: { code: 'invalid_price' } });
-			return z.NEVER;
-		}
-		return cents;
-	})
-	.pipe(createProductSchema.shape.priceCents);
 
 /** One schema per step that has fields; `types` are the ones with a template. */
 const schemas = (types: ProductType[]) => [
