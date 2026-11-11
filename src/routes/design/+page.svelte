@@ -161,6 +161,7 @@
 				['StatusBadge', 'StatusBadge', 'shield'],
 				['FileUpload', 'FileUpload', 'upload'],
 				['ColorField', 'ColorField', 'image'],
+				['BrandHero', 'BrandHero', 'sparkles'],
 				['CopyField', 'CopyField', 'copy']
 			]
 		}

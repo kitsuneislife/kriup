@@ -77,6 +77,7 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Stat` | Número em destaque: saldo retido, liberado, sacado | Valor dentro de tabela (use `Money`) | `icon`, `tone`, `hint` |
 | `StatusBadge` | Estado de pedido, reembolso ou saldo, com a cor certa | Categoria livre (use `Badge`) | `status` (15 estados), `size` |
 | `FileUpload` | Logo e anexos: arrastar ou escolher | Imagem já enviada | `accept`, `maxBytes`, `multiple`, `error`, `onreject` |
+| `BrandHero` | Topo da página de venda com a marca do produtor: prévia no assistente e página pública | Destaque com as cores do sistema (use `Card`) | `color` (o texto do botão vira preto ou branco para manter o contraste AA), `font`, `logoUrl` |
 | `ColorField` | Cor da marca do produtor | Cor do sistema (use token) | `value` `#rrggbb`, `name`, `error` |
 | `CopyField` | Texto para copiar: Pix copia e cola, link de afiliado | Texto que a pessoa edita | `copyLabel`, `copiedLabel` |
 
