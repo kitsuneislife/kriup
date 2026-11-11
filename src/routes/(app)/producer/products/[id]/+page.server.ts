@@ -3,11 +3,7 @@ import { z } from 'zod';
 import { ctx } from '#lib/server/app';
 import { act, fieldErrors, orNotFound, requireUser, type ActionFailure } from '#lib/server/http';
 import { brandForm } from '#lib/server/product-form';
-import {
-	getProductEditor,
-	updateProduct,
-	updateProductSchema
-} from '#lib/server/services/catalog';
+import { getProductEditor, updateProduct, updateProductSchema } from '#lib/server/services/catalog';
 import type { Actions, PageServerLoad } from './$types';
 
 // Another producer's product, or a malformed id, answers 404 (RNF-05).
@@ -17,6 +13,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		product: { name, type, status, brand, refundPolicy },
 		pendencies: editor.pendencies,
+		sectionCount: editor.pages.sales.sections.length,
 		lessonCount: editor.modules.reduce((sum, m) => sum + m.lessons.length, 0),
 		offerCount: editor.offers.length
 	};

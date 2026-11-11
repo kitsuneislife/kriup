@@ -9,9 +9,13 @@
 		Badge,
 		Breadcrumb,
 		Button,
+		Card,
 		Checklist,
 		Cluster,
 		ColorField,
+		Grid,
+		Icon,
+		type IconName,
 		Page,
 		Select,
 		Stack,
@@ -20,18 +24,26 @@
 		TextField
 	} from '#lib/ui';
 
-	let { data, form } = $props();
+	let { data, form, params } = $props();
 	const save = new Submission();
 
 	const status = $derived(productStatusText[data.product.status]);
+	const parts = $derived({
+		page: resolve('/(app)/producer/products/[id]/page', { id: params.id })
+	});
+	// where each pendency is solved; the others get theirs with their screens (batches 2.6, 2.7)
+	const fixAt: Partial<Record<keyof typeof pendencyText, string>> = $derived({
+		sales_page: parts.page,
+		refund_policy: '?tab=data'
+	});
 	const pendencies = $derived(
 		(Object.keys(pendencyText) as (keyof typeof pendencyText)[]).map((pendency) => ({
 			label: pendencyText[pendency],
 			done: !data.pendencies.includes(pendency),
-			// the other pendencies get their link when their screens exist (batches 2.5 to 2.7)
-			href: pendency === 'refund_policy' ? '?tab=data' : undefined
+			href: fixAt[pendency]
 		}))
 	);
+	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 	// after a refusal the fields show what was just typed, with the reason under each one
 	const typed = $derived(form && 'typed' in form ? form.typed : undefined);
 	const errors = $derived(form && 'fields' in form ? (form.fields ?? {}) : {});
@@ -46,6 +58,18 @@
 </script>
 
 <svelte:head><title>{data.product.name}</title></svelte:head>
+
+{#snippet part(href: string, icon: IconName, title: string, summary: string)}
+	<Card {href} padding="lg">
+		<Cluster gap={3} wrap={false}>
+			<Text tone="secondary"><Icon name={icon} /></Text>
+			<Stack gap={1}>
+				<Text weight="semibold">{title}</Text>
+				<Text variant="subhead" tone="secondary">{summary}</Text>
+			</Stack>
+		</Cluster>
+	</Card>
+{/snippet}
 
 <Page>
 	<Stack gap={8}>
@@ -74,18 +98,26 @@
 		>
 			{#snippet children(current)}
 				{#if current === 'overview'}
-					<Stack gap={4}>
-						<Text variant="title2" as="h2">Antes de publicar</Text>
-						<Checklist
-							label="Pendências para publicar"
-							items={pendencies}
-							count={(done, total) => `${done} de ${total} prontos`}
-						/>
-						<Text tone="secondary">
-							{data.lessonCount}
-							{data.lessonCount === 1 ? 'aula' : 'aulas'} e {data.offerCount}
-							{data.offerCount === 1 ? 'oferta' : 'ofertas'} até agora.
-						</Text>
+					<Stack gap={8}>
+						<Stack gap={4}>
+							<Text variant="title2" as="h2">Antes de publicar</Text>
+							<Checklist
+								label="Pendências para publicar"
+								items={pendencies}
+								count={(done, total) => `${done} de ${total} prontos`}
+							/>
+						</Stack>
+						<Stack gap={4}>
+							<Text variant="title2" as="h2">Partes do produto</Text>
+							<Grid min="sm" gap={4}>
+								{@render part(
+									parts.page,
+									'image',
+									'Página de venda',
+									plural(data.sectionCount, 'seção', 'seções')
+								)}
+							</Grid>
+						</Stack>
 					</Stack>
 				{:else}
 					<form method="post" action="?/update" use:save.enhance>
