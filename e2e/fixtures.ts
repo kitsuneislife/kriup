@@ -54,7 +54,15 @@ export const test = base.extend<Fixtures>({
 export async function expectAccessible(page: Page) {
 	for (const colorScheme of ['light', 'dark'] as const) {
 		await page.emulateMedia({ colorScheme });
-		await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+		// hidden content (a closed Disclosure) never runs its theme transitions: skip it
+		await page.evaluate(() =>
+			Promise.all(
+				document
+					.getAnimations()
+					.filter((a) => (a.effect as KeyframeEffect | null)?.target?.checkVisibility() ?? true)
+					.map((a) => a.finished)
+			)
+		);
 		const { violations } = await new AxeBuilder({ page }).analyze();
 		expect(
 			violations.map((v) => `${v.id}: ${v.help} at ${v.nodes.map((n) => n.target).join(', ')}`),
