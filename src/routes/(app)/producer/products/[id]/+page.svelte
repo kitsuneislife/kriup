@@ -29,11 +29,13 @@
 
 	const status = $derived(productStatusText[data.product.status]);
 	const parts = $derived({
-		page: resolve('/(app)/producer/products/[id]/page', { id: params.id })
+		page: resolve('/(app)/producer/products/[id]/page', { id: params.id }),
+		content: resolve('/(app)/producer/products/[id]/content', { id: params.id })
 	});
-	// where each pendency is solved; the others get theirs with their screens (batches 2.6, 2.7)
+	// where each pendency is solved; the others get theirs with their screens (batch 2.7)
 	const fixAt: Partial<Record<keyof typeof pendencyText, string>> = $derived({
 		sales_page: parts.page,
+		lesson: parts.content,
 		refund_policy: '?tab=data'
 	});
 	const pendencies = $derived(
@@ -115,6 +117,12 @@
 									'image',
 									'Página de venda',
 									plural(data.sectionCount, 'seção', 'seções')
+								)}
+								{@render part(
+									parts.content,
+									'book',
+									'Conteúdo',
+									`${plural(data.moduleCount, 'módulo', 'módulos')}, ${plural(data.lessonCount, 'aula', 'aulas')}`
 								)}
 							</Grid>
 						</Stack>

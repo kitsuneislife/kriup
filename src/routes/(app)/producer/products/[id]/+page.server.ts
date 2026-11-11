@@ -14,6 +14,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		product: { name, type, status, brand, refundPolicy },
 		pendencies: editor.pendencies,
 		sectionCount: editor.pages.sales.sections.length,
+		moduleCount: editor.modules.length,
 		lessonCount: editor.modules.reduce((sum, m) => sum + m.lessons.length, 0),
 		offerCount: editor.offers.length
 	};
