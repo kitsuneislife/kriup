@@ -1,7 +1,7 @@
 // Guided creation and the product editor (RF-10 to RF-16), plus the public pages that
 // sell a product (RF-20). Every producer action checks ownership in the query itself.
 
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, min } from 'drizzle-orm';
 import { z } from 'zod';
 import { fillDeep } from '../../domain/draft';
 import { GUARANTEE_DAYS, OFFER_MIN_PRICE_CENTS } from '../../domain/params';
@@ -192,6 +192,7 @@ export async function createProduct(
 // ---------------------------------------------------------------------------
 // Producer reads
 
+/** Newest first, each with its offer count and lowest price (null without offers). */
 export async function listProducerProducts(ctx: Ctx, producerId: string) {
 	return ctx.db
 		.select({
@@ -201,11 +202,15 @@ export async function listProducerProducts(ctx: Ctx, producerId: string) {
 			status: product.status,
 			brand: product.brand,
 			publishedAt: product.publishedAt,
-			createdAt: product.createdAt
+			createdAt: product.createdAt,
+			minPriceCents: min(offer.priceCents),
+			offerCount: count(offer.id)
 		})
 		.from(product)
+		.leftJoin(offer, eq(offer.productId, product.id))
 		.where(eq(product.producerId, producerId))
-		.orderBy(asc(product.createdAt));
+		.groupBy(product.id)
+		.orderBy(desc(product.createdAt), desc(product.id));
 }
 
 /** Everything the editor shows, including pendencies (RF-15) and the fee per offer (RN-02). */

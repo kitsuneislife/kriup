@@ -5,12 +5,14 @@ import { NotFoundError } from '../errors';
 import {
 	addLesson,
 	addModule,
+	addOffer,
 	createProduct,
 	deleteModule,
 	deleteOffer,
 	getCheckout,
 	getProductEditor,
 	getSalesPage,
+	listProducerProducts,
 	listTemplates,
 	publishProduct,
 	reorderModules,
@@ -87,6 +89,22 @@ describe('editor and ownership (RNF-05)', () => {
 		await expect(getProductEditor(ctx, other.id, id)).rejects.toBeInstanceOf(NotFoundError);
 		await expect(addModule(ctx, other.id, id, 'Extra')).rejects.toBeInstanceOf(NotFoundError);
 		await expect(publishProduct(ctx, other.id, id)).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('lists only the own products, newest first, with offer count and lowest price', async () => {
+		const ctx = testCtx();
+		const owner = await newUser('p@example.com');
+		const other = await newUser('o@example.com');
+		const first = await createProduct(ctx, owner.id, answers);
+		const second = await createProduct(ctx, owner.id, { ...answers, name: 'Mentoria' });
+		await addOffer(ctx, owner.id, second, { name: 'Promoção', priceCents: 4_900 });
+		await deleteOffer(ctx, owner.id, (await getProductEditor(ctx, owner.id, first)).offers[0]!.id);
+		await createProduct(ctx, other.id, answers);
+
+		expect(await listProducerProducts(ctx, owner.id)).toMatchObject([
+			{ id: second, offerCount: 2, minPriceCents: 4_900 },
+			{ id: first, offerCount: 0, minPriceCents: null }
+		]);
 	});
 
 	it('appends and reorders modules, refusing an incomplete order', async () => {
