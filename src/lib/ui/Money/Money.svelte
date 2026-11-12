@@ -31,6 +31,7 @@
 		font-size: 0.62em;
 		font-weight: var(--weight-semibold);
 		letter-spacing: 0;
-		opacity: 0.6;
+		/* 0.6 fell just under 4.5:1 on a white card */
+		opacity: 0.7;
 	}
 </style>
