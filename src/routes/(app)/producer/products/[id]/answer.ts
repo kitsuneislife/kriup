@@ -13,12 +13,6 @@ export function idOf(url: URL): string {
 	return id.data;
 }
 
-/** A text field of the form; a missing one reads as empty. */
-export function formText(form: FormData, key: string): string {
-	const value = form.get(key);
-	return typeof value === 'string' ? value : '';
-}
-
 /** The answer for the form `target`: the refusal with what was typed, or that it saved. */
 export function answer(result: Acted<unknown>, target: string, typed?: Record<string, string>) {
 	if (!result.ok) {

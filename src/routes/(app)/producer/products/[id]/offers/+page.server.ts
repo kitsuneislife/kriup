@@ -1,8 +1,8 @@
 import { ctx } from '#lib/server/app';
-import { act, orNotFound, requireUser } from '#lib/server/http';
+import { act, formText, orNotFound, requireUser } from '#lib/server/http';
 import { offerForm } from '#lib/server/product-form';
 import { addOffer, deleteOffer, getProductEditor, updateOffer } from '#lib/server/services/catalog';
-import { answer, formText, idOf } from '../answer';
+import { answer, idOf } from '../answer';
 import type { Actions, PageServerLoad } from './$types';
 
 // RF-15. The answers are for `offer:<id>`, `new-offer` or `delete:<id>` (see ../answer.ts).

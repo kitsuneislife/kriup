@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { move } from '#lib/domain/page';
 import { ctx } from '#lib/server/app';
-import { act, orNotFound, requireUser } from '#lib/server/http';
+import { act, formText as text, orNotFound, requireUser } from '#lib/server/http';
 import {
 	addLesson,
 	addModule,
@@ -15,7 +15,7 @@ import {
 	reorderModules,
 	updateLesson
 } from '#lib/server/services/catalog';
-import { answer, formText as text, idOf } from '../answer';
+import { answer, idOf } from '../answer';
 import type { Actions, PageServerLoad } from './$types';
 
 // RF-14. The answers are for `module:<id>`, `lesson:<id>`, `new-module`,

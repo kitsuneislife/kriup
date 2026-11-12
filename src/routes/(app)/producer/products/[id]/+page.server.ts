@@ -1,7 +1,14 @@
 import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
 import { ctx } from '#lib/server/app';
-import { act, fieldErrors, orNotFound, requireUser, type ActionFailure } from '#lib/server/http';
+import {
+	act,
+	fieldErrors,
+	formText,
+	orNotFound,
+	requireUser,
+	type ActionFailure
+} from '#lib/server/http';
 import { brandForm } from '#lib/server/product-form';
 import {
 	getProductEditor,
@@ -40,10 +47,7 @@ export const actions: Actions = {
 		const user = requireUser(locals);
 		const form = await request.formData();
 		const typed = Object.fromEntries(
-			Object.keys(basicData.shape).map((key) => {
-				const value = form.get(key);
-				return [key, typeof value === 'string' ? value : ''];
-			})
+			Object.keys(basicData.shape).map((key) => [key, formText(form, key)])
 		) as BasicData;
 		const parsed = basicData.safeParse(typed);
 		if (!parsed.success) {

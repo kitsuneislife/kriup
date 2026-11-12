@@ -43,6 +43,12 @@ export function fieldErrors(err: ZodError): Record<string, string> {
 	return fields;
 }
 
+/** A text field of a submitted form; a missing one (or a file) reads as empty. */
+export function formText(form: FormData, key: string): string {
+	const value = form.get(key);
+	return typeof value === 'string' ? value : '';
+}
+
 /** For `load` and API routes: NotFoundError becomes a 404, the rest is rethrown. */
 export async function orNotFound<T>(work: Promise<T>): Promise<T> {
 	try {
