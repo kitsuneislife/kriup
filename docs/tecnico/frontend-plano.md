@@ -27,7 +27,7 @@ flowchart TD
     subgraph Publico["Público"]
         HOME["/ redireciona pelo perfil"]
         LG["/login"] & RG["/register"] & FG["/password/forgot"] & PW["/password/[token]"]
-        SP["/p/[slug] página de venda"] --> CK["/p/[slug]/checkout"] --> PS["/orders/[id] aguardando pagamento"]
+        SP["/p/[id] página de venda"] --> CK["/p/[id]/checkout"] --> PS["/orders/[id] aguardando pagamento"]
         DEV["/dev/payments/[externalId] simulador"]
     end
 
@@ -114,11 +114,13 @@ Concluída em 12/11/2026. Publicar não ganhou rota própria: o `Checklist` de p
 
 | Lote | Telas | Serviços | % |
 | --- | --- | --- | --- |
-| 3.1 | `/p/[slug]`: página de venda pública com a marca do produtor, rápida no celular (RNF-07) | `getSalesPage` | 46 |
-| 3.2 | `/p/[slug]/checkout`: dados mínimos, CPF validado, Pix ou cartão | `getCheckout`, `startCheckout` | 50 |
+| 3.1 | `/p/[id]`: página de venda pública com a marca do produtor, rápida no celular (RNF-07) | `getSalesPage` | 46 |
+| 3.2 | `/p/[id]/checkout?offer=…`: dados mínimos, CPF validado, Pix ou cartão | `getCheckout`, `startCheckout` | 50 |
 | 3.3 | `/orders/[id]`: aguardando pagamento com Pix copia e cola (`CopyField`), atualização do status e confirmação que leva à área do aluno; `/dev/payments/[externalId]` para aprovar ou recusar em desenvolvimento | `getPaymentStatus`, rota `api/dev/payments` | 54 |
 
 E2e UC-02: comprar com Pix, simular pagamento, cair na área do aluno; cartão recusado; Pix expirado; produto não publicado dá 404.
+
+Concluída em 12/11/2026. O produto não tem slug, então as rotas públicas usam o id (`/p/[id]`); um id malformado também dá 404. A oferta vai no endereço (`?offer=`), e a página de venda leva direto a ela quando só há uma. As três telas públicas vestem a marca do produtor pelo `BrandScope` (componente novo do kit): cor de destaque, texto legível sobre ela e fonte. O cartão é digitado na página do meio de pagamento, nunca aqui; em desenvolvimento essa página é o simulador. F3 ficou com a consulta periódica: `/orders/[id]` pergunta o status a cada 4 s enquanto o pedido está pendente. Ainda falta tratar o retorno do cartão de um provedor real, que entra com a integração dele.
 
 ### Fase 4. Aluno, UC-03 e UC-04 (54 a 68%)
 
@@ -189,4 +191,3 @@ As fases seguem a ordem dos dados: sem produto publicado não há venda, sem ven
 | --- | --- |
 | F1 | Logo e anexos: o backend guarda só URL (`brandSchema`, `lessonSchema`). Fica assim no MVP ou entra armazenamento de arquivo para usar o `FileUpload`? |
 | F2 | `/support/payouts` (lote 8.4) é do suporte ou o simulador conclui o saque sozinho? |
-| F3 | O status do pagamento em `/orders/[id]` atualiza por consulta periódica (simples) ou por evento do servidor? |
