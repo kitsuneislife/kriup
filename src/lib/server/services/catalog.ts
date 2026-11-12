@@ -572,6 +572,8 @@ export async function onSale(db: Db | Tx, productId: string, now: Date) {
 
 /** RF-20: the public sales page with the offers on sale; NotFound when not on sale. */
 export async function getSalesPage(ctx: Ctx, productId: string, now = new Date()) {
+	// the id comes from a public address: a malformed one fails here, never in the database
+	z.uuid().parse(productId);
 	const prod = assertFound(await onSale(ctx.db, productId, now), 'product');
 	const [[sales], offers] = await Promise.all([
 		ctx.db
@@ -604,6 +606,7 @@ export async function getSalesPage(ctx: Ctx, productId: string, now = new Date()
 
 /** The checkout page of one offer, or NotFound when its product is not on sale. */
 export async function getCheckout(ctx: Ctx, offerId: string, now = new Date()) {
+	z.uuid().parse(offerId);
 	const [off] = await ctx.db.select().from(offer).where(eq(offer.id, offerId));
 	const found = assertFound(off, 'offer');
 	const prod = assertFound(await onSale(ctx.db, found.productId, now), 'product');
