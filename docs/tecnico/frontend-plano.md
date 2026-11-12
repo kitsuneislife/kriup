@@ -33,13 +33,12 @@ flowchart TD
 
     subgraph Produtor
         PL["/producer produtos"] --> NW["/producer/new assistente"]
-        PL --> ED["/producer/products/[id] visão geral"]
+        PL --> ED["/producer/products/[id] resumo, pendências e publicar"]
         ED --> EP["…/page página de venda"]
         ED --> EC["…/content módulos e aulas"]
         ED --> EO["…/offers ofertas"]
         ED --> EK["…/coproduction coprodutores"]
         ED --> EV["…/preview como o aluno vê"]
-        ED --> EB["…/publish pendências"]
         MN["/producer/money painel"] --> ST["/producer/money/statement extrato"]
         MN --> PO["/producer/money/payouts saques"]
         RF["/producer/refunds"] --> RD["/producer/refunds/[id]"]
@@ -108,6 +107,8 @@ Concluída em 10/11/2026. Cadastro e login saíram das rotas para `auth/accounts
 E2e UC-01: do assistente ao produto publicado; Publicar bloqueado com pendência; produtor B recebe 404 no editor do produtor A.
 
 `…/preview` (RF-16, prioridade S) entra no lote 9.2 se houver tempo.
+
+Concluída em 12/11/2026. Publicar não ganhou rota própria: o `Checklist` de pendências e o botão Publicar ficam no resumo do editor, que já era a tela das pendências, e cada pendência leva à tela que a resolve. O botão fica desativado enquanto houver pendência, e o servidor confere de novo ao publicar. As telas com vários formulários (conteúdo, ofertas) respondem pelo mesmo padrão de `answer.ts`: cada resposta diz a que formulário pertence, e o erro aparece nele.
 
 ### Fase 3. Venda, UC-02 (42 a 54%)
 
