@@ -3,7 +3,13 @@ import { z } from 'zod';
 import { ctx } from '#lib/server/app';
 import { act, fieldErrors, orNotFound, requireUser, type ActionFailure } from '#lib/server/http';
 import { brandForm } from '#lib/server/product-form';
-import { getProductEditor, updateProduct, updateProductSchema } from '#lib/server/services/catalog';
+import {
+	getProductEditor,
+	publishProduct,
+	updateProduct,
+	updateProductSchema
+} from '#lib/server/services/catalog';
+import { answer } from './answer';
 import type { Actions, PageServerLoad } from './$types';
 
 // Another producer's product, or a malformed id, answers 404 (RNF-05).
@@ -53,5 +59,11 @@ export const actions: Actions = {
 		);
 		if (!updated.ok) return updated;
 		return { saved: true };
+	},
+
+	// RN-01: the service checks the pendencies and the blocks again, whatever the screen showed
+	publish: async ({ locals, params }) => {
+		const user = requireUser(locals);
+		return answer(await act(() => publishProduct(ctx, user.id, params.id)), 'publish');
 	}
 };

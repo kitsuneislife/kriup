@@ -34,3 +34,17 @@ export const priceForm = z
 		return cents;
 	})
 	.pipe(offerSchema.shape.priceCents);
+
+/** An offer (RF-15): its price in reais and its guarantee in whole days. */
+export const offerForm = z
+	.object({
+		name: offerSchema.shape.name,
+		price: priceForm,
+		guaranteeDays: z
+			.string()
+			.trim()
+			.min(1)
+			.transform(Number)
+			.pipe(offerSchema.shape.guaranteeDays.unwrap())
+	})
+	.transform(({ price, ...offer }) => ({ ...offer, priceCents: price }));

@@ -26,16 +26,24 @@
 
 	let { data, form, params } = $props();
 	const save = new Submission();
+	const publish = new Submission();
+
+	// the publish answer says it is for 'publish'; every other answer belongs to the data form
+	const published = $derived(form && 'for' in form ? form : undefined);
+	const dataForm = $derived(published ? undefined : form);
+	const ready = $derived(data.pendencies.length === 0);
 
 	const status = $derived(productStatusText[data.product.status]);
 	const parts = $derived({
 		page: resolve('/(app)/producer/products/[id]/page', { id: params.id }),
-		content: resolve('/(app)/producer/products/[id]/content', { id: params.id })
+		content: resolve('/(app)/producer/products/[id]/content', { id: params.id }),
+		offers: resolve('/(app)/producer/products/[id]/offers', { id: params.id })
 	});
-	// where each pendency is solved; the others get theirs with their screens (batch 2.7)
-	const fixAt: Partial<Record<keyof typeof pendencyText, string>> = $derived({
+	// where each pendency is solved
+	const fixAt: Record<keyof typeof pendencyText, string> = $derived({
 		sales_page: parts.page,
 		lesson: parts.content,
+		offer: parts.offers,
 		refund_policy: '?tab=data'
 	});
 	const pendencies = $derived(
@@ -47,8 +55,8 @@
 	);
 	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 	// after a refusal the fields show what was just typed, with the reason under each one
-	const typed = $derived(form && 'typed' in form ? form.typed : undefined);
-	const errors = $derived(form && 'fields' in form ? (form.fields ?? {}) : {});
+	const typed = $derived(dataForm && 'typed' in dataForm ? dataForm.typed : undefined);
+	const errors = $derived(dataForm && 'fields' in dataForm ? (dataForm.fields ?? {}) : {});
 	const fonts = $derived(
 		brandFonts.includes(data.product.brand.font)
 			? brandFonts
@@ -56,7 +64,7 @@
 	);
 
 	// ?tab=data opens the form, so a link reaches it even without JavaScript
-	let tab = $derived(page.url.searchParams.get('tab') === 'data' || form ? 'data' : 'overview');
+	let tab = $derived(page.url.searchParams.get('tab') === 'data' || dataForm ? 'data' : 'overview');
 </script>
 
 <svelte:head><title>{data.product.name}</title></svelte:head>
@@ -101,14 +109,44 @@
 			{#snippet children(current)}
 				{#if current === 'overview'}
 					<Stack gap={8}>
-						<Stack gap={4}>
-							<Text variant="title2" as="h2">Antes de publicar</Text>
-							<Checklist
-								label="Pendências para publicar"
-								items={pendencies}
-								count={(done, total) => `${done} de ${total} prontos`}
-							/>
-						</Stack>
+						{#if data.product.status === 'published'}
+							<Alert tone="success" title="Produto publicado">
+								Seu produto está à venda. Você continua podendo editar tudo, e as mudanças valem
+								para as próximas vendas.
+							</Alert>
+						{:else}
+							<Stack gap={4}>
+								<Text variant="title2" as="h2">Antes de publicar</Text>
+								<Checklist
+									label="Pendências para publicar"
+									items={pendencies}
+									count={(done, total) => `${done} de ${total} prontos`}
+								/>
+								<form method="post" action="?/publish" use:publish.enhance>
+									<Stack gap={3}>
+										{#if published?.code}
+											<Alert tone="danger">{errorText(published.code)}</Alert>
+										{/if}
+										<Cluster>
+											<Button
+												type="submit"
+												variant="primary"
+												icon="send"
+												disabled={!ready}
+												loading={publish.loading('Publicando')}
+											>
+												Publicar produto
+											</Button>
+										</Cluster>
+										<Text variant="footnote" tone="secondary">
+											{ready
+												? 'Ao publicar, a página de venda fica no ar e o produto pode ser comprado.'
+												: 'Resolva as pendências acima para publicar.'}
+										</Text>
+									</Stack>
+								</form>
+							</Stack>
+						{/if}
 						<Stack gap={4}>
 							<Text variant="title2" as="h2">Partes do produto</Text>
 							<Grid min="sm" gap={4}>
@@ -124,6 +162,12 @@
 									'Conteúdo',
 									`${plural(data.moduleCount, 'módulo', 'módulos')}, ${plural(data.lessonCount, 'aula', 'aulas')}`
 								)}
+								{@render part(
+									parts.offers,
+									'receipt',
+									'Ofertas',
+									plural(data.offerCount, 'oferta', 'ofertas')
+								)}
 							</Grid>
 						</Stack>
 					</Stack>
@@ -131,10 +175,10 @@
 					<form method="post" action="?/update" use:save.enhance>
 						<Stack gap={6}>
 							<Text variant="title2" as="h2">Dados básicos</Text>
-							{#if form && 'saved' in form}
+							{#if dataForm && 'saved' in dataForm}
 								<Alert tone="success">Alterações salvas.</Alert>
-							{:else if form?.code && !('typed' in form)}
-								<Alert tone="danger">{errorText(form.code)}</Alert>
+							{:else if dataForm?.code && !('typed' in dataForm)}
+								<Alert tone="danger">{errorText(dataForm.code)}</Alert>
 							{/if}
 							<TextField
 								name="name"
