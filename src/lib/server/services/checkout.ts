@@ -99,10 +99,12 @@ export async function getPaymentStatus(ctx: Ctx, orderId: string) {
 	const [row] = await ctx.db
 		.select({
 			status: order.status,
+			method: order.paymentMethod,
 			externalId: order.externalId,
 			grossCents: order.grossCents,
 			productId: order.productId,
-			productName: product.name
+			productName: product.name,
+			brand: product.brand
 		})
 		.from(order)
 		.innerJoin(product, eq(product.id, order.productId))
@@ -114,8 +116,9 @@ export async function getPaymentStatus(ctx: Ctx, orderId: string) {
 			: null;
 	return {
 		status: found.status,
+		method: found.method,
 		grossCents: found.grossCents,
-		product: { id: found.productId, name: found.productName },
+		product: { id: found.productId, name: found.productName, brand: found.brand },
 		charge
 	};
 }

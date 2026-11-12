@@ -54,12 +54,14 @@ export const test = base.extend<Fixtures>({
 export async function expectAccessible(page: Page) {
 	for (const colorScheme of ['light', 'dark'] as const) {
 		await page.emulateMedia({ colorScheme });
-		// hidden content (a closed Disclosure) never runs its theme transitions: skip it
+		// hidden content (a closed Disclosure) never runs its theme transitions, and a spinner
+		// never ends: skip both
 		await page.evaluate(() =>
 			Promise.all(
 				document
 					.getAnimations()
 					.filter((a) => (a.effect as KeyframeEffect | null)?.target?.checkVisibility() ?? true)
+					.filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
 					.map((a) => a.finished)
 			)
 		);
