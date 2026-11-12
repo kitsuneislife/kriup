@@ -38,12 +38,12 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Text` | Todo texto: dá estilo, peso e tom | Texto dentro de componente que já o formata | `variant` (9 estilos), `weight`, `tone`, `numeric`, `truncate` |
 | `Icon` | Ícone do conjunto do kit | SVG solto em tela | `name`, `size`, `label` |
 | `Button` | Qualquer ação. Uma `primary` por tela | Navegação dentro de texto corrido (use link) | `variant`: `primary`, `neutral`, `ghost`, `danger`; `size`; `icon`; só ícone; `loading`; `href`; `name` e `value` (o botão de envio pressionado manda o seu valor) |
-| `TextField` | Texto de uma ou várias linhas | Escolha entre opções (use `Select`) | `type`, `size`, `icon`, `rows`, `hint`, `error`, `disabled`, `labelHidden` (rótulo só para leitor de tela, como numa busca) |
+| `TextField` | Texto de uma ou várias linhas | Escolha entre opções (use `Select`) | `type`, `size`, `icon`, `rows`, `hint`, `error`, `disabled`, `labelHidden` (rótulo só para leitor de tela, como numa busca), `inputmode` (teclado do celular) |
 | `Select` | Escolher uma opção entre 4 ou mais | Duas ou três opções (use `SegmentedControl`) | `size`, `icon`, `hint`, `error` |
 | `Field` | Dar rótulo, ajuda e erro a um controle novo | Quando `TextField` ou `Select` servem | `size`, `icon`, `multiline`, `labelHidden` |
 | `Checkbox` | Marcar uma ou várias opções, em formulário | Efeito imediato (use `Switch`) | `hint`, `disabled` |
 | `Switch` | Ligar ou desligar com efeito imediato | Item de formulário que só vale ao enviar | `hint`, `disabled` |
-| `SegmentedControl` | Alternar entre 2 a 4 visões ou filtros | Navegação entre páginas | `size`, `iconOnly` |
+| `SegmentedControl` | Alternar entre 2 a 4 visões ou filtros; escolha curta num formulário (forma de pagamento) | Navegação entre páginas | `size`, `iconOnly`, `name` (envia a escolha com o formulário) |
 | `Card` | Agrupar conteúdo relacionado | Envolver a página inteira | `variant`: `plain`, `frame` (borda dupla); `padding`; `selected`; `href` |
 | `Badge` | Estado ou categoria curta | Texto longo, ação | `tone` (13), `size`, `dot` |
 | `Avatar` | Pessoa ou conta | Logo de produto | `size`, `src` |
@@ -77,7 +77,8 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Stat` | Número em destaque: saldo retido, liberado, sacado | Valor dentro de tabela (use `Money`) | `icon`, `tone`, `hint` |
 | `StatusBadge` | Estado de pedido, reembolso ou saldo, com a cor certa | Categoria livre (use `Badge`) | `status` (15 estados), `size` |
 | `FileUpload` | Logo e anexos: arrastar ou escolher | Imagem já enviada | `accept`, `maxBytes`, `multiple`, `error`, `onreject` |
-| `BrandHero` | Topo da página de venda com a marca do produtor: prévia no assistente e página pública | Destaque com as cores do sistema (use `Card`) | `color` (o texto do botão vira preto ou branco para manter o contraste AA), `font`, `logoUrl` |
+| `BrandHero` | Topo da página de venda com a marca do produtor: prévia no assistente e página pública | Destaque com as cores do sistema (use `Card`) | `color` (o texto do botão vira preto ou branco para manter o contraste AA), `font`, `logoUrl`, `size`: `preview`, `page` (título vira o h1 e o botão leva a `href`) |
+| `BrandScope` | Páginas do comprador (venda, checkout, pagamento): a cor e a fonte do produtor valem para os componentes dentro | Telas do produtor ou do sistema | `color` (vira o destaque; o texto do botão principal fica preto ou branco pelo contraste AA), `font` (carregada do Google Fonts) |
 | `ColorField` | Cor da marca do produtor | Cor do sistema (use token) | `value` `#rrggbb`, `name`, `error` |
 | `CopyField` | Texto para copiar: Pix copia e cola, link de afiliado | Texto que a pessoa edita | `copyLabel`, `copiedLabel` |
 

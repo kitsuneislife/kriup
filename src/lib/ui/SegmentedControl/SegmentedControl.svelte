@@ -12,11 +12,19 @@
 		size?: 'sm' | 'md';
 		/** Shows only the icons; the labels stay as accessible names. */
 		iconOnly?: boolean;
+		/** Sends the chosen value with a form under this name. */
+		name?: string;
 	};
 
-	let { label, options, value = $bindable(), size = 'md', iconOnly = false }: Props = $props();
-
-	const name = $props.id();
+	const id = $props.id();
+	let {
+		label,
+		options,
+		value = $bindable(),
+		size = 'md',
+		iconOnly = false,
+		name = id
+	}: Props = $props();
 	const index = $derived(
 		Math.max(
 			0,

@@ -18,10 +18,12 @@ function luminance(hex: string): number {
 
 /**
  * Black or white, whichever reads better on `hex`. The better of the two always passes
- * WCAG AA (4.5:1), so any brand color gets readable text.
+ * WCAG AA (4.5:1), so any brand color gets readable text. `shade` is for a surface that
+ * mixes `hex` with black in oklab (Button primary keeps 84%): scaling L, a and b by `shade`
+ * scales the luminance by `shade` cubed.
  */
-export function textOn(hex: string): '#000000' | '#ffffff' {
+export function textOn(hex: string, shade = 1): '#000000' | '#ffffff' {
 	if (!isHexColor(hex)) throw new RangeError(`not a #rrggbb color: ${hex}`);
-	const l = luminance(hex);
+	const l = luminance(hex) * shade ** 3;
 	return (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? '#000000' : '#ffffff';
 }

@@ -11,16 +11,33 @@
 		/** Font family name; falls back to the system font when the browser does not have it. */
 		font: string;
 		logoUrl?: string | null;
+		/**
+		 * `preview` (the wizard) shows a still picture; `page` is the top of the public sales
+		 * page: bigger, the title is the page's h1 and the call to action goes to `href`.
+		 */
+		size?: 'preview' | 'page';
+		href?: string;
 	};
 
-	let { title, subtitle, cta, color, font, logoUrl }: Props = $props();
+	let { title, subtitle, cta, color, font, logoUrl, size = 'preview', href }: Props = $props();
 </script>
 
-<div class="hero" style:--_brand={color} style:--_on-brand={textOn(color)} style:--_font={font}>
+<div
+	class="hero"
+	data-size={size}
+	style:--_brand={color}
+	style:--_on-brand={textOn(color)}
+	style:--_font={font}
+>
 	{#if logoUrl}<img class="logo" src={logoUrl} alt="" />{/if}
-	<p class="title">{title}</p>
+	<svelte:element this={size === 'page' ? 'h1' : 'p'} class="title">{title}</svelte:element>
 	<p class="subtitle">{subtitle}</p>
-	<span class="cta">{cta}</span>
+	{#if href}
+		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href comes from the caller, already resolved -->
+		<a class="cta" {href}>{cta}</a>
+	{:else}
+		<span class="cta">{cta}</span>
+	{/if}
 </div>
 
 <style>
@@ -58,5 +75,61 @@
 		background: var(--_brand);
 		color: var(--_on-brand);
 		font-weight: var(--weight-medium);
+		text-decoration: none;
+	}
+
+	/* the public page: a calm wash of the brand behind a large title */
+	[data-size='page'] {
+		gap: var(--space-4);
+		padding: var(--space-12) var(--space-6);
+		background:
+			radial-gradient(
+				120% 90% at 0% 0%,
+				color-mix(in srgb, var(--_brand) 16%, transparent),
+				transparent 70%
+			),
+			var(--color-bg-raised);
+	}
+	[data-size='page'] .logo {
+		max-block-size: var(--space-12);
+	}
+	[data-size='page'] .title {
+		font-size: var(--text-large-size);
+		line-height: var(--text-large-leading);
+		letter-spacing: var(--text-large-tracking);
+	}
+	[data-size='page'] .subtitle {
+		font-size: var(--text-title3-size);
+		line-height: var(--text-title3-leading);
+		max-inline-size: 36rem;
+	}
+	[data-size='page'] .cta {
+		margin-block-start: var(--space-2);
+		padding: var(--space-3) var(--space-6);
+		font-size: var(--text-body-size);
+		font-weight: var(--weight-semibold);
+		box-shadow: 0 var(--space-1) var(--space-4) color-mix(in srgb, var(--_brand) 35%, transparent);
+		transition:
+			transform var(--duration-fast) var(--ease-standard),
+			box-shadow var(--duration-fast) var(--ease-standard);
+	}
+	a.cta:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 var(--space-2) var(--space-6) color-mix(in srgb, var(--_brand) 45%, transparent);
+	}
+	@media (min-width: 48rem) {
+		[data-size='page'] {
+			padding: var(--space-16) var(--space-12);
+		}
+		[data-size='page'] .title {
+			font-size: var(--text-display-size);
+			line-height: var(--text-display-leading);
+			letter-spacing: var(--text-display-tracking);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		a.cta:hover {
+			transform: none;
+		}
 	}
 </style>

@@ -18,6 +18,8 @@
 		/** Number of lines. When set, the field is a multi-line text area. */
 		rows?: number;
 		autocomplete?: HTMLInputElement['autocomplete'];
+		/** Which phone keyboard opens, for example `numeric` for a CPF. */
+		inputmode?: 'text' | 'numeric' | 'decimal' | 'email' | 'tel';
 		required?: boolean;
 		disabled?: boolean;
 	};
@@ -35,6 +37,7 @@
 		icon,
 		rows,
 		autocomplete,
+		inputmode,
 		required = false,
 		disabled = false
 	}: Props = $props();
@@ -75,6 +78,7 @@
 			{required}
 			{disabled}
 			{autocomplete}
+			{inputmode}
 			aria-invalid={error ? true : undefined}
 			aria-describedby={describedby}
 			bind:value

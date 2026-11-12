@@ -7,6 +7,7 @@ export { default as Alert } from './Alert/Alert.svelte';
 export { default as Avatar } from './Avatar/Avatar.svelte';
 export { default as Badge } from './Badge/Badge.svelte';
 export { default as BrandHero } from './BrandHero/BrandHero.svelte';
+export { default as BrandScope } from './BrandScope/BrandScope.svelte';
 export { default as Breadcrumb } from './Breadcrumb/Breadcrumb.svelte';
 export { default as Button } from './Button/Button.svelte';
 export { default as Card } from './Card/Card.svelte';

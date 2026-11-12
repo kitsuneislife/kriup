@@ -21,4 +21,10 @@ describe('hex colors', () => {
 		expect(textOn('#777777')).toBe('#000000');
 		expect(() => textOn('azul')).toThrow(RangeError);
 	});
+	it('picks for the darker shade a button paints', () => {
+		// a mid blue reads black on its own color, but white once the button darkens it
+		expect(textOn('#3b82f6')).toBe('#000000');
+		expect(textOn('#3b82f6', 0.84)).toBe('#ffffff');
+		expect(textOn('#ffd60a', 0.84)).toBe('#000000');
+	});
 });
