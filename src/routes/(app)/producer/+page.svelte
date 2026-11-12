@@ -33,8 +33,8 @@
 
 		{#if data.products.length === 0}
 			<EmptyState icon="package" title="Nenhum produto ainda">
-				Responda algumas perguntas e o rascunho do seu primeiro produto fica pronto, com página
-				de venda e aulas para você ajustar.
+				Responda algumas perguntas e o rascunho do seu primeiro produto fica pronto, com página de
+				venda e aulas para você ajustar.
 				{#snippet action()}
 					<Button variant="primary" icon="sparkles" href={resolve('/(app)/producer/new')}>
 						Criar meu primeiro produto

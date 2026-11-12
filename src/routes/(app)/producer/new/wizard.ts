@@ -11,13 +11,14 @@ import { steps, type Answers } from './steps';
 export type ProductType = (typeof productType.enumValues)[number];
 
 /** One schema per step that has fields; `types` are the ones with a template. */
-const schemas = (types: ProductType[]) => [
-	z.object({ type: z.enum(types as [ProductType, ...ProductType[]]) }),
-	createProductSchema.pick({ name: true }),
-	z.object({ price }),
-	createProductSchema.pick({ audience: true }),
-	brandForm
-] as const;
+const schemas = (types: ProductType[]) =>
+	[
+		z.object({ type: z.enum(types as [ProductType, ...ProductType[]]) }),
+		createProductSchema.pick({ name: true }),
+		z.object({ price }),
+		createProductSchema.pick({ audience: true }),
+		brandForm
+	] as const;
 
 export type Checked = { step: number; fields?: Record<string, string> };
 

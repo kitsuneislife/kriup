@@ -124,8 +124,8 @@
 							<Stack gap={2}>
 								<Text variant="title2" as="h2">{steps[step]!.question}</Text>
 								<Text tone="secondary">
-									Veja como fica o topo da sua página de venda. O modelo também traz os textos,
-									as aulas e a política de reembolso, e você ajusta tudo depois.
+									Veja como fica o topo da sua página de venda. O modelo também traz os textos, as
+									aulas e a política de reembolso, e você ajusta tudo depois.
 								</Text>
 							</Stack>
 							{#if form?.code}<Alert tone="danger">{errorText(form.code)}</Alert>{/if}

@@ -1,9 +1,5 @@
 import type { Page } from '@playwright/test';
-import {
-	createProduct,
-	getProductEditor,
-	updateProduct
-} from '../src/lib/server/services/catalog';
+import { createProduct, getProductEditor, updateProduct } from '../src/lib/server/services/catalog';
 import { brand } from '../src/lib/server/services/testing';
 import { expect, expectAccessible, test } from './fixtures';
 
