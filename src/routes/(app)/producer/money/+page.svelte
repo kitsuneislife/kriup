@@ -69,6 +69,9 @@
 			<EmptyState icon="wallet" title="Nenhum dinheiro ainda">
 				Quando você fizer a primeira venda, o valor aparece aqui como retido e é liberado depois do
 				prazo da garantia.
+				{#snippet action()}
+					<Button href={resolve('/(app)/producer')}>Ver meus produtos</Button>
+				{/snippet}
 			</EmptyState>
 		{:else}
 			<Card padding="lg">
