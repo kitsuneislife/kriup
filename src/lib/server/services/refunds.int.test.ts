@@ -236,6 +236,8 @@ describe('conversation (RF-31)', () => {
 
 		const view = await getRefund(ctx, student, id);
 		expect(view.viewerRole).toBe('student');
+		expect(view.student.name).toBe(student.name);
+		expect((await getRefund(ctx, producer, id)).viewerRole).toBe('producer');
 		expect(view.messages.map((m) => m.body)).toEqual(['Oi, pode ver?', 'Vou analisar.']);
 	});
 });
