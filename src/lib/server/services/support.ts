@@ -218,6 +218,9 @@ export async function listMyTickets(ctx: Ctx, studentId: string) {
 		.orderBy(desc(ticket.createdAt));
 }
 
+/** A reply names its field, so the screen shows the error under it. */
+const messageSchema = z.object({ body });
+
 export async function addTicketMessage(
 	ctx: Ctx,
 	viewer: SessionUser,
@@ -230,7 +233,7 @@ export async function addTicketMessage(
 	}
 	await ctx.db
 		.insert(message)
-		.values({ ticketId: found.id, authorId: viewer.id, body: body.parse(text) });
+		.values({ ticketId: found.id, authorId: viewer.id, ...messageSchema.parse({ body: text }) });
 }
 
 /** The student or support closes the ticket; support's close is audited. */

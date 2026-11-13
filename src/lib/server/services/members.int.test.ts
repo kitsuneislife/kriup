@@ -133,6 +133,9 @@ describe('support (RF-35, RF-60 to RF-62)', () => {
 			student: { name: student.name },
 			product: { name: 'Curso de pão' }
 		});
+		await expect(addTicketMessage(ctx, support, id, '  ')).rejects.toMatchObject({
+			issues: [{ path: ['body'] }]
+		});
 		await addTicketMessage(ctx, support, id, 'Fica no último módulo.');
 		const stranger = await newUser('z@example.com');
 		await expect(getTicket(ctx, stranger, id)).rejects.toBeInstanceOf(NotFoundError);
