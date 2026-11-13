@@ -27,3 +27,21 @@
 		]}
 	/>
 </Card>
+
+<!-- with `href` each lesson is a link, so it works without JavaScript -->
+<Card>
+	<LessonList
+		label="Aulas do curso, como links"
+		current="1"
+		href={(id) => `#aula-${id}`}
+		modules={[
+			{
+				title: 'Módulo 1 · Primeiros passos',
+				lessons: [
+					{ id: '1', title: 'Bem-vindo ao curso', done: true },
+					{ id: '2', title: 'Materiais e pinceis' }
+				]
+			}
+		]}
+	/>
+</Card>

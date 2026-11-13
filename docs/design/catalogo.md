@@ -70,7 +70,7 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Timeline` | Histórico ou próximos passos: reembolso, liberações, auditoria | Lista sem ordem no tempo | `state`: `done`, `current`, `upcoming`; `tone`; `extra` |
 | `Checklist` | Pendências com link para resolver | Etapas ordenadas (use `Stepper`) | `done`, `href`, `reason`, `count` |
 | `Chart` | Tendência ou comparação simples, sem eixos | Dado que exige leitura exata (use `Table`) | `kind`: `line`, `bar`; `tone` |
-| `LessonList` | Módulos e aulas do player do aluno | Lista de produtos | `current`, `done`, `duration` |
+| `LessonList` | Módulos e aulas do player do aluno | Lista de produtos | `current`, `done`, `duration`, `href` (cada aula vira link e funciona sem JavaScript) |
 | `VideoFrame` | Moldura 16:9 do vídeo da aula | Imagem de capa | Slot para `video` ou `iframe` |
 | `Money` | Todo valor em reais. Recebe centavos inteiros (RNF-01) | Número que não é dinheiro | `variant`, `tone`, `weight` |
 | `DateTime` | Toda data e hora. Recebe UTC e mostra America/Sao_Paulo (RNF-11) | Datas escolhidas pela pessoa (use `TextField type="date"`) | `format`: `date`, `datetime`, `time`, `relative` |

@@ -10,13 +10,27 @@
 		/** Id of the lesson being watched. */
 		current?: string;
 		onselect?: (id: string) => void;
+		/** Address of a lesson. With it each lesson is a link, so it works without JavaScript. */
+		href?: (id: string) => string;
 	};
 
-	let { label, modules, current = $bindable(), onselect }: Props = $props();
+	let { label, modules, current = $bindable(), onselect, href }: Props = $props();
 </script>
 
+{#snippet row(lesson: Lesson)}
+	<span class="mark">
+		{#if lesson.done}<Icon name="check" size="sm" />{:else if lesson.id === current}<Icon
+				name="play"
+				size="sm"
+			/>{/if}
+	</span>
+	<span class="title">{lesson.title}</span>
+	{#if lesson.duration}<span class="duration">{lesson.duration}</span>{/if}
+{/snippet}
+
+<!-- eslint-disable svelte/no-navigation-without-resolve -- href comes from the caller, already resolved -->
 <nav class="lessons" aria-label={label}>
-	{#each modules as module (module.title)}
+	{#each modules as module, index (index)}
 		<section class="module">
 			<h3 class="module-title">
 				<span>{module.title}</span>
@@ -27,31 +41,37 @@
 			<ul class="list">
 				{#each module.lessons as lesson (lesson.id)}
 					<li>
-						<button
-							class="lesson"
-							type="button"
-							aria-current={lesson.id === current ? 'true' : undefined}
-							data-done={lesson.done}
-							onclick={() => {
-								current = lesson.id;
-								onselect?.(lesson.id);
-							}}
-						>
-							<span class="mark">
-								{#if lesson.done}<Icon
-										name="check"
-										size="sm"
-									/>{:else if lesson.id === current}<Icon name="play" size="sm" />{/if}
-							</span>
-							<span class="title">{lesson.title}</span>
-							{#if lesson.duration}<span class="duration">{lesson.duration}</span>{/if}
-						</button>
+						{#if href}
+							<a
+								class="lesson"
+								href={href(lesson.id)}
+								aria-current={lesson.id === current ? 'true' : undefined}
+								data-done={lesson.done}
+							>
+								{@render row(lesson)}
+							</a>
+						{:else}
+							<button
+								class="lesson"
+								type="button"
+								aria-current={lesson.id === current ? 'true' : undefined}
+								data-done={lesson.done}
+								onclick={() => {
+									current = lesson.id;
+									onselect?.(lesson.id);
+								}}
+							>
+								{@render row(lesson)}
+							</button>
+						{/if}
 					</li>
 				{/each}
 			</ul>
 		</section>
 	{/each}
 </nav>
+
+<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 <style>
 	.lessons {
@@ -72,7 +92,7 @@
 		gap: var(--space-3);
 	}
 	.module-count {
-		color: var(--color-text-tertiary);
+		color: var(--color-text-secondary);
 		font-weight: var(--weight-medium);
 		font-variant-numeric: tabular-nums;
 	}
@@ -100,6 +120,7 @@
 		line-height: var(--text-subhead-leading);
 		letter-spacing: var(--text-subhead-tracking);
 		text-align: start;
+		text-decoration: none;
 		cursor: pointer;
 		transition:
 			background-color var(--duration-fast) var(--ease-standard),
