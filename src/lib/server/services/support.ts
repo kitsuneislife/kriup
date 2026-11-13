@@ -34,11 +34,13 @@ export async function getSupportQueue(ctx: Ctx, viewer: SessionUser) {
 				contested: refund.contested,
 				reason: refund.reason,
 				productName: product.name,
-				grossCents: order.grossCents
+				grossCents: order.grossCents,
+				studentName: user.name
 			})
 			.from(refund)
 			.innerJoin(order, eq(order.id, refund.orderId))
 			.innerJoin(product, eq(product.id, order.productId))
+			.innerJoin(user, eq(user.id, order.studentId))
 			.where(eq(refund.status, 'with_platform'))
 			.orderBy(asc(refund.dueAt)),
 		ctx.db
@@ -46,10 +48,13 @@ export async function getSupportQueue(ctx: Ctx, viewer: SessionUser) {
 				id: ticket.id,
 				subject: ticket.subject,
 				createdAt: ticket.createdAt,
-				studentName: user.name
+				studentName: user.name,
+				productName: product.name
 			})
 			.from(ticket)
 			.innerJoin(user, eq(user.id, ticket.studentId))
+			.innerJoin(order, eq(order.id, ticket.orderId))
+			.innerJoin(product, eq(product.id, order.productId))
 			.where(eq(ticket.status, 'open'))
 			.orderBy(asc(ticket.createdAt)),
 		ctx.db
@@ -168,10 +173,9 @@ export async function openTicket(
 
 /** The student of the ticket or support; anyone else gets NotFound. */
 async function ticketFor(ctx: Ctx, viewer: SessionUser, ticketId: string) {
-	const [row] = await ctx.db
-		.select()
-		.from(ticket)
-		.where(eq(ticket.id, z.uuid().parse(ticketId)));
+	// A malformed id is a missing ticket, never a validation error.
+	if (!z.uuid().safeParse(ticketId).success) throw new NotFoundError('ticket not found');
+	const [row] = await ctx.db.select().from(ticket).where(eq(ticket.id, ticketId));
 	if (!row || (row.studentId !== viewer.id && viewer.platformRole !== 'support')) {
 		throw new NotFoundError('ticket not found');
 	}
@@ -180,6 +184,12 @@ async function ticketFor(ctx: Ctx, viewer: SessionUser, ticketId: string) {
 
 export async function getTicket(ctx: Ctx, viewer: SessionUser, ticketId: string) {
 	const found = await ticketFor(ctx, viewer, ticketId);
+	const [about] = await ctx.db
+		.select({ studentName: user.name, productName: product.name })
+		.from(order)
+		.innerJoin(user, eq(user.id, order.studentId))
+		.innerJoin(product, eq(product.id, order.productId))
+		.where(eq(order.id, found.orderId));
 	const messages = await ctx.db
 		.select({
 			id: message.id,
@@ -192,7 +202,12 @@ export async function getTicket(ctx: Ctx, viewer: SessionUser, ticketId: string)
 		.innerJoin(user, eq(user.id, message.authorId))
 		.where(eq(message.ticketId, found.id))
 		.orderBy(asc(message.createdAt));
-	return { ticket: found, messages };
+	return {
+		ticket: found,
+		student: { name: about!.studentName },
+		product: { name: about!.productName },
+		messages
+	};
 }
 
 export async function listMyTickets(ctx: Ctx, studentId: string) {
@@ -202,6 +217,9 @@ export async function listMyTickets(ctx: Ctx, studentId: string) {
 		.where(eq(ticket.studentId, studentId))
 		.orderBy(desc(ticket.createdAt));
 }
+
+/** A reply names its field, so the screen shows the error under it. */
+const messageSchema = z.object({ body });
 
 export async function addTicketMessage(
 	ctx: Ctx,
@@ -215,7 +233,7 @@ export async function addTicketMessage(
 	}
 	await ctx.db
 		.insert(message)
-		.values({ ticketId: found.id, authorId: viewer.id, body: body.parse(text) });
+		.values({ ticketId: found.id, authorId: viewer.id, ...messageSchema.parse({ body: text }) });
 }
 
 /** The student or support closes the ticket; support's close is audited. */

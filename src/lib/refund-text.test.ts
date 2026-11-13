@@ -5,7 +5,10 @@ import {
 	producerQueue,
 	producerRefundHeadline,
 	producerRefundStatus,
-	refundSteps
+	refundSteps,
+	supportCanDecide,
+	supportDeadline,
+	supportRefundHeadline
 } from './refund-text';
 
 const base = {
@@ -122,5 +125,42 @@ describe('the producer side', () => {
 		);
 		expect(waiting.map((r) => r.id)).toEqual(['soon', 'late']);
 		expect(others.map((r) => r.id)).toEqual(['new', 'gone', 'old']);
+	});
+});
+
+describe('the support side', () => {
+	const now = new Date('2026-11-03T12:00:00Z');
+	const due = (hours: number) => new Date(now.getTime() + hours * 3_600_000);
+
+	it('tells the history in the third person, with the hour of the deadline', () => {
+		const escalated = refundSteps({ ...base, status: 'with_platform' }, 'support');
+		expect(escalated.map((s) => s.title)).toEqual([
+			'O aluno pediu o reembolso',
+			'O prazo do produtor passou',
+			'A plataforma analisa',
+			'Valor devolvido e acesso encerrado'
+		]);
+		expect(escalated[2]?.description).toMatch(/^Resposta até 4 de nov\. de 2026, \d{2}:\d{2}\.$/);
+		const contested = refundSteps({ ...base, status: 'with_platform', contested: true }, 'support');
+		expect(contested.map((s) => s.title)).toContain('Recusado pelo produtor');
+		expect(contested.map((s) => s.title)).toContain('O aluno contestou a recusa');
+	});
+
+	it('decides only what is with the platform, even past the deadline', () => {
+		expect(supportCanDecide({ status: 'with_platform' })).toBe(true);
+		for (const status of ['with_producer', 'declined', 'completed', 'final_declined'] as const) {
+			expect(supportCanDecide({ status })).toBe(false);
+		}
+		expect(supportDeadline(due(0), now)).toEqual({ label: 'Prazo vencido', tone: 'danger' });
+		expect(supportDeadline(due(30), now)).toEqual({ label: 'Falta 1 dia', tone: 'secondary' });
+	});
+
+	it('says why the request reached support', () => {
+		expect(supportRefundHeadline({ status: 'with_platform', contested: false }).title).toBe(
+			'O produtor não respondeu no prazo'
+		);
+		expect(supportRefundHeadline({ status: 'with_platform', contested: true }).title).toBe(
+			'O aluno contestou a recusa'
+		);
 	});
 });

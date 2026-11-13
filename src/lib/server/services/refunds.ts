@@ -358,6 +358,8 @@ type Party = 'student' | 'producer' | 'support';
 
 /** Who the user is on this request, or NotFound when they have no part in it. */
 async function partyOf(ctx: Ctx, viewer: SessionUser, refundId: string) {
+	// A malformed id is a missing refund, never a validation error.
+	if (!z.uuid().safeParse(refundId).success) throw new NotFoundError('refund not found');
 	const [row] = await ctx.db
 		.select({
 			refund,
@@ -388,7 +390,7 @@ async function partyOf(ctx: Ctx, viewer: SessionUser, refundId: string) {
 
 /** RF-31: status, current owner, deadline and the conversation. */
 export async function getRefund(ctx: Ctx, viewer: SessionUser, refundId: string) {
-	const found = await partyOf(ctx, viewer, z.uuid().parse(refundId));
+	const found = await partyOf(ctx, viewer, refundId);
 	const messages = await ctx.db
 		.select({
 			id: message.id,
@@ -418,7 +420,7 @@ export async function addRefundMessage(
 	body: string
 ) {
 	const text = reasonSchema.parse(body);
-	const found = await partyOf(ctx, viewer, z.uuid().parse(refundId));
+	const found = await partyOf(ctx, viewer, refundId);
 	await ctx.db
 		.insert(message)
 		.values({ refundId: found.refund.id, authorId: viewer.id, body: text });

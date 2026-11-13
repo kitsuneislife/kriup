@@ -121,7 +121,21 @@ describe('support (RF-35, RF-60 to RF-62)', () => {
 			subject: 'Não acho o certificado',
 			body: 'Onde fica?'
 		});
-		expect((await getSupportQueue(ctx, support)).tickets).toHaveLength(1);
+		expect((await getSupportQueue(ctx, support)).tickets).toMatchObject([
+			{
+				id,
+				subject: 'Não acho o certificado',
+				studentName: student.name,
+				productName: 'Curso de pão'
+			}
+		]);
+		expect(await getTicket(ctx, support, id)).toMatchObject({
+			student: { name: student.name },
+			product: { name: 'Curso de pão' }
+		});
+		await expect(addTicketMessage(ctx, support, id, '  ')).rejects.toMatchObject({
+			issues: [{ path: ['body'] }]
+		});
 		await addTicketMessage(ctx, support, id, 'Fica no último módulo.');
 		const stranger = await newUser('z@example.com');
 		await expect(getTicket(ctx, stranger, id)).rejects.toBeInstanceOf(NotFoundError);
@@ -130,6 +144,16 @@ describe('support (RF-35, RF-60 to RF-62)', () => {
 		await rejectsCode(addTicketMessage(ctx, student, id, 'obrigada'), 'invalid_transition');
 		expect((await getTicket(ctx, student, id)).messages).toHaveLength(2);
 		expect(await db.select().from(auditLog)).toMatchObject([{ action: 'ticket.close' }]);
+	});
+
+	it('treats a malformed ticket id as a missing ticket', async () => {
+		const { ctx, student } = await enrolled();
+		const support = await newUser('s@example.com', 'support');
+		await expect(getTicket(ctx, support, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(addTicketMessage(ctx, student, 'nope', 'oi')).rejects.toBeInstanceOf(
+			NotFoundError
+		);
+		await expect(closeTicket(ctx, support, 'nope')).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('blocks with a reason and lifts, both audited; support screens are support only', async () => {

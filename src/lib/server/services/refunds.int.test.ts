@@ -7,6 +7,7 @@ import { NotFoundError } from '../errors';
 import { acceptInvite, inviteCoproducer } from './coproduction';
 import { getBalance, previewPayout, releaseHeld, requestPayout } from './money';
 import { handlePaymentEvent } from './payments';
+import { getSupportQueue } from './support';
 import {
 	addRefundMessage,
 	contestRefund,
@@ -165,6 +166,10 @@ describe('outside the guarantee (RN-08 to RN-10)', () => {
 		const { ctx, orderId, student } = await scenario();
 		const id = await requestRefund(ctx, student.id, { orderId, reason: 'x' }, days(PAID, 10));
 		await escalateOverdueRefunds(ctx, days(PAID, 13));
+		const support = await newUser('s@example.com', 'support');
+		expect((await getSupportQueue(ctx, support)).refunds).toMatchObject([
+			{ id, studentName: student.name, contested: false, dueAt: days(PAID, 16) }
+		]);
 		const impostor = await newUser('i@example.com');
 		await expect(
 			supportDecision(ctx, impostor.id, id, { decision: 'approve' }, days(PAID, 14))
@@ -178,6 +183,14 @@ describe('outside the guarantee (RN-08 to RN-10)', () => {
 			producerDecision(ctx, producer.id, 'nope', { decision: 'approve' })
 		).rejects.toBeInstanceOf(NotFoundError);
 		await expect(contestRefund(ctx, student.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(getRefund(ctx, student, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(addRefundMessage(ctx, student, 'nope', 'oi')).rejects.toBeInstanceOf(
+			NotFoundError
+		);
+		const support = await newUser('s@example.com', 'support');
+		await expect(
+			supportDecision(ctx, support.id, 'nope', { decision: 'decline', reason: 'x' })
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });
 
