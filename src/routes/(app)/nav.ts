@@ -15,7 +15,10 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 	{
 		profile: 'producer',
 		title: 'Produtor',
-		items: [{ route: '/(app)/producer', label: 'Produtos', icon: 'package' }]
+		items: [
+			{ route: '/(app)/producer', label: 'Produtos', icon: 'package' },
+			{ route: '/(app)/producer/money', label: 'Dinheiro', icon: 'wallet' }
+		]
 	},
 	{
 		profile: 'student',
