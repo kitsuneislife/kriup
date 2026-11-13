@@ -1,17 +1,17 @@
 # Status
 
-> **Summary.** Frontend do MVP em 78%: fases 0 a 5 concluídas (conta, criação do produto, venda, área do aluno, dinheiro). Próximo: fase 6, reembolso do produtor. Backend completo; falta só ligar as telas.
+> **Summary.** Frontend do MVP em 82%: fases 0 a 6 concluídas (conta, criação do produto, venda, área do aluno, dinheiro, reembolso do produtor). Próximo: fase 7, coprodução. Backend completo; falta só ligar as telas.
 
 Atualizado em 13/11/2026.
 
 ## Estado
 
-- Fases 0 a 5 de `tecnico/frontend-plano.md` concluídas. Na fase 5, o produtor tem o painel do dinheiro (`/producer/money`), o extrato com filtros e regra por linha, que também serve ao coprodutor, e os saques com a taxa antes de confirmar.
-- Gates verdes em `main` [measured]: lint, check, 226 testes unitários, 96 de integração e 155 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
+- Fases 0 a 6 de `tecnico/frontend-plano.md` concluídas. Na fase 6, o produtor tem a fila de reembolsos pelo prazo (`/producer/refunds`) e o detalhe com conversa, aprovação confirmada e recusa com justificativa que o aluno lê.
+- Gates verdes [measured]: lint, check, 232 testes unitários, 97 de integração e 167 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
 
 ## Próximo passo
 
-Fase 6, reembolso do lado do produtor (UC-05): `/producer/refunds` e `/producer/refunds/[id]`. Depois vêm as fases 7 (coprodução), 8 (suporte) e 9 (fechamento).
+Fase 7, coprodução (UC-08 e UC-09): convite em `/producer/products/[id]/coproduction`, `/coproductions` e o aceite do contrato. Depois vêm as fases 8 (suporte) e 9 (fechamento).
 
 ## Riscos e pendências
 

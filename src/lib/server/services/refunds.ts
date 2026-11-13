@@ -50,6 +50,8 @@ const toRules = (r: RefundRow): rules.Refund => ({
 
 /** The refund with what ownership checks need, locked for the rest of the transaction. */
 async function lockRefund(tx: Tx, refundId: string) {
+	// A malformed id is a missing refund, never a database error.
+	if (!z.uuid().safeParse(refundId).success) return undefined;
 	const [row] = await tx
 		.select({
 			refund,
@@ -362,12 +364,14 @@ async function partyOf(ctx: Ctx, viewer: SessionUser, refundId: string) {
 			studentId: order.studentId,
 			producerId: product.producerId,
 			productName: product.name,
+			studentName: user.name,
 			grossCents: order.grossCents,
 			paidAt: order.paidAt
 		})
 		.from(refund)
 		.innerJoin(order, eq(order.id, refund.orderId))
 		.innerJoin(product, eq(product.id, order.productId))
+		.innerJoin(user, eq(user.id, order.studentId))
 		.where(eq(refund.id, refundId));
 	const found = assertFound(row, 'refund');
 	const party: Party | null =
@@ -402,6 +406,7 @@ export async function getRefund(ctx: Ctx, viewer: SessionUser, refundId: string)
 		refund: found.refund,
 		order: { grossCents: found.grossCents, paidAt: found.paidAt },
 		product: { name: found.productName },
+		student: { name: found.studentName },
 		messages
 	};
 }

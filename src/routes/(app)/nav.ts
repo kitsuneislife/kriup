@@ -17,7 +17,8 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 		title: 'Produtor',
 		items: [
 			{ route: '/(app)/producer', label: 'Produtos', icon: 'package' },
-			{ route: '/(app)/producer/money', label: 'Dinheiro', icon: 'wallet' }
+			{ route: '/(app)/producer/money', label: 'Dinheiro', icon: 'wallet' },
+			{ route: '/(app)/producer/refunds', label: 'Reembolsos', icon: 'refresh' }
 		]
 	},
 	{

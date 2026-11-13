@@ -171,6 +171,14 @@ describe('outside the guarantee (RN-08 to RN-10)', () => {
 		).rejects.toBeInstanceOf(NotFoundError);
 		expect(await refundOf(orderId)).toMatchObject({ status: 'with_platform' });
 	});
+
+	it('treats a malformed id as a missing refund', async () => {
+		const { ctx, producer, student } = await scenario();
+		await expect(
+			producerDecision(ctx, producer.id, 'nope', { decision: 'approve' })
+		).rejects.toBeInstanceOf(NotFoundError);
+		await expect(contestRefund(ctx, student.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+	});
 });
 
 describe('settlement', () => {
@@ -236,6 +244,8 @@ describe('conversation (RF-31)', () => {
 
 		const view = await getRefund(ctx, student, id);
 		expect(view.viewerRole).toBe('student');
+		expect(view.student.name).toBe(student.name);
+		expect((await getRefund(ctx, producer, id)).viewerRole).toBe('producer');
 		expect(view.messages.map((m) => m.body)).toEqual(['Oi, pode ver?', 'Vou analisar.']);
 	});
 });
