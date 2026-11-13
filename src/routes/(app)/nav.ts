@@ -22,7 +22,8 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 		title: 'Aluno',
 		items: [
 			{ route: '/(app)/student', label: 'Meus cursos', icon: 'book' },
-			{ route: '/(app)/student/orders', label: 'Pedidos', icon: 'receipt' }
+			{ route: '/(app)/student/orders', label: 'Pedidos', icon: 'receipt' },
+			{ route: '/(app)/student/tickets', label: 'Chamados', icon: 'message' }
 		]
 	},
 	{
