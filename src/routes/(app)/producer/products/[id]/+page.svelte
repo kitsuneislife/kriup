@@ -37,7 +37,8 @@
 	const parts = $derived({
 		page: resolve('/(app)/producer/products/[id]/page', { id: params.id }),
 		content: resolve('/(app)/producer/products/[id]/content', { id: params.id }),
-		offers: resolve('/(app)/producer/products/[id]/offers', { id: params.id })
+		offers: resolve('/(app)/producer/products/[id]/offers', { id: params.id }),
+		coproduction: resolve('/(app)/producer/products/[id]/coproduction', { id: params.id })
 	});
 	// where each pendency is solved
 	const fixAt: Record<keyof typeof pendencyText, string> = $derived({
@@ -167,6 +168,12 @@
 									'receipt',
 									'Ofertas',
 									plural(data.offerCount, 'oferta', 'ofertas')
+								)}
+								{@render part(
+									parts.coproduction,
+									'users',
+									'Coprodução',
+									'Divida as vendas com outra pessoa'
 								)}
 							</Grid>
 						</Stack>
