@@ -12,16 +12,18 @@ import { buy, expect, publishedProduct, test } from './fixtures';
 const LIMIT = 120;
 const SKIP = /^\/(api|design)(\/|$)/;
 
-/** Follows every same-origin link from `/`, once each. Returns the paths reached. */
+/** `/student/courses/<uuid>?lesson=…` and its siblings are one screen: crawl one of each. */
+const screen = (path: string) => path.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, ':id');
+
+/** Follows every same-origin link from `/`, one page per screen. Returns the paths reached. */
 async function crawl(page: Page, baseURL: string) {
 	const queue = ['/'];
 	const seen = new Set<string>();
+	const screens = new Set<string>();
 	while (queue.length > 0 && seen.size < LIMIT) {
 		const target = queue.shift()!;
-		const response = await page.goto(target);
-		const here = new URL(page.url());
-		const key = here.pathname + here.search;
-		seen.add(target);
+		const response = await page.goto(target, { waitUntil: 'domcontentloaded' });
+		seen.add(new URL(page.url()).pathname);
 		expect(response?.status(), `${target} answers`).toBeLessThan(400);
 		await expect(page.getByRole('heading', { level: 1 }), `${target} has a title`).not.toHaveText(
 			/^(404|500)$|Página não encontrada|Algo deu errado/
@@ -32,8 +34,10 @@ async function crawl(page: Page, baseURL: string) {
 		for (const href of hrefs) {
 			const url = new URL(href);
 			if (url.origin !== baseURL || SKIP.test(url.pathname)) continue;
-			const next = url.pathname + url.search;
-			if (!seen.has(next) && next !== key && !queue.includes(next)) queue.push(next);
+			const next = screen(url.pathname);
+			if (screens.has(next)) continue;
+			screens.add(next);
+			queue.push(url.pathname + url.search);
 		}
 	}
 	return seen;

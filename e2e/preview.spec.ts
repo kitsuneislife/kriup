@@ -11,6 +11,7 @@ test('shows the sales page and the course as the student sees them', async ({
 	createUser,
 	signIn
 }) => {
+	test.slow(); // two axe checks, each in two themes
 	const producer = await createUser('Paulo Lima');
 	const { productId } = await publishedProduct(ctx, producer.id, 9_700, 'Curso de pão');
 	await signIn(producer);
