@@ -83,10 +83,15 @@ export async function newUser(
 export const brand = { logoUrl: null, color: '#3355ff', font: 'Inter' };
 
 /** A published course by `producer` with one offer at `priceCents`. */
-export async function publishedProduct(ctx: Ctx, producerId: string, priceCents = 10_000) {
+export async function publishedProduct(
+	ctx: Ctx,
+	producerId: string,
+	priceCents = 10_000,
+	name = 'Curso de pão'
+) {
 	const productId = await createProduct(ctx, producerId, {
 		templateSlug: 'online-course',
-		name: 'Curso de pão',
+		name,
 		audience: 'iniciantes',
 		priceCents,
 		brand
