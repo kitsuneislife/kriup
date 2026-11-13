@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import {
 		Alert,
+		Button,
 		Card,
+		Cluster,
 		DateTime,
 		EmptyState,
 		Grid,
@@ -33,7 +36,17 @@
 
 <Page>
 	<Stack gap={8}>
-		<Text variant="title1" as="h1">Dinheiro</Text>
+		<Stack gap={4}>
+			<Text variant="title1" as="h1">Dinheiro</Text>
+			<Cluster gap={2}>
+				<Button href={resolve('/(app)/producer/money/statement')} iconEnd="arrow-right">
+					Ver extrato
+				</Button>
+				<Button href={resolve('/(app)/producer/money/payouts')} iconEnd="arrow-right">
+					Sacar e ver saques
+				</Button>
+			</Cluster>
+		</Stack>
 
 		{#each panel.blocks as block (block.id)}
 			<Alert

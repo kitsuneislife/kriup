@@ -4,6 +4,7 @@
 	import { entryStateText, entryTypeText } from '#lib/statement-filters';
 	import {
 		Alert,
+		Breadcrumb,
 		Button,
 		Card,
 		Cluster,
@@ -57,6 +58,13 @@
 <Page width="page">
 	<Stack gap={8}>
 		<Stack gap={2}>
+			<Breadcrumb
+				label="Caminho"
+				items={[
+					{ label: 'Dinheiro', href: resolve('/(app)/producer/money') },
+					{ label: 'Extrato' }
+				]}
+			/>
 			<Text variant="title1" as="h1">Extrato</Text>
 			<Text tone="secondary">
 				Cada lançamento com a regra que o gerou: valor bruto, taxa da plataforma e, na coprodução, o

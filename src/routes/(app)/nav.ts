@@ -32,7 +32,10 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 	{
 		profile: 'coproducer',
 		title: 'Coprodução',
-		items: [{ route: '/(app)/coproductions', label: 'Convites', icon: 'users' }]
+		items: [
+			{ route: '/(app)/coproductions', label: 'Convites', icon: 'users' },
+			{ route: '/(app)/producer/money/statement', label: 'Extrato', icon: 'receipt' }
+		]
 	},
 	{
 		profile: 'support',

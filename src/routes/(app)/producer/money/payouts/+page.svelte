@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
 	import { payoutStatusText } from '#lib/payout-text';
 	import {
 		Alert,
+		Breadcrumb,
 		Button,
 		Card,
 		Cluster,
@@ -93,7 +95,13 @@
 
 <Page>
 	<Stack gap={8}>
-		<Text variant="title1" as="h1">Saques</Text>
+		<Stack gap={3}>
+			<Breadcrumb
+				label="Caminho"
+				items={[{ label: 'Dinheiro', href: resolve('/(app)/producer/money') }, { label: 'Saques' }]}
+			/>
+			<Text variant="title1" as="h1">Saques</Text>
+		</Stack>
 
 		{#if data.requested}
 			<Alert tone="success" title="Saque solicitado">

@@ -125,3 +125,28 @@ test("never shows another producer's money and sends a visitor to the login", as
 	await page.goto('/producer/money');
 	await expect(page.getByText('Nenhum dinheiro ainda')).toBeVisible();
 });
+
+test('the panel leads to the statement and the payouts, and back', async ({
+	page,
+	createUser,
+	signIn
+}) => {
+	await signIn(await createUser('Paulo Lima'));
+	await page.goto('/producer/money');
+
+	await page.getByRole('link', { name: 'Ver extrato' }).click();
+	await expect(page.getByRole('heading', { name: 'Extrato', level: 1 })).toBeVisible();
+	await page
+		.getByRole('navigation', { name: 'Caminho' })
+		.getByRole('link', { name: 'Dinheiro' })
+		.click();
+	await expect(page.getByRole('heading', { name: 'Dinheiro', level: 1 })).toBeVisible();
+
+	await page.getByRole('link', { name: 'Sacar e ver saques' }).click();
+	await expect(page.getByRole('heading', { name: 'Saques', level: 1 })).toBeVisible();
+	await page
+		.getByRole('navigation', { name: 'Caminho' })
+		.getByRole('link', { name: 'Dinheiro' })
+		.click();
+	await expect(page).toHaveURL(/\/producer\/money$/);
+});
