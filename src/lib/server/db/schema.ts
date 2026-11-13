@@ -460,12 +460,19 @@ export const payout = pgTable(
 		feeCents: integer().notNull(),
 		status: payoutStatus().notNull().default('requested'),
 		createdAt: createdAt(),
-		decidedAt: at()
+		decidedAt: at(),
+		/** Support's reason, shown to the producer when the payout is declined. */
+		declineReason: text()
 	},
 	(t) => [
 		index('payout_user_id_idx').on(t.userId, t.createdAt),
 		check('payout_fee_below_amount', sql`${t.feeCents} >= 0 AND ${t.feeCents} < ${t.amountCents}`),
-		check('payout_decided_at', setWhen(t.decidedAt, sql`${t.status} <> 'requested'`))
+		check('payout_decided_at', setWhen(t.decidedAt, sql`${t.status} <> 'requested'`)),
+		check(
+			'payout_decline_reason',
+			sql`${t.status} <> 'declined'
+				OR (${t.declineReason} IS NOT NULL AND btrim(${t.declineReason}) <> '')`
+		)
 	]
 );
 

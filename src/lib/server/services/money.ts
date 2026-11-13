@@ -7,11 +7,12 @@ import { PAYOUT_FEE_CENTS, PAYOUT_MIN_CENTS } from '../../domain/params';
 import { quotePayout } from '../../domain/payout';
 import type { Balance } from '../../domain/retention';
 import { assertTransition, DomainError, PAYOUT_TRANSITIONS } from '../../domain/states';
+import type { SessionUser } from '../auth/session';
 import type { Ctx } from '../context';
 import type { Db, Tx } from '../db/client';
 import { coproduction, entryState, ledgerEntry, order, payout, product, user } from '../db/schema';
-import { assertFound } from '../errors';
-import { activeBlocks, assertNotBlocked, audit } from './blocks';
+import { assertFound, NotFoundError } from '../errors';
+import { activeBlocks, assertNotBlocked, assertSupport, audit } from './blocks';
 
 export async function getBalance(db: Db | Tx, userId: string): Promise<Balance> {
 	const rows = await db
@@ -219,7 +220,27 @@ export async function requestPayout(
 	});
 }
 
+/** RF-44: every payout still waiting for support, oldest first, with who asked for it. */
+export async function listPendingPayouts(ctx: Ctx, viewer: SessionUser) {
+	assertSupport(viewer);
+	return ctx.db
+		.select({
+			id: payout.id,
+			amountCents: payout.amountCents,
+			feeCents: payout.feeCents,
+			createdAt: payout.createdAt,
+			userName: user.name,
+			userEmail: user.email
+		})
+		.from(payout)
+		.innerJoin(user, eq(user.id, payout.userId))
+		.where(eq(payout.status, 'requested'))
+		.orderBy(asc(payout.createdAt), asc(payout.id));
+}
+
 async function lockPayout(tx: Tx, payoutId: string) {
+	// A malformed id is a missing payout, never a database error.
+	if (!z.uuid().safeParse(payoutId).success) throw new NotFoundError('payout not found');
 	const [row] = await tx.select().from(payout).where(eq(payout.id, payoutId)).for('update');
 	return assertFound(row, 'payout');
 }
@@ -247,6 +268,8 @@ export async function completePayout(
 	});
 }
 
+const declineSchema = z.object({ reason: z.string().trim().min(1).max(2_000) });
+
 /** The request's entries come back as adjustments pointing at them (RN-14); audited. */
 export async function declinePayout(
 	ctx: Ctx,
@@ -255,11 +278,15 @@ export async function declinePayout(
 	reason: string,
 	now = new Date()
 ) {
-	const why = z.string().trim().min(1).max(2_000).parse(reason);
+	// parsed as a field, so a blank reason shows under the form's `reason` field
+	const { reason: why } = declineSchema.parse({ reason });
 	await ctx.db.transaction(async (tx) => {
 		const p = await lockPayout(tx, payoutId);
 		assertTransition(PAYOUT_TRANSITIONS, p.status, 'declined');
-		await tx.update(payout).set({ status: 'declined', decidedAt: now }).where(eq(payout.id, p.id));
+		await tx
+			.update(payout)
+			.set({ status: 'declined', decidedAt: now, declineReason: why })
+			.where(eq(payout.id, p.id));
 		const debits = await tx
 			.select()
 			.from(ledgerEntry)

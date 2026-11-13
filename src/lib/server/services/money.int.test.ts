@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { PAYOUT_FEE_CENTS } from '../../domain/params';
 import { DomainError } from '../../domain/states';
 import { platformFee, splitSale } from '../../domain/split';
+import { ZodError } from 'zod';
 import { ledgerEntry, payout, user } from '../db/schema';
 import { NotFoundError } from '../errors';
 import { acceptInvite, inviteCoproducer } from './coproduction';
@@ -12,6 +13,8 @@ import {
 	getBalance,
 	getMoneyPanel,
 	getStatement,
+	listPayouts,
+	listPendingPayouts,
 	listStatementProducts,
 	releaseHeld,
 	requestPayout
@@ -88,6 +91,64 @@ describe('payout (RN-13)', () => {
 		expect((await getBalance(db, producer.id)).releasedCents).toBe(NET);
 		const [p] = await db.select().from(payout).where(eq(payout.id, id));
 		expect(p!.status).toBe('declined');
+		expect((await listPayouts(ctx, producer.id))[0]).toMatchObject({
+			status: 'declined',
+			declineReason: 'Conta bancária inválida'
+		});
+	});
+
+	it('refuses a blank decline reason on the reason field', async () => {
+		const { ctx, producer } = await released();
+		const support = await newUser('s@example.com', 'support');
+		await releaseHeld(ctx, days(PAID, 7));
+		const id = await requestPayout(ctx, producer.id, 6_000);
+		const err = await declinePayout(ctx, support.id, id, '   ').catch((e: unknown) => e);
+		expect(err).toBeInstanceOf(ZodError);
+		expect((err as ZodError).issues[0]!.path).toEqual(['reason']);
+		expect((await listPayouts(ctx, producer.id))[0]!.status).toBe('requested');
+	});
+
+	it('lists every pending payout to support only, oldest first', async () => {
+		const { ctx, producer, offerId: own } = await released();
+		const support = await newUser('s@example.com', 'support');
+		await buy(ctx, own, 'c@example.com', PAID);
+		await releaseHeld(ctx, days(PAID, 7));
+		const first = await requestPayout(ctx, producer.id, 5_000);
+		const second = await requestPayout(ctx, producer.id, 5_000);
+		await db
+			.update(payout)
+			.set({ createdAt: new Date('2026-11-10T12:00:00Z') })
+			.where(eq(payout.id, second));
+		// a second producer, so the list crosses users
+		const otherProducer = await newUser('p2@example.com');
+		const { offerId } = await publishedProduct(ctx, otherProducer.id);
+		await buy(ctx, offerId, 'b@example.com', PAID);
+		await releaseHeld(ctx, days(PAID, 7));
+		const third = await requestPayout(ctx, otherProducer.id, 6_000);
+
+		const pending = await listPendingPayouts(ctx, support);
+		// the older request comes first, whatever the insertion order
+		expect(pending.map((p) => p.id)).toEqual([second, first, third]);
+		expect(pending[2]).toMatchObject({
+			amountCents: 6_000,
+			feeCents: PAYOUT_FEE_CENTS,
+			userName: otherProducer.name,
+			userEmail: 'p2@example.com'
+		});
+
+		await completePayout(ctx, support.id, first);
+		await declinePayout(ctx, support.id, second, 'Conta bancária inválida');
+		expect((await listPendingPayouts(ctx, support)).map((p) => p.id)).toEqual([third]);
+		await expect(listPendingPayouts(ctx, producer)).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('answers a malformed payout id as not found', async () => {
+		const ctx = testCtx();
+		const support = await newUser('s@example.com', 'support');
+		await expect(completePayout(ctx, support.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(declinePayout(ctx, support.id, 'nope', 'Motivo')).rejects.toBeInstanceOf(
+			NotFoundError
+		);
 	});
 
 	it('never lets two simultaneous requests spend the same money', async () => {

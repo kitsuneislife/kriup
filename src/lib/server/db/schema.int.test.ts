@@ -348,6 +348,20 @@ describe('ledger', () => {
 		});
 	});
 
+	it('needs a reason the producer can read to decline a payout', async () => {
+		const { producer } = await seedSale();
+		const declined = {
+			userId: producer.id,
+			amountCents: 5_000,
+			feeCents: PAYOUT_FEE_CENTS,
+			status: 'declined' as const,
+			decidedAt: new Date()
+		};
+		await rejectsWith(db.insert(s.payout).values(declined), CHECK);
+		await rejectsWith(db.insert(s.payout).values({ ...declined, declineReason: ' ' }), CHECK);
+		await db.insert(s.payout).values({ ...declined, declineReason: 'Conta inválida' });
+	});
+
 	it('changes only the state, along the allowed transitions (RN-14)', async () => {
 		const { order, producer } = await seedSale();
 		const entry = await saleEntry(producer.id, order.id, 5_000);
