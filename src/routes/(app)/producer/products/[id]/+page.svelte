@@ -38,7 +38,9 @@
 		page: resolve('/(app)/producer/products/[id]/page', { id: params.id }),
 		content: resolve('/(app)/producer/products/[id]/content', { id: params.id }),
 		offers: resolve('/(app)/producer/products/[id]/offers', { id: params.id }),
-		coproduction: resolve('/(app)/producer/products/[id]/coproduction', { id: params.id })
+		coproduction: resolve('/(app)/producer/products/[id]/coproduction', { id: params.id }),
+		preview: resolve('/(app)/producer/products/[id]/preview', { id: params.id }),
+		sales: resolve('/(public)/p/[id]', { id: params.id })
 	});
 	// where each pendency is solved
 	const fixAt: Record<keyof typeof pendencyText, string> = $derived({
@@ -96,6 +98,14 @@
 			<Cluster>
 				<Badge tone={status.tone} dot>{status.label}</Badge>
 				<Badge>{productTypeText[data.product.type].label}</Badge>
+			</Cluster>
+			<Cluster>
+				<Button size="sm" icon="eye" href={parts.preview}>Ver como o aluno vê</Button>
+				{#if data.product.status === 'published'}
+					<Button size="sm" variant="ghost" iconEnd="arrow-up-right" href={parts.sales}>
+						Abrir página de venda
+					</Button>
+				{/if}
 			</Cluster>
 		</Stack>
 
