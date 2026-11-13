@@ -167,6 +167,16 @@ Concluída em 13/11/2026. O único serviço que mudou foi `getRefund`, que passo
 
 E2e UC-08 e UC-09: convite, aceite, venda, extrato do coprodutor com bruto, taxa, parte do produtor e a dele; venda anterior ao aceite não aparece.
 
+Concluída em 13/11/2026. Os dois lotes foram feitos em paralelo e juntados num merge. O único serviço que mudou foi `coproduction.ts`: um id malformado agora vira `NotFoundError` em convite, aceite, cancelamento, contrato e lista, como no reembolso, e não erro de banco ou de validação. Isso tem teste de integração.
+
+O produtor chega a `…/coproduction` por um cartão "Coprodução" no resumo do editor, porque as abas irmãs só se ligam pelo `Breadcrumb`. A simulação é um formulário GET (`?percent=&offer=`), então funciona sem JavaScript. Ela mostra bruto, taxa da plataforma, a parte do produtor e a do coprodutor de uma oferta, calculadas pelo módulo puro `domain/simulation.ts` (`simulateSale`, `parsePercent`, que aceita "30", "12,5" e "30%"). O convite pede e-mail, nome (usado só se a pessoa ainda não tem conta), percentual e duração (em branco quer dizer sem fim). `already_invited` e `self_coproduction` aparecem no campo do e-mail, e `share_limit` no do percentual. A tabela lista cada versão com situação e permite cancelar um convite ainda não aceito (`ConfirmDelete`).
+
+O coprodutor vê em `/coproductions` os convites pendentes primeiro e depois os demais, do mais novo ao mais antigo. Em `/coproductions/[id]` ele lê o contrato versionado e aceita ou recusa em dois passos: `Dialog` com JavaScript, ou `?accept` e `?refuse` num `Card` sem ele. Depois do aceite, a tela mostra quando aceitou, a versão, o fim e o começo do hash do aceite, e leva ao extrato. O texto da tela fica em `lib/coproduction-text.ts`. O produtor, um estranho e um id malformado recebem 404 no contrato, porque a visão do produtor é a do editor.
+
+O e2e cobre o caminho do convidado sem senha (link do e-mail, login, definir senha, `/coproductions`) e o dinheiro da UC-09: venda paga antes do aceite não aparece no extrato do coprodutor, e a paga depois aparece com bruto, taxa, "Coprodução de 20%" e as duas partes.
+
+Ficou de fora: a simulação ao vivo enquanto se digita, que hoje usa o botão "Simular", e o retorno ao convite depois do login (não há parâmetro `next`), então quem já tem conta abre "Convites" na barra lateral.
+
 ### Fase 8. Suporte, UC-06 (88 a 95%)
 
 | Lote | Telas | Serviços | % |
