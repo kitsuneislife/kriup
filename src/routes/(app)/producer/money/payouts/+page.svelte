@@ -193,7 +193,17 @@
 							</Text>{/if}
 					{:else if column.key === 'status'}
 						{@const text = payoutStatusText[row.status]}
-						<StatusBadge status={text.status} label={text.label} size="sm" />
+						{#if row.status === 'declined'}
+							<Stack gap={1} align="start">
+								<StatusBadge status={text.status} label={text.label} size="sm" />
+								<Text variant="footnote">Motivo: {row.declineReason}</Text>
+								<Text variant="footnote" tone="secondary">
+									<Money cents={row.amountCents} variant="footnote" /> voltou ao seu saldo liberado.
+								</Text>
+							</Stack>
+						{:else}
+							<StatusBadge status={text.status} label={text.label} size="sm" />
+						{/if}
 					{:else if column.key === 'feeCents'}
 						<Money cents={row.feeCents} tone="secondary" />
 					{:else}
