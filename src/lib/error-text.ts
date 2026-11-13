@@ -41,10 +41,13 @@ export function errorText(code: ErrorCode): string {
 	return errors[code];
 }
 
+/** Under a money field that is not a price in reais. */
+export const invalidMoneyText = 'Informe o valor em reais, como 97,90.';
+
 /** Codes a schema puts in a custom issue (`params.code`), for rules Zod has no name for. */
 const custom: Record<string, string> = {
 	invalid_tax_id: 'CPF ou CNPJ inválido.',
-	invalid_price: 'Informe o valor em reais, como 97,90.'
+	invalid_price: invalidMoneyText
 };
 
 /** The text under a field for one Zod issue. */
