@@ -14,6 +14,8 @@ const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
 	testDir: 'e2e',
+	// the review specs need the production build: `pnpm test:review` (playwright.review.config.ts)
+	testIgnore: /review-(lcp|captures)\.spec\.ts/,
 	globalSetup: './e2e/global-setup.ts',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,

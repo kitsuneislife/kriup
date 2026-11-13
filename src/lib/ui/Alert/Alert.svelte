@@ -59,7 +59,7 @@
 			inset 0 1px 0 var(--color-highlight),
 			0 0 0 var(--border-width) var(--color-edge),
 			var(--shadow-1);
-		animation: enter var(--duration-base) var(--ease-enter) both;
+		animation: enter var(--duration-base) var(--ease-enter) backwards;
 	}
 	.icon {
 		display: grid;

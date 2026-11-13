@@ -28,7 +28,7 @@
 	.content {
 		grid-column: 2;
 		min-width: 0;
-		animation: enter var(--duration-slow) var(--ease-enter) both;
+		animation: enter var(--duration-slow) var(--ease-enter) backwards;
 	}
 	@keyframes enter {
 		from {
