@@ -41,7 +41,12 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 	{
 		profile: 'support',
 		title: 'Suporte',
-		items: [{ route: '/(app)/support', label: 'Fila', icon: 'shield' }]
+		items: [
+			{ route: '/(app)/support', label: 'Fila', icon: 'shield' },
+			{ route: '/(app)/support/payouts', label: 'Saques', icon: 'wallet' },
+			{ route: '/(app)/support/blocks', label: 'Bloqueios', icon: 'lock' },
+			{ route: '/(app)/support/audit', label: 'Auditoria', icon: 'list' }
+		]
 	}
 ];
 
