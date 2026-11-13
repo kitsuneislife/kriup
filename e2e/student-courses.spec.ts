@@ -71,7 +71,10 @@ test('lists the course with progress and plays lessons until it is finished', as
 
 	// finish everything: the course shows as done on the list
 	for (const lesson of lessons) {
-		await page.getByRole('link', { name: lesson.title }).click();
+		// a click on the lesson already open reloads it, and that load could land after the save
+		if (!page.url().includes(`lesson=${lesson.id}`)) {
+			await page.getByRole('link', { name: lesson.title }).click();
+		}
 		await expect(page.getByRole('heading', { name: lesson.title, level: 2 })).toBeVisible();
 		await page.getByRole('button', { name: 'Marcar como concluída' }).click();
 		await expect(page.getByRole('button', { name: 'Concluída, desfazer' })).toBeVisible();
