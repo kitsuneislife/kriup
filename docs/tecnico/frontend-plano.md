@@ -188,6 +188,16 @@ Ficou de fora: a simulação ao vivo enquanto se digita, que hoje usa o botão "
 
 E2e UC-06: reembolso vencido escala, suporte decide, aluno e produtor veem; bloqueio aparece no painel do produtor com o motivo; toda ação aparece na auditoria.
 
+Concluída em 13/11/2026. Os quatro lotes foram feitos em paralelo, cada um na sua branch, e juntados em três merges, sem conflito. A barra lateral do suporte ganhou Fila, Saques, Bloqueios e Auditoria. Decisão F2: quem conclui o saque é o suporte, numa tela; o simulador não conclui sozinho.
+
+A fila (`/support`) mostra os reembolsos escalados, do prazo mais próximo ao mais distante, e diz por que chegaram à plataforma. Um reembolso atrasado continua decidível e mostra "Prazo vencido". Depois vêm os chamados abertos, do mais antigo ao mais novo. Quando a fila está vazia, aparece um só `EmptyState`, porque dois deixavam a página rolável sem foco, o que o axe acusa. Em `/support/refunds/[id]`, aprovar tem dois passos que funcionam sem JavaScript, como na tela do produtor, e recusar pede uma justificativa que o aluno e o produtor leem. Em `/support/tickets/[id]`, o suporte responde e encerra o chamado. Dois serviços mudaram, e as mudanças têm teste de integração: um id malformado de chamado ou de reembolso agora vira `NotFoundError`, e uma resposta vazia no chamado vira erro no campo `body`.
+
+Em `/support/blocks`, o suporte acha a pessoa pelo e-mail (`findBlockTarget`), bloqueia o saldo, a conta ou um produto dela com motivo e próximo passo obrigatórios, e desbloqueia. A lista mostra todos os bloqueios em vigor (`listActiveBlocks`). Em `/support/audit`, cada registro (`listAuditTrail`) aparece com quem fez, a ação traduzida e o alvo pelo nome, não pelo id. O texto fica em `lib/support-text.ts`.
+
+`/support/payouts` lista os saques pedidos, do mais antigo ao mais novo (`listPendingPayouts`), e o suporte conclui ou recusa cada um com motivo, por `Dialog` com JavaScript ou `Card` sem ele. A migração `0004_payout_decline_reason.sql` guarda o motivo da recusa. Nos saques recusados antes da coluna, o motivo vem da auditoria. O produtor vê em `/producer/money/payouts` o saque concluído, ou o recusado com o motivo e o valor devolvido ao saldo.
+
+O e2e cobre a decisão do suporte num reembolso escalado (recusa lida pelo aluno e pelo produtor, e aprovação com o dinheiro devolvido e o acesso encerrado), o chamado, o bloqueio que aparece no painel do produtor e na auditoria, os dois desfechos do saque e o 404 para quem não é suporte. Depois do merge, rodar `pnpm db:migrate` no banco local.
+
 ### Fase 9. Integração e fechamento (95 a 100%)
 
 | Lote | Entrega | % |
@@ -206,4 +216,4 @@ As fases seguem a ordem dos dados: sem produto publicado não há venda, sem ven
 | # | Decisão |
 | --- | --- |
 | F1 | Logo e anexos: o backend guarda só URL (`brandSchema`, `lessonSchema`). Fica assim no MVP ou entra armazenamento de arquivo para usar o `FileUpload`? |
-| F2 | `/support/payouts` (lote 8.4) é do suporte ou o simulador conclui o saque sozinho? |
+| F2 | Decidida em 13/11/2026: quem conclui o saque é o suporte, em `/support/payouts` (lote 8.4). |
