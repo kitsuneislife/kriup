@@ -24,7 +24,9 @@
 				size="sm"
 			/>{/if}
 	</span>
-	<span class="title">{lesson.title}</span>
+	<span class="title"
+		>{lesson.title}{#if lesson.done}<span class="visually-hidden"> (concluída)</span>{/if}</span
+	>
 	{#if lesson.duration}<span class="duration">{lesson.duration}</span>{/if}
 {/snippet}
 
@@ -179,6 +181,15 @@
 			opacity: 0;
 			transform: scale(0.4);
 		}
+	}
+	.visually-hidden {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 	.title {
 		flex: 1;
