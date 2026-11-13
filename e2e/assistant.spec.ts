@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, hydrated, test } from './fixtures';
 
 const question = (page: Page, name: string) =>
 	expect(page.getByRole('heading', { name, level: 2 })).toBeVisible();
@@ -14,6 +14,7 @@ test('asks one question per step and keeps the answers', async ({ page, createUs
 	await expect(stepper.locator('[aria-current="step"]')).toContainText('Tipo');
 	await question(page, 'O que você vai vender?');
 	await expectAccessible(page);
+	await hydrated(page);
 	await page.getByLabel('Tipo de produto').selectOption({ label: 'Curso' });
 	await proceed(page);
 
@@ -69,6 +70,7 @@ test('asks one question per step and keeps the answers', async ({ page, createUs
 test('offers only the templates of the chosen type', async ({ page, createUser, signIn }) => {
 	await signIn(await createUser('Ana Souza'));
 	await page.goto('/producer/new');
+	await hydrated(page);
 	await page.getByLabel('Tipo de produto').selectOption({ label: 'Mentoria' });
 	await proceed(page);
 	await page.getByLabel('Nome do produto').fill('Mentoria de vendas');

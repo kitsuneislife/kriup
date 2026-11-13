@@ -50,6 +50,14 @@ export const test = base.extend<Fixtures>({
 	}
 });
 
+/**
+ * Waits until the page is interactive. A select changed before hydration is reset by it, so
+ * call this after `goto` and before such a control.
+ */
+export async function hydrated(page: Page) {
+	await page.locator('html[data-hydrated]').waitFor({ state: 'attached' });
+}
+
 /** Fails with the axe violations of the current page, in the light and the dark theme. */
 export async function expectAccessible(page: Page) {
 	for (const colorScheme of ['light', 'dark'] as const) {
