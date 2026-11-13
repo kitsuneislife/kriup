@@ -69,7 +69,9 @@
 			: undefined
 	);
 	const cancelError = $derived(
-		form && form.for.startsWith('cancel:') && 'code' in form ? errorText(form.code) : undefined
+		form && form.for.startsWith('cancel:') && 'code' in form && form.code
+			? errorText(form.code)
+			: undefined
 	);
 
 	const columns = [
