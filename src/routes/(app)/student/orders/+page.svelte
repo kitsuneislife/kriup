@@ -68,22 +68,42 @@
 									· garantia até <DateTime value={order.guaranteeUntil} format="date" />
 								{/if}
 							</Text>
-							{#if order.refundId}
+							<Cluster gap={2}>
+								{#if order.enrollmentStatus === 'active'}
+									<Button
+										variant="primary"
+										href={resolve('/(app)/student/courses/[id]', { id: order.productId })}
+										iconEnd="arrow-right"
+										label="Acessar curso {order.productName}"
+									>
+										Acessar curso
+									</Button>
+								{/if}
+								{#if order.refundId}
+									<Button
+										href={resolve('/(app)/student/refunds/[id]', { id: order.refundId })}
+										iconEnd="arrow-right"
+										label="Ver reembolso de {order.productName}"
+									>
+										Ver reembolso
+									</Button>
+								{:else if order.status === 'paid'}
+									<Button
+										href={resolve('/(app)/student/orders/[id]/refund', { id: order.id })}
+										label="Pedir reembolso de {order.productName}"
+									>
+										Pedir reembolso
+									</Button>
+								{/if}
 								<Button
-									href={resolve('/(app)/student/refunds/[id]', { id: order.refundId })}
-									iconEnd="arrow-right"
-									label="Ver reembolso de {order.productName}"
+									variant="ghost"
+									icon="message"
+									href="{resolve('/(app)/student/tickets/new')}?order={order.id}"
+									label="Falar com o suporte sobre {order.productName}"
 								>
-									Ver reembolso
+									Falar com o suporte
 								</Button>
-							{:else if order.status === 'paid'}
-								<Button
-									href={resolve('/(app)/student/orders/[id]/refund', { id: order.id })}
-									label="Pedir reembolso de {order.productName}"
-								>
-									Pedir reembolso
-								</Button>
-							{/if}
+							</Cluster>
 						</Stack>
 					</Card>
 				{/each}
