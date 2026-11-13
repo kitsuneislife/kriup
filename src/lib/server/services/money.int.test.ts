@@ -12,6 +12,7 @@ import {
 	getBalance,
 	getMoneyPanel,
 	getStatement,
+	listStatementProducts,
 	releaseHeld,
 	requestPayout
 } from './money';
@@ -157,5 +158,7 @@ describe('statement (RF-43, RF-53, US-04)', () => {
 		const paged = await getStatement(ctx, producer.id, { pageSize: 1 });
 		expect(paged).toMatchObject({ hasMore: true });
 		expect(await db.select().from(ledgerEntry)).toHaveLength(3);
+		expect(await listStatementProducts(ctx, co!.id)).toMatchObject([{ id: productId }]);
+		expect(await listStatementProducts(ctx, (await newUser('x@example.com')).id)).toEqual([]);
 	});
 });

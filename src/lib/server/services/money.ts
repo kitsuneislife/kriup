@@ -142,6 +142,20 @@ export async function getStatement(
 	};
 }
 
+/**
+ * The products that have a line in the user's statement, for the product filter. It covers
+ * a coproducer too, who owns no product, so the list comes from the lines and not the catalog.
+ */
+export async function listStatementProducts(ctx: Ctx, userId: string) {
+	return ctx.db
+		.selectDistinct({ id: product.id, name: product.name })
+		.from(ledgerEntry)
+		.innerJoin(order, eq(order.id, ledgerEntry.orderId))
+		.innerJoin(product, eq(product.id, order.productId))
+		.where(eq(ledgerEntry.userId, userId))
+		.orderBy(asc(product.name), asc(product.id));
+}
+
 // ---------------------------------------------------------------------------
 // Payouts (RF-44, RN-13)
 
