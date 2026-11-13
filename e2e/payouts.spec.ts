@@ -5,16 +5,16 @@ import type { Page } from '@playwright/test';
 import { SESSION_COOKIE, createSession, type SessionUser } from '../src/lib/server/auth/session';
 import type { Ctx } from '../src/lib/server/context';
 import { ledgerEntry, payout } from '../src/lib/server/db/schema';
-import { getBalance, releaseHeld } from '../src/lib/server/services/money';
+import { getBalance } from '../src/lib/server/services/money';
 import { createBlock } from '../src/lib/server/services/support';
-import { days, db } from '../src/lib/server/services/testing';
+import { db, releaseSalesOf } from '../src/lib/server/services/testing';
 import { buy, expect, expectAccessible, hydrated, publishedProduct, test } from './fixtures';
 
 /** A producer with one sale of R$ 300 already released; returns its balance in cents. */
 async function withReleasedBalance(ctx: Ctx, producer: SessionUser) {
 	const { offerId } = await publishedProduct(ctx, producer.id, 30_000);
 	await buy(ctx, offerId, `aluno.${producer.id}@e2e.test`);
-	await releaseHeld(ctx, days(new Date(), 8));
+	await releaseSalesOf(producer.id);
 	return (await getBalance(db, producer.id)).releasedCents;
 }
 

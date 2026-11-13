@@ -4,12 +4,12 @@
 import 'dotenv/config';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { DomainError, type DomainErrorCode } from '../../domain/states';
 import type { SessionUser } from '../auth/session';
 import type { Ctx } from '../context';
 import { createDb } from '../db/client';
-import { user } from '../db/schema';
+import { ledgerEntry, user } from '../db/schema';
 import { memoryMailer } from '../email/mailer';
 import type { PaymentGateway } from '../payment/gateway';
 import { simulatedGateway } from '../payment/simulated';
@@ -120,6 +120,24 @@ export async function buy(ctx: Ctx, offerId: string, email: string, paidAt = new
 		paidAt
 	);
 	return orderId;
+}
+
+/**
+ * Releases the held sales of one person, as the daily job would. The job itself
+ * (`releaseHeld`) moves every sale due, so e2e specs running in parallel would release
+ * each other's money; they use this instead.
+ */
+export async function releaseSalesOf(userId: string) {
+	await db
+		.update(ledgerEntry)
+		.set({ state: 'released' })
+		.where(
+			and(
+				eq(ledgerEntry.userId, userId),
+				eq(ledgerEntry.state, 'held'),
+				eq(ledgerEntry.type, 'sale')
+			)
+		);
 }
 
 export async function rejectsCode(work: Promise<unknown>, code: DomainErrorCode) {

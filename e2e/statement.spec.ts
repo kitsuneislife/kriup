@@ -3,8 +3,7 @@
 
 import { platformFee, splitSale } from '../src/lib/domain/split';
 import { acceptInvite, inviteCoproducer } from '../src/lib/server/services/coproduction';
-import { releaseHeld } from '../src/lib/server/services/money';
-import { days } from '../src/lib/server/services/testing';
+import { days, releaseSalesOf } from '../src/lib/server/services/testing';
 import { formatMoney } from '../src/lib/ui/format';
 import { buy, expect, expectAccessible, hydrated, publishedProduct, test } from './fixtures';
 
@@ -42,7 +41,7 @@ test('filters narrow the list and survive a reload', async ({ page, ctx, createU
 	const cake = await publishedProduct(ctx, producer.id, 20_000, 'Curso de bolo');
 	const old = days(new Date(), -10);
 	await buy(ctx, bread.offerId, 'um@e2e.test', old);
-	await releaseHeld(ctx, new Date());
+	await releaseSalesOf(producer.id);
 	await buy(ctx, cake.offerId, 'dois@e2e.test');
 	await signIn(producer);
 

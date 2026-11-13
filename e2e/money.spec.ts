@@ -29,7 +29,8 @@ test('a sale is held with its release date and the daily job releases it', async
 	test.skip(testInfo.project.name !== 'desktop');
 	const producer = await createUser('Paulo Lima');
 	const { offerId } = await publishedProduct(ctx, producer.id);
-	// paid long ago, so the job below only touches this sale and no other spec's
+	// paid long ago, so the job below touches only this sale (other specs release their own
+	// sales with releaseSalesOf, never with the job)
 	const paidAt = new Date('2020-03-01T12:00:00Z');
 	await buy(ctx, offerId, `bia.${randomUUID()}@e2e.test`, paidAt);
 	await signIn(producer);
