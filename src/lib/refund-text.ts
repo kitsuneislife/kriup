@@ -63,15 +63,17 @@ type Input = {
 	dueAt: Date;
 };
 
-/** Who reads the steps: the same history, told to the student or to the producer. */
-export type RefundViewer = 'student' | 'producer';
+/** Who reads the steps: the same history, told to the student, the producer or support. */
+export type RefundViewer = 'student' | 'producer' | 'support';
 
 /** The steps of a refund, from what the request holds (there is no history table). */
 export function refundSteps(r: Input, viewer: RefundViewer = 'student'): Step[] {
 	const producer = viewer === 'producer';
-	const until = `Resposta até ${formatDate(r.dueAt, producer ? 'datetime' : 'date')}.`;
+	const student = viewer === 'student';
+	// whoever decides sees the hour too: the deadline is theirs
+	const until = `Resposta até ${formatDate(r.dueAt, student ? 'date' : 'datetime')}.`;
 	const sent: Step = {
-		title: producer ? 'O aluno pediu o reembolso' : 'Pedido enviado',
+		title: student ? 'Pedido enviado' : 'O aluno pediu o reembolso',
 		time: formatDate(r.openedAt, 'datetime'),
 		state: 'done'
 	};
@@ -82,7 +84,7 @@ export function refundSteps(r: Input, viewer: RefundViewer = 'student'): Step[] 
 		tone: 'danger'
 	};
 	const contested: Step = {
-		title: producer ? 'O aluno contestou a recusa' : 'Você contestou',
+		title: student ? 'Você contestou' : 'O aluno contestou a recusa',
 		state: 'done'
 	};
 	const approved: Step = { title: 'Reembolso aprovado', state: 'done', tone: 'success' };
@@ -104,8 +106,8 @@ export function refundSteps(r: Input, viewer: RefundViewer = 'student'): Step[] 
 				sent,
 				producerDeclined,
 				{
-					title: producer ? 'O aluno pode contestar' : 'Você pode contestar',
-					description: producer ? 'Uma única vez. Aí a plataforma decide.' : 'Uma única vez.',
+					title: student ? 'Você pode contestar' : 'O aluno pode contestar',
+					description: student ? 'Uma única vez.' : 'Uma única vez. Aí a plataforma decide.',
 					state: 'current'
 				}
 			];
@@ -249,4 +251,70 @@ export function producerQueue<T extends Pending & { openedAt: Date }>(
 		.filter((r) => !producerCanDecide(r, now))
 		.sort((a, b) => b.openedAt.getTime() - a.openedAt.getTime());
 	return { waiting, others };
+}
+
+// ---------------------------------------------------------------------------
+// Support's side (UC-06)
+
+/** RN-08, RN-09: support decides only what is with the platform, even past its deadline. */
+export const supportCanDecide = (r: { status: RefundStatus }) => r.status === 'with_platform';
+
+/**
+ * How close support's deadline is. Unlike the producer's, it does not take the decision
+ * away: a late request is still support's to decide, and it goes first.
+ */
+export function supportDeadline(
+	dueAt: Date,
+	now: Date
+): { label: string; tone: 'secondary' | 'warning' | 'danger' } {
+	if (dueAt <= now) return { label: 'Prazo vencido', tone: 'danger' };
+	return producerDeadline(dueAt, now);
+}
+
+/** Why the request reached support: the producer missed the deadline or the student contested. */
+export const escalationText = (contested: boolean) =>
+	contested ? 'Contestado pelo aluno' : 'Prazo do produtor vencido';
+
+/** What happens now and next, said to support. */
+export function supportRefundHeadline(r: { status: RefundStatus; contested: boolean }): {
+	title: string;
+	body: string;
+} {
+	switch (r.status) {
+		case 'with_producer':
+			return {
+				title: 'O produtor está analisando',
+				body: 'O pedido ainda é do produtor. Se ele não responder até o prazo, passa para a plataforma.'
+			};
+		case 'declined':
+			return {
+				title: 'O produtor recusou o pedido',
+				body: 'O aluno pode contestar uma vez. Se contestar, o pedido volta para a plataforma decidir.'
+			};
+		case 'with_platform':
+			return r.contested
+				? {
+						title: 'O aluno contestou a recusa',
+						body: 'Leia o motivo do aluno, a justificativa do produtor e a conversa. A decisão da plataforma é final.'
+					}
+				: {
+						title: 'O produtor não respondeu no prazo',
+						body: 'O pedido passou para a plataforma. Leia o motivo e a conversa e decida. A decisão é final.'
+					};
+		case 'approved':
+			return {
+				title: 'Reembolso aprovado',
+				body: 'O valor está sendo devolvido ao aluno. Quando terminar, o acesso é encerrado e a venda é estornada.'
+			};
+		case 'final_declined':
+			return {
+				title: 'A plataforma recusou o pedido',
+				body: 'A decisão é final: a venda continua valendo e o aluno mantém o acesso.'
+			};
+		case 'completed':
+			return {
+				title: 'Reembolso concluído',
+				body: 'O valor voltou ao aluno, o acesso foi encerrado e a venda foi estornada.'
+			};
+	}
 }
