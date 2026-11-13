@@ -8,7 +8,8 @@ const database = new URL(process.env.DATABASE_URL);
 if (!database.pathname.endsWith('_e2e')) database.pathname += '_e2e';
 process.env.DATABASE_URL = database.href;
 
-const port = 4173;
+// E2E_PORT lets several checkouts run the suite at once, each against its own dev server.
+const port = Number(process.env.E2E_PORT ?? 4173);
 const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
