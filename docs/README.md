@@ -2,6 +2,8 @@
 
 A documentação é em português. Código, pastas, arquivos, banco e API são em inglês (ver `tecnico/convencoes.md`).
 
+Estado atual e próximo passo: `status.md`.
+
 | Pasta | Conteúdo |
 | --- | --- |
 | `produto/` | O que construir: `visao-e-escopo.md`, `requisitos.md`, `regras-de-negocio.md` |

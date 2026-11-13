@@ -134,6 +134,8 @@ Concluída em 12/11/2026. O produto não tem slug, então as rotas públicas usa
 
 E2e UC-04: dentro da garantia aprova sozinho e o acesso some; fora da garantia fica com o produtor e mostra prazo; aluno B recebe 404 no reembolso do aluno A.
 
+Concluída em 13/11/2026. Nenhum serviço mudou. O player guarda a aula no endereço (`?lesson=`); sem ela, abre a primeira não concluída, ou a primeira quando todas já foram. Marcar como concluída é um formulário que funciona sem JavaScript. O `LessonList` ganhou `href`, para cada aula ser um link, e passou a anunciar ao leitor de tela qual aula foi concluída. YouTube e Vimeo tocam num iframe (YouTube pelo `youtube-nocookie.com`), arquivo de vídeo toca em `<video>`, e outro endereço vira um link "Abrir vídeo". Acesso revogado dá 404 no curso. O reembolso não tem histórico gravado, então a `Timeline` deriva as etapas de `status`, `contested` e `declineReason`. O cartão do pedido leva ao curso, ao reembolso e a um chamado sobre aquele pedido (`/student/tickets/new?order=`). Abrir chamado tem página própria, e chamado fechado não aceita mais mensagens. O texto secundário da `Timeline` e do contador do `LessonList` subiu de terciário para secundário, para passar no AA. No caminho: os specs esperam a hidratação (`hydrated` em `e2e/fixtures.ts`) antes de mexer num `select`, e `E2E_PORT` deixa várias worktrees rodarem o e2e ao mesmo tempo. Ficou de fora: a lista de chamados não mostra o produto do pedido, porque `listMyTickets` não traz o nome dele.
+
 ### Fase 5. Dinheiro, UC-07 (68 a 78%)
 
 | Lote | Telas | Serviços | % |
