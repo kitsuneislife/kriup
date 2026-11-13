@@ -171,6 +171,14 @@ describe('outside the guarantee (RN-08 to RN-10)', () => {
 		).rejects.toBeInstanceOf(NotFoundError);
 		expect(await refundOf(orderId)).toMatchObject({ status: 'with_platform' });
 	});
+
+	it('treats a malformed id as a missing refund', async () => {
+		const { ctx, producer, student } = await scenario();
+		await expect(
+			producerDecision(ctx, producer.id, 'nope', { decision: 'approve' })
+		).rejects.toBeInstanceOf(NotFoundError);
+		await expect(contestRefund(ctx, student.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+	});
 });
 
 describe('settlement', () => {

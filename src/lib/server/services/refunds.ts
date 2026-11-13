@@ -50,6 +50,8 @@ const toRules = (r: RefundRow): rules.Refund => ({
 
 /** The refund with what ownership checks need, locked for the rest of the transaction. */
 async function lockRefund(tx: Tx, refundId: string) {
+	// A malformed id is a missing refund, never a database error.
+	if (!z.uuid().safeParse(refundId).success) return undefined;
 	const [row] = await tx
 		.select({
 			refund,
