@@ -31,7 +31,9 @@
 		font-size: 0.62em;
 		font-weight: var(--weight-semibold);
 		letter-spacing: 0;
-		/* 0.6 fell just under 4.5:1 on a white card */
+	}
+	/* 0.6 fell just under 4.5:1 on a white card; a tone (danger, success) has no contrast to spare */
+	:global([data-tone='primary']) > .minor {
 		opacity: 0.7;
 	}
 </style>
