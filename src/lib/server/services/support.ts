@@ -1,9 +1,12 @@
 // Support (RF-35, RF-60 to RF-62). Every write by support is audited in its transaction.
 // Refund and payout decisions live in refunds.ts and money.ts; they audit the same way.
 
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, isNull, or } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { assertTransition, DomainError, TICKET_TRANSITIONS } from '../../domain/states';
+import type { AuditTarget } from '../../support-text';
+import { emailSchema } from '../auth/credentials';
 import type { SessionUser } from '../auth/session';
 import type { Ctx } from '../context';
 import {
@@ -254,4 +257,130 @@ export async function closeTicket(
 			await audit(tx, viewer.id, 'ticket.close', { ticketId: found.id });
 		}
 	});
+}
+
+// ---------------------------------------------------------------------------
+// Blocks and audit screens (RF-61, RF-62)
+
+/**
+ * The person support looks up by e-mail to block, with their products; null when no
+ * account has that e-mail.
+ */
+export async function findBlockTarget(ctx: Ctx, viewer: SessionUser, email: string) {
+	assertSupport(viewer);
+	const [found] = await ctx.db
+		.select({ id: user.id, name: user.name, email: user.email })
+		.from(user)
+		.where(eq(user.email, emailSchema.parse(email)));
+	if (!found) return null;
+	const products = await ctx.db
+		.select({ id: product.id, name: product.name })
+		.from(product)
+		.where(eq(product.producerId, found.id))
+		.orderBy(asc(product.name));
+	return { ...found, products };
+}
+
+/** Every block in force (RN-11), across all people, newest first. */
+export async function listActiveBlocks(ctx: Ctx, viewer: SessionUser, now = new Date()) {
+	assertSupport(viewer);
+	const creator = alias(user, 'creator');
+	return ctx.db
+		.select({
+			id: block.id,
+			target: block.target,
+			reason: block.reason,
+			nextStep: block.nextStep,
+			endsAt: block.endsAt,
+			createdAt: block.createdAt,
+			userName: user.name,
+			userEmail: user.email,
+			productName: product.name,
+			createdByName: creator.name
+		})
+		.from(block)
+		.innerJoin(user, eq(user.id, block.userId))
+		.innerJoin(creator, eq(creator.id, block.createdById))
+		.leftJoin(product, eq(product.id, block.productId))
+		.where(and(isNull(block.liftedAt), or(isNull(block.endsAt), gt(block.endsAt, now))))
+		.orderBy(desc(block.createdAt));
+}
+
+/**
+ * RF-62 for people: `listAudit` with the target of each record resolved to names (whose
+ * balance, which refund) and the reason the record carries, if any.
+ */
+export async function listAuditTrail(ctx: Ctx, viewer: SessionUser, limit = 100) {
+	const rows = await listAudit(ctx, viewer, limit);
+	const ids = (key: string) => [
+		...new Set(rows.map((r) => r.detail[key]).filter((v): v is string => typeof v === 'string'))
+	];
+	const byId = <T extends { id: string }>(list: T[]) => new Map(list.map((x) => [x.id, x]));
+	const blockIds = ids('blockId');
+	const refundIds = ids('refundId');
+	const payoutIds = ids('payoutId');
+	const ticketIds = ids('ticketId');
+	const [blocks, refunds, payouts, tickets] = await Promise.all([
+		blockIds.length === 0
+			? []
+			: ctx.db
+					.select({
+						id: block.id,
+						target: block.target,
+						userName: user.name,
+						productName: product.name
+					})
+					.from(block)
+					.innerJoin(user, eq(user.id, block.userId))
+					.leftJoin(product, eq(product.id, block.productId))
+					.where(inArray(block.id, blockIds)),
+		refundIds.length === 0
+			? []
+			: ctx.db
+					.select({ id: refund.id, studentName: user.name, productName: product.name })
+					.from(refund)
+					.innerJoin(order, eq(order.id, refund.orderId))
+					.innerJoin(product, eq(product.id, order.productId))
+					.innerJoin(user, eq(user.id, order.studentId))
+					.where(inArray(refund.id, refundIds)),
+		payoutIds.length === 0
+			? []
+			: ctx.db
+					.select({ id: payout.id, userName: user.name })
+					.from(payout)
+					.innerJoin(user, eq(user.id, payout.userId))
+					.where(inArray(payout.id, payoutIds)),
+		ticketIds.length === 0
+			? []
+			: ctx.db
+					.select({ id: ticket.id, subject: ticket.subject, studentName: user.name })
+					.from(ticket)
+					.innerJoin(user, eq(user.id, ticket.studentId))
+					.where(inArray(ticket.id, ticketIds))
+	]);
+	const found = {
+		block: byId(blocks),
+		refund: byId(refunds),
+		payout: byId(payouts),
+		ticket: byId(tickets)
+	};
+
+	function targetOf(detail: Record<string, unknown>): AuditTarget | null {
+		const b = found.block.get(detail.blockId as string);
+		if (b)
+			return { kind: 'block', target: b.target, userName: b.userName, productName: b.productName };
+		const r = found.refund.get(detail.refundId as string);
+		if (r) return { kind: 'refund', studentName: r.studentName, productName: r.productName };
+		const p = found.payout.get(detail.payoutId as string);
+		if (p) return { kind: 'payout', userName: p.userName };
+		const t = found.ticket.get(detail.ticketId as string);
+		if (t) return { kind: 'ticket', studentName: t.studentName, subject: t.subject };
+		return null;
+	}
+
+	return rows.map(({ detail, ...row }) => ({
+		...row,
+		target: targetOf(detail),
+		reason: typeof detail.reason === 'string' ? detail.reason : null
+	}));
 }
