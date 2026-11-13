@@ -64,7 +64,8 @@ async function visit(page: import('@playwright/test').Page, routes: Record<strin
 	for (const url of Object.values(routes)) {
 		const response = await page.goto(url);
 		expect(response?.status(), url).toBe(200);
-		await expect(page.locator('html[data-hydrated]'), url).toBeAttached();
+		// the dev server compiles each route on its first visit, so hydration can be slow
+		await expect(page.locator('html[data-hydrated]'), url).toBeAttached({ timeout: 30_000 });
 		await expect(page.locator('h1').first(), url).toBeVisible();
 		try {
 			await expectAccessible(page);
