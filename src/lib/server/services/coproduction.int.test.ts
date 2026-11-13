@@ -100,4 +100,11 @@ describe('invite and acceptance (RF-50 to RF-52)', () => {
 			'invalid_transition'
 		);
 	});
+
+	it('treats a malformed id as a missing invite', async () => {
+		const { ctx, producer } = await setup();
+		await expect(acceptInvite(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(cancelInvite(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(getContract(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+	});
 });
