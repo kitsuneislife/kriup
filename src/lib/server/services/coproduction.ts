@@ -35,6 +35,8 @@ export async function inviteCoproducer(
 	input: z.input<typeof inviteSchema>,
 	now = new Date()
 ): Promise<string> {
+	// A malformed product id is a missing product, not invalid input.
+	if (!z.uuid().safeParse(input.productId).success) throw new NotFoundError('product not found');
 	const data = inviteSchema.parse(input);
 	const created = await ctx.db.transaction(async (tx) => {
 		const [prod] = await tx
@@ -103,6 +105,8 @@ export async function inviteCoproducer(
 }
 
 async function lockTerm(tx: Tx, id: string) {
+	// A malformed id is a missing invite, never a database error.
+	if (!z.uuid().safeParse(id).success) return undefined;
 	const [row] = await tx.select().from(coproduction).where(eq(coproduction.id, id)).for('update');
 	return row;
 }
@@ -113,7 +117,7 @@ async function lockTerm(tx: Tx, id: string) {
  */
 export async function acceptInvite(ctx: Ctx, coproducerId: string, id: string, now = new Date()) {
 	await ctx.db.transaction(async (tx) => {
-		const term = await lockTerm(tx, z.uuid().parse(id));
+		const term = await lockTerm(tx, id);
 		if (!term || term.coproducerId !== coproducerId) throw new NotFoundError('invite not found');
 		assertTransition(COPRODUCTION_TRANSITIONS, term.status, 'active');
 
@@ -155,7 +159,7 @@ export async function acceptInvite(ctx: Ctx, coproducerId: string, id: string, n
 /** The invitee refuses, or the producer withdraws, an invite not yet accepted. */
 export async function cancelInvite(ctx: Ctx, actorId: string, id: string) {
 	await ctx.db.transaction(async (tx) => {
-		const term = await lockTerm(tx, z.uuid().parse(id));
+		const term = await lockTerm(tx, id);
 		const [prod] = term
 			? await tx
 					.select({ producerId: product.producerId })
@@ -184,6 +188,7 @@ const termColumns = {
 
 /** The producer's view of one product: every version, with the coproducer. */
 export async function listProductCoproductions(ctx: Ctx, producerId: string, productId: string) {
+	if (!z.uuid().safeParse(productId).success) throw new NotFoundError('product not found');
 	const [prod] = await ctx.db
 		.select({ id: product.id })
 		.from(product)
@@ -209,6 +214,7 @@ export async function listMyCoproductions(ctx: Ctx, coproducerId: string) {
 
 /** RF-51: the contract text, for the coproducer or the producer of the product. */
 export async function getContract(ctx: Ctx, viewerId: string, id: string) {
+	if (!z.uuid().safeParse(id).success) throw new NotFoundError('contract not found');
 	const [row] = await ctx.db
 		.select({
 			...termColumns,
@@ -219,7 +225,7 @@ export async function getContract(ctx: Ctx, viewerId: string, id: string) {
 		})
 		.from(coproduction)
 		.innerJoin(product, eq(product.id, coproduction.productId))
-		.where(eq(coproduction.id, z.uuid().parse(id)));
+		.where(eq(coproduction.id, id));
 	if (!row || (row.coproducerId !== viewerId && row.producerId !== viewerId)) {
 		throw new NotFoundError('contract not found');
 	}
