@@ -17,6 +17,15 @@ describe('errorText', () => {
 });
 
 describe('issueText', () => {
+	it('explains a percentage that is not one', () => {
+		const schema = z.string().superRefine((_, ctx) => {
+			ctx.addIssue({ code: 'custom', message: 'x', params: { code: 'invalid_percent' } });
+		});
+		expect(schema.safeParse('abc').error!.issues.map(issueText)).toEqual([
+			'Informe o percentual de 0,01 a 90, como 30 ou 12,5.'
+		]);
+	});
+
 	const textFor = (schema: z.ZodType, value: unknown) => {
 		const result = schema.safeParse(value);
 		if (result.success) throw new Error('expected an issue');

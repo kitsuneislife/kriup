@@ -47,7 +47,8 @@ export const invalidMoneyText = 'Informe o valor em reais, como 97,90.';
 /** Codes a schema puts in a custom issue (`params.code`), for rules Zod has no name for. */
 const custom: Record<string, string> = {
 	invalid_tax_id: 'CPF ou CNPJ inválido.',
-	invalid_price: invalidMoneyText
+	invalid_price: invalidMoneyText,
+	invalid_percent: 'Informe o percentual de 0,01 a 90, como 30 ou 12,5.'
 };
 
 /** The text under a field for one Zod issue. */

@@ -100,4 +100,24 @@ describe('invite and acceptance (RF-50 to RF-52)', () => {
 			'invalid_transition'
 		);
 	});
+
+	it('treats a malformed id as missing, not as a database error', async () => {
+		const { ctx, producer, productId } = await setup();
+		await expect(cancelInvite(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(acceptInvite(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(getContract(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(listProductCoproductions(ctx, producer.id, 'nope')).rejects.toBeInstanceOf(
+			NotFoundError
+		);
+		await expect(
+			inviteCoproducer(ctx, producer.id, {
+				productId: 'nope',
+				email: 'co@example.com',
+				name: 'Co',
+				percentBp: 1_000,
+				durationDays: null
+			})
+		).rejects.toBeInstanceOf(NotFoundError);
+		expect(await listProductCoproductions(ctx, producer.id, productId)).toEqual([]);
+	});
 });
