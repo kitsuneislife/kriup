@@ -7,7 +7,7 @@ Atualizado em 13/11/2026.
 ## Estado
 
 - Fases 0 a 6 de `tecnico/frontend-plano.md` concluídas. Na fase 6, o produtor tem a fila de reembolsos pelo prazo (`/producer/refunds`) e o detalhe com conversa, aprovação confirmada e recusa com justificativa que o aluno lê.
-- Gates verdes [measured]: lint, check, 232 testes unitários, 96 de integração e 167 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
+- Gates verdes [measured]: lint, check, 232 testes unitários, 97 de integração e 167 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
 
 ## Próximo passo
 
