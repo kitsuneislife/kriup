@@ -153,7 +153,8 @@
 		color: var(--color-text-secondary);
 	}
 	.time {
-		color: var(--color-text-tertiary);
+		/* secondary, not tertiary: the tertiary gray fails AA on text this small */
+		color: var(--color-text-secondary);
 		font-size: var(--text-footnote-size);
 		font-variant-numeric: tabular-nums;
 	}
