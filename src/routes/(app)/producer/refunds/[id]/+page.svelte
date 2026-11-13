@@ -48,12 +48,8 @@
 	const canDecide = $derived(producerCanDecide(refund, data.now));
 	const open = $derived(refund.status !== 'completed' && refund.status !== 'final_declined');
 	const failed = (target: string) => (form?.for === target && form.code ? form.code : undefined);
-	const declineError = $derived(
-		form?.for === 'decline' && form.code
-			? (form.fields?.reason ??
-					(form.code === 'decline_reason_required' ? errorText(form.code) : undefined))
-			: undefined
-	);
+	// a blank reason fails the schema first, so it always arrives as a field error
+	const declineError = $derived(form?.for === 'decline' ? form.fields?.reason : undefined);
 	const declineAlert = $derived(
 		failed('decline') && !declineError ? errorText(failed('decline')!) : undefined
 	);
