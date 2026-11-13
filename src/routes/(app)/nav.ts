@@ -20,7 +20,10 @@ export const sections: { profile: Profile; title: string; items: NavItem[] }[] =
 	{
 		profile: 'student',
 		title: 'Aluno',
-		items: [{ route: '/(app)/student', label: 'Meus cursos', icon: 'book' }]
+		items: [
+			{ route: '/(app)/student', label: 'Meus cursos', icon: 'book' },
+			{ route: '/(app)/student/orders', label: 'Pedidos', icon: 'receipt' }
+		]
 	},
 	{
 		profile: 'coproducer',
