@@ -135,7 +135,7 @@ function visits(one: Story): Visit[] {
 	const outsiders: Who[] = ['producer2', 'student', 'student2', 'coproducer', 'support'];
 	const nonSupport: Who[] = ['producer', 'student', 'coproducer', 'producer2', 'student2'];
 	return [
-		...['', '/content', '/coproduction', '/offers', '/page'].map((tail) => ({
+		...['', '/content', '/coproduction', '/offers', '/page', '/preview'].map((tail) => ({
 			route: `/(app)/producer/products/[id]${tail}`,
 			url: `${p}${tail}`,
 			allowed: ['producer' as const],

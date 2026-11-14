@@ -27,6 +27,7 @@ const producerRoutes = (s: Story): Record<string, string> => ({
 	'/(app)/producer/products/[id]/coproduction': `/producer/products/${s.productId}/coproduction`,
 	'/(app)/producer/products/[id]/offers': `/producer/products/${s.productId}/offers`,
 	'/(app)/producer/products/[id]/page': `/producer/products/${s.productId}/page`,
+	'/(app)/producer/products/[id]/preview': `/producer/products/${s.productId}/preview`,
 	'/(app)/producer/refunds': '/producer/refunds',
 	'/(app)/producer/refunds/[id]': `/producer/refunds/${s.refundId}`,
 	'/(app)/producer/money': '/producer/money',
