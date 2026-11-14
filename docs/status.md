@@ -1,6 +1,6 @@
 # Status
 
-> **Summary.** Frontend do MVP em 95%: fases 0 a 8 concluídas (conta, criação do produto, venda, área do aluno, dinheiro, reembolso do produtor, coprodução, suporte). Próximo: fase 9, integração e fechamento.
+> **Summary.** Frontend do MVP em 99%: fases 0 a 8 e lotes 9.1 a 9.3 concluídos (jornada completa entre perfis, navegação e prévia, revisão de acessibilidade, acesso e LCP). Falta o 9.4, teste de uso com pessoas reais, com roteiro pronto.
 
 Atualizado em 13/11/2026.
 
@@ -8,11 +8,12 @@ Atualizado em 13/11/2026.
 
 - Fases 0 a 7 de `tecnico/frontend-plano.md` concluídas. Na fase 7, o produtor convida coprodutores e simula uma venda no editor (`…/coproduction`), e o coprodutor lê o contrato e aceita ou recusa (`/coproductions/[id]`). A parte dele aparece no extrato só a partir do aceite.
 - Fase 8 concluída: o suporte tem fila, decisão de reembolso, chamados, bloqueios, auditoria e saques (`/support/**`). F2 decidida: quem conclui o saque é o suporte.
-- Gates verdes [measured]: lint, check, 262 testes unitários, 109 de integração e 219 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
+- Lotes 9.1 a 9.3 concluídos: jornada completa entre perfis num só e2e, links e e-mails conferidos, prévia do produto (`…/preview`, RF-16), axe em todas as rotas, varredura de acesso sem vazamento e LCP das páginas públicas abaixo de 1 s. Detalhes em `tecnico/frontend-plano.md`, fase 9.
+- Gates verdes na main [measured]: lint, check, 262 testes unitários, 112 de integração e 257 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
 
 ## Próximo passo
 
-Fase 9, fechamento: lote 9.1, jornada completa entre perfis num só e2e; depois 9.2 a 9.4 (`tecnico/frontend-plano.md`).
+Lote 9.4: rodar o teste de uso com 3 a 5 pessoas não técnicas seguindo `produto/teste-de-uso.md` e corrigir o que travar. LCP e capturas finais: `pnpm test:review`.
 
 ## Riscos e pendências
 

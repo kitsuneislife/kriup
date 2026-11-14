@@ -207,6 +207,16 @@ O e2e cobre a decisão do suporte num reembolso escalado (recusa lida pelo aluno
 | 9.3 | Revisão geral: axe em todas as rotas, LCP das páginas públicas, varredura de acesso (cada rota com usuário de outro perfil e de outro dono), capturas finais | 99 |
 | 9.4 | Teste de uso com 3 a 5 pessoas não técnicas criando o primeiro produto; ajustes do que travou | 100 |
 
+Lotes 9.1 a 9.3 concluídos em 13/11/2026, feitos em paralelo, cada um na sua branch, e juntados sem conflito. O 9.4 depende de pessoas reais e tem roteiro pronto em `docs/produto/teste-de-uso.md`.
+
+9.1: `e2e/journey.spec.ts` percorre a jornada inteira pelas telas reais, em duas variantes (o suporte aprova ou recusa). O produtor se cadastra, cria pelo assistente e publica; o aluno compra com Pix pelo simulador, conclui uma aula e pede reembolso; o prazo do produtor vence e o pedido vai para o suporte, que decide. Só o tempo (pedido e reembolso retroagidos, job do prazo) e a conta de suporte usam serviços. O dinheiro bate nos dois desfechos: aprovado zera o retido e deixa só a taxa fixa de R$ 2,49 com a plataforma; recusado mantém o líquido retido e o acesso do aluno.
+
+9.2: os três e-mails (redefinição de senha, acesso da compra, convite de coprodução) têm os links conferidos contra a lista de rotas e a origem `APP_URL` (`src/lib/server/email-links.int.test.ts`). `e2e/navigation.spec.ts` segue, por perfil, todos os links internos visíveis, uma tela de cada tipo, e não achou link quebrado. O painel de dinheiro vazio agora leva aos produtos. `…/preview` (RF-16) mostra a página de venda e o conteúdo do curso como o aluno vê, só leitura e só para o dono; o editor ganhou "Ver como o aluno vê" e, depois de publicar, o link da página pública.
+
+9.3: axe sem violação em todas as rotas, nos dois temas, com dados semeados (`e2e/review-a11y.spec.ts`; `/design` fica de fora, porque só existe em dev). A varredura de acesso (`e2e/review-access.spec.ts`) abre cada rota de `(app)` com outro perfil e com outro dono do mesmo perfil e manda cerca de 90 POSTs contra recursos alheios: tudo responde 404, o anônimo vai para `/login` e o banco não muda. Os dois specs têm uma guarda que falha se surgir rota nova sem cobertura. O LCP das páginas públicas, no build de produção, ficou entre 0,5 e 0,9 s em carga normal (orçamento de 2,5 s). Para medi-lo foi preciso corrigir as animações de entrada de `Page` e `Alert`: com `fill-mode: both` o Chromium não reportava FCP nem LCP; agora é `backwards`, com o mesmo visual. `pnpm test:review` faz o build e roda o LCP e as capturas finais (desktop e 375 px, em `test-results/captures/`, fora do git).
+
+Na suíte inteira, com o banco compartilhado, a auditoria cresceu até o painel rolar sem nenhum elemento focável, e o axe acusou `scrollable-region-focusable`. O painel do `Shell` agora recebe foco (`tabindex="0"`), então qualquer página rola pelo teclado. Gates na main: lint, check, 262 unitários, 112 de integração e 257 e2e.
+
 ## 4. Ordem e dependências
 
 As fases seguem a ordem dos dados: sem produto publicado não há venda, sem venda não há dinheiro nem reembolso. As fixtures do lote 0.1 criam esses dados direto pelos serviços, então dá para adiantar uma fase se for preciso, mas o e2e de cada fase usa as telas das anteriores sempre que elas já existem.
