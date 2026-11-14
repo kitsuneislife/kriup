@@ -13,7 +13,9 @@
 <div class="shell">
 	<aside class="sidebar">{@render sidebar()}</aside>
 	<main class="main">
-		<div class="panel">{@render children()}</div>
+		<!-- The panel is the scroll container: focusable so a page with no links or buttons still scrolls by keyboard (axe scrollable-region-focusable). -->
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+		<div class="panel" tabindex="0">{@render children()}</div>
 	</main>
 </div>
 
