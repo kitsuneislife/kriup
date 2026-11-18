@@ -23,6 +23,7 @@
 	let { data } = $props();
 
 	const base = resolve('/(app)/producer/money/statement');
+	const exportBase = resolve('/api/statement/export');
 	const columns = [
 		{ key: 'createdAt', header: 'Data' },
 		{ key: 'productName', header: 'Produto' },
@@ -40,6 +41,12 @@
 		...Object.entries(entryStateText).map(([value, t]) => ({ value, label: t.label }))
 	];
 	const filtered = $derived(Object.values(data.values).some((v) => v !== ''));
+	const exportHref = $derived.by(() => {
+		const params = new SvelteURLSearchParams();
+		for (const [key, value] of Object.entries(data.values)) if (value) params.set(key, value);
+		const query = params.toString();
+		return query ? `${exportBase}?${query}` : exportBase;
+	});
 
 	/** The same filters on another page. */
 	function pageHref(page: number) {
@@ -102,6 +109,16 @@
 			</Alert>
 		{/if}
 
+		{#if data.entries.length > 0}
+			<Cluster gap={3} justify="between">
+				<Text variant="footnote" tone="secondary" numeric>
+					Mostrando {data.entries.length} de {data.totalCount}
+					{data.totalCount === 1 ? 'lançamento' : 'lançamentos'}
+				</Text>
+				<Button variant="ghost" icon="download" href={exportHref}>Exportar CSV</Button>
+			</Cluster>
+		{/if}
+
 		<Table caption="Extrato" columns={[...columns]} rows={data.entries} rowKey={(row) => row.id}>
 			{#snippet cell(row, column)}
 				{#if column.key === 'createdAt'}
@@ -161,7 +178,9 @@
 					{:else}
 						<span></span>
 					{/if}
-					<Text tone="secondary" variant="footnote">Página {data.page}</Text>
+					<Text tone="secondary" variant="footnote" numeric>
+						Página {data.page} de {data.pageCount}
+					</Text>
 					{#if data.hasMore}
 						<Button href={pageHref(data.page + 1)} iconEnd="arrow-right">Próxima</Button>
 					{:else}

@@ -4,7 +4,7 @@ import { PAYOUT_FEE_CENTS } from '../../domain/params';
 import { DomainError } from '../../domain/states';
 import { platformFee, splitSale } from '../../domain/split';
 import { ZodError } from 'zod';
-import { ledgerEntry, payout, user } from '../db/schema';
+import { ledgerEntry, order, payout, user } from '../db/schema';
 import { NotFoundError } from '../errors';
 import { acceptInvite, inviteCoproducer } from './coproduction';
 import {
@@ -17,7 +17,8 @@ import {
 	listPendingPayouts,
 	listStatementProducts,
 	releaseHeld,
-	requestPayout
+	requestPayout,
+	statementSchema
 } from './money';
 import { createBlock } from './support';
 import { buy, days, db, newUser, publishedProduct, rejectsCode, resetDb, testCtx } from './testing';
@@ -188,6 +189,147 @@ describe('payout (RN-13)', () => {
 	});
 });
 
+describe('recent sales (RF-41)', () => {
+	async function insertSale(
+		userId: string,
+		productId: string,
+		offerId: string,
+		studentId: string,
+		amountCents: number,
+		createdAt: Date,
+		state: 'held' | 'released' | 'reversed' = 'held'
+	) {
+		const [createdOrder] = await db
+			.insert(order)
+			.values({
+				offerId,
+				productId,
+				studentId,
+				paymentMethod: 'pix',
+				grossCents: 10_000,
+				feeCents: platformFee(10_000),
+				guaranteeDays: 7,
+				status: state === 'reversed' ? 'refunded' : 'paid',
+				paidAt: createdAt,
+				createdAt
+			})
+			.returning({ id: order.id });
+		const [entry] = await db
+			.insert(ledgerEntry)
+			.values({
+				userId,
+				orderId: createdOrder!.id,
+				type: 'sale',
+				state: 'held',
+				amountCents,
+				reason: 'Venda de Curso de pão, retida até o fim da garantia',
+				releaseAt: days(createdAt, 7),
+				createdAt
+			})
+			.returning({ id: ledgerEntry.id });
+		if (state !== 'held') {
+			await db.update(ledgerEntry).set({ state }).where(eq(ledgerEntry.id, entry!.id));
+		}
+	}
+
+	it('groups the last 7 Sao Paulo calendar days, excluding reversed and foreign sales', async () => {
+		const ctx = testCtx();
+		const producer = await newUser('p@example.com');
+		const other = await newUser('other@example.com');
+		const student = await newUser('student@example.com');
+		const { productId, offerId } = await publishedProduct(ctx, producer.id);
+		const otherPub = await publishedProduct(ctx, other.id);
+
+		// 2026-11-18T01:30:00Z is 2026-11-17 22:30 in America/Sao_Paulo (UTC-3): window 11/11..17/11
+		const now = new Date('2026-11-18T01:30:00Z');
+		const empty = await getMoneyPanel(ctx, producer.id, now);
+		expect(empty.recentSales).toEqual({
+			labels: ['11/11', '12/11', '13/11', '14/11', '15/11', '16/11', '17/11'],
+			valuesCents: [0, 0, 0, 0, 0, 0, 0],
+			salesCount: 0,
+			totalNetCents: 0
+		});
+
+		// 1 second before 11/11 00:00 in Sao Paulo -> excluded
+		await insertSale(
+			producer.id,
+			productId,
+			offerId,
+			student.id,
+			9_000,
+			new Date('2026-11-11T02:59:59Z'),
+			'released'
+		);
+		// start of 11/11 in Sao Paulo (released) -> index 0
+		await insertSale(
+			producer.id,
+			productId,
+			offerId,
+			student.id,
+			4_000,
+			new Date('2026-11-11T03:00:00Z'),
+			'released'
+		);
+		// two sales on 15/11 in Sao Paulo (one past UTC midnight) -> index 4
+		await insertSale(
+			producer.id,
+			productId,
+			offerId,
+			student.id,
+			3_000,
+			new Date('2026-11-15T15:00:00Z'),
+			'held'
+		);
+		await insertSale(
+			producer.id,
+			productId,
+			offerId,
+			student.id,
+			2_500,
+			new Date('2026-11-16T01:00:00Z'),
+			'held'
+		);
+		// reversed sale inside the window -> excluded
+		await insertSale(
+			producer.id,
+			productId,
+			offerId,
+			student.id,
+			8_000,
+			new Date('2026-11-15T18:00:00Z'),
+			'reversed'
+		);
+		// sale on 17/11 (today in Sao Paulo) -> index 6
+		await insertSale(
+			producer.id,
+			productId,
+			offerId,
+			student.id,
+			7_000,
+			new Date('2026-11-18T01:00:00Z'),
+			'held'
+		);
+		// another producer's sale on 17/11 -> excluded
+		await insertSale(
+			other.id,
+			otherPub.productId,
+			otherPub.offerId,
+			student.id,
+			6_000,
+			new Date('2026-11-17T15:00:00Z'),
+			'held'
+		);
+
+		const panel = await getMoneyPanel(ctx, producer.id, now);
+		expect(panel.recentSales).toEqual({
+			labels: ['11/11', '12/11', '13/11', '14/11', '15/11', '16/11', '17/11'],
+			valuesCents: [4_000, 0, 0, 0, 5_500, 0, 7_000],
+			salesCount: 4,
+			totalNetCents: 16_500
+		});
+	});
+});
+
 describe('statement (RF-43, RF-53, US-04)', () => {
 	it('filters by state and shows the coproducer the rule and the producer part', async () => {
 		const { ctx, producer, productId, offerId } = await released();
@@ -205,6 +347,7 @@ describe('statement (RF-43, RF-53, US-04)', () => {
 
 		const mine = await getStatement(ctx, co!.id);
 		const parts = splitSale(10_000, platformFee(10_000), [2_000]);
+		expect(mine).toMatchObject({ totalCount: 1, pageCount: 1, hasMore: false });
 		expect(mine.entries).toMatchObject([
 			{
 				grossCents: 10_000,
@@ -214,12 +357,33 @@ describe('statement (RF-43, RF-53, US-04)', () => {
 				producerCents: parts.producerCents
 			}
 		]);
-		expect((await getStatement(ctx, producer.id, { state: 'released' })).entries).toHaveLength(1);
-		expect((await getStatement(ctx, producer.id, { state: 'held' })).entries).toHaveLength(1);
+		expect(await getStatement(ctx, producer.id, { state: 'released' })).toMatchObject({
+			totalCount: 1,
+			pageCount: 1,
+			hasMore: false
+		});
+		expect(await getStatement(ctx, producer.id, { state: 'held' })).toMatchObject({
+			totalCount: 1,
+			pageCount: 1,
+			hasMore: false
+		});
 		const paged = await getStatement(ctx, producer.id, { pageSize: 1 });
-		expect(paged).toMatchObject({ hasMore: true });
+		expect(paged).toMatchObject({ hasMore: true, totalCount: 2, pageCount: 2 });
+		const pageTwo = await getStatement(ctx, producer.id, { page: 2, pageSize: 1 });
+		expect(pageTwo).toMatchObject({ hasMore: false, totalCount: 2, pageCount: 2 });
+
+		const stranger = await newUser('x@example.com');
+		expect(await getStatement(ctx, stranger.id)).toMatchObject({
+			entries: [],
+			totalCount: 0,
+			pageCount: 1,
+			hasMore: false
+		});
+		expect(statementSchema.parse({ pageSize: 1_000 }).pageSize).toBe(1_000);
+		expect(() => statementSchema.parse({ pageSize: 1_001 })).toThrow(ZodError);
+
 		expect(await db.select().from(ledgerEntry)).toHaveLength(3);
 		expect(await listStatementProducts(ctx, co!.id)).toMatchObject([{ id: productId }]);
-		expect(await listStatementProducts(ctx, (await newUser('x@example.com')).id)).toEqual([]);
+		expect(await listStatementProducts(ctx, stranger.id)).toEqual([]);
 	});
 });

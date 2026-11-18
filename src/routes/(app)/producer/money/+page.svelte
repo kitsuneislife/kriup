@@ -4,6 +4,7 @@
 		Alert,
 		Button,
 		Card,
+		Chart,
 		Cluster,
 		DateTime,
 		EmptyState,
@@ -25,7 +26,8 @@
 		panel.releases.length === 0 &&
 			balance.releasedCents === 0 &&
 			balance.paidOutCents === 0 &&
-			panel.blocks.length === 0
+			panel.blocks.length === 0 &&
+			panel.recentSales.salesCount === 0
 	);
 
 	const blockTitle = { account: 'Conta bloqueada', balance: 'Saques bloqueados' } as const;
@@ -87,6 +89,26 @@
 					</Stat>
 				</Grid>
 			</Card>
+
+			<Stack gap={4}>
+				<Text variant="title3" as="h2">Desempenho dos últimos 7 dias</Text>
+				<Card padding="lg">
+					<Stack gap={4}>
+						<Chart
+							kind="bar"
+							tone="accent"
+							label="Receita líquida dos últimos 7 dias"
+							values={panel.recentSales.valuesCents}
+							labels={panel.recentSales.labels}
+							format={formatMoney}
+						/>
+						<Text variant="footnote" tone="secondary">
+							{plural(panel.recentSales.salesCount)} nos últimos 7 dias · total líquido de
+							<Money cents={panel.recentSales.totalNetCents} variant="footnote" weight="semibold" />
+						</Text>
+					</Stack>
+				</Card>
+			</Stack>
 
 			<Stack gap={4}>
 				<Text variant="title3" as="h2">Próximas liberações</Text>

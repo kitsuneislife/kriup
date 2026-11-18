@@ -17,6 +17,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		entries: statement.entries,
 		hasMore: statement.hasMore,
+		totalCount: statement.totalCount,
+		pageCount: statement.pageCount,
 		products,
 		values: query.values,
 		page: query.filters.page,

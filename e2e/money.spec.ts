@@ -3,10 +3,12 @@
 
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
+import { platformFee, splitSale } from '../src/lib/domain/split';
 import { ledgerEntry } from '../src/lib/server/db/schema';
 import { releaseHeld } from '../src/lib/server/services/money';
 import { createBlock } from '../src/lib/server/services/support';
 import { days, db } from '../src/lib/server/services/testing';
+import { formatMoney } from '../src/lib/ui/format';
 import { buy, expect, expectAccessible, publishedProduct, test } from './fixtures';
 
 test('shows an empty state before the first sale', async ({ page, createUser, signIn }) => {
@@ -149,4 +151,29 @@ test('the panel leads to the statement and the payouts, and back', async ({
 		.getByRole('link', { name: 'Dinheiro' })
 		.click();
 	await expect(page).toHaveURL(/\/producer\/money$/);
+});
+
+test('shows the 7-day revenue chart and summary after a recent sale', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	const producer = await createUser('Paulo Lima');
+	const { offerId } = await publishedProduct(ctx, producer.id);
+	await buy(ctx, offerId, `bia.${randomUUID()}@e2e.test`);
+	await buy(ctx, offerId, `carlos.${randomUUID()}@e2e.test`);
+	await signIn(producer);
+
+	await page.goto('/producer/money');
+	await expect(
+		page.getByRole('heading', { name: 'Desempenho dos últimos 7 dias', level: 2 })
+	).toBeVisible();
+	await expect(page.getByRole('img', { name: 'Receita líquida dos últimos 7 dias' })).toBeVisible();
+	const netTwoSales = splitSale(10_000, platformFee(10_000)).producerCents * 2;
+	const money = formatMoney(netTwoSales).replace(/\s/g, ' ');
+	await expect(
+		page.getByText(`2 vendas nos últimos 7 dias · total líquido de ${money}`)
+	).toBeVisible();
+	await expectAccessible(page);
 });

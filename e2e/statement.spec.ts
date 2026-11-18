@@ -1,6 +1,7 @@
 // UC-07 (RF-43, RF-53): the statement with the rule on each line, its filters in the URL,
 // the coproducer's view and the privacy of other accounts.
 
+import { request as playwrightRequest } from '@playwright/test';
 import { platformFee, splitSale } from '../src/lib/domain/split';
 import { acceptInvite, inviteCoproducer } from '../src/lib/server/services/coproduction';
 import { days, releaseSalesOf } from '../src/lib/server/services/testing';
@@ -114,9 +115,13 @@ test('paginates a long statement keeping the filters', async ({
 	await page.goto('/producer/money/statement?state=held');
 	const rows = page.getByRole('row').filter({ hasText: 'Curso de pão' });
 	await expect(rows).toHaveCount(20);
+	await expect(page.getByText('Mostrando 20 de 21 lançamentos')).toBeVisible();
+	await expect(page.getByText('Página 1 de 2')).toBeVisible();
 	await page.getByRole('link', { name: 'Próxima' }).click();
 	await expect(page).toHaveURL(/state=held.*page=2|page=2.*state=held/);
 	await expect(rows).toHaveCount(1);
+	await expect(page.getByText('Mostrando 1 de 21 lançamentos')).toBeVisible();
+	await expect(page.getByText('Página 2 de 2')).toBeVisible();
 	await expect(page.getByRole('link', { name: 'Próxima' })).toHaveCount(0);
 	await page.getByRole('link', { name: 'Anterior' }).click();
 	await expect(rows).toHaveCount(20);
@@ -172,4 +177,64 @@ test("another account never sees someone else's lines", async ({
 
 	await page.goto('/producer/money/statement');
 	await expect(page.getByText('Nenhum lançamento ainda')).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Exportar CSV' })).toHaveCount(0);
+});
+
+test('exports a BOM CSV with filtered rows, sanitizes formulas, isolates accounts and redirects visitors', async ({
+	page,
+	baseURL,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	const anonymous = await playwrightRequest.newContext({ baseURL: baseURL!, maxRedirects: 0 });
+	try {
+		const anonRes = await anonymous.get('/api/statement/export');
+		expect(anonRes.status()).toBe(303);
+		expect(anonRes.headers().location).toBe('/login');
+	} finally {
+		await anonymous.dispose();
+	}
+
+	const producer = await createUser('Paulo Lima');
+	const other = await createUser('Outra Pessoa');
+	const bread = await publishedProduct(ctx, producer.id, 10_000, 'Curso de pão');
+	const formula = await publishedProduct(ctx, producer.id, 20_000, '=Curso; "pro"');
+	const otherProd = await publishedProduct(ctx, other.id, 15_000, 'Curso secreto');
+
+	await buy(ctx, bread.offerId, 'um@e2e.test');
+	await releaseSalesOf(producer.id);
+	await buy(ctx, formula.offerId, 'dois@e2e.test');
+	await buy(ctx, otherProd.offerId, 'tres@e2e.test');
+
+	await signIn(producer);
+	await page.goto('/producer/money/statement?state=held');
+	const exportLink = page.getByRole('link', { name: 'Exportar CSV' });
+	await expect(exportLink).toHaveAttribute('href', '/api/statement/export?state=held');
+	await expectAccessible(page);
+
+	const filteredRes = await page.request.get('/api/statement/export?state=held');
+	expect(filteredRes.status()).toBe(200);
+	expect(filteredRes.headers()['content-type']).toBe('text/csv; charset=utf-8');
+	expect(filteredRes.headers()['content-disposition']).toBe(
+		'attachment; filename="extrato-cakto.csv"'
+	);
+	expect(filteredRes.headers()['cache-control']).toBe('no-store');
+
+	const filteredCsv = await filteredRes.text();
+	expect(filteredCsv.startsWith('\uFEFF')).toBe(true);
+	const filteredLines = filteredCsv.slice(1).split('\r\n');
+	expect(filteredLines[0]).toBe('Data;Produto;Tipo;Regra aplicada;Estado;Valor (R$)');
+	expect(filteredLines).toHaveLength(2);
+	expect(filteredLines[1]).toContain('"\'=Curso; ""pro""";Venda;');
+	expect(filteredLines[1]).toContain(';Retido;');
+	expect(filteredCsv).not.toContain('Curso de pão');
+	expect(filteredCsv).not.toContain('Curso secreto');
+
+	// another account's product filter never leaks their rows
+	const foreignRes = await page.request.get(`/api/statement/export?product=${otherProd.productId}`);
+	expect(foreignRes.status()).toBe(200);
+	expect((await foreignRes.text()).slice(1).split('\r\n')).toEqual([
+		'Data;Produto;Tipo;Regra aplicada;Estado;Valor (R$)'
+	]);
 });

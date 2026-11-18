@@ -1,7 +1,7 @@
 // The money panel (RF-40 to RF-45). The balance is always the sum of the entries
 // (modelo-de-dados section 4), computed in the database, never stored.
 
-import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, ne, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { PAYOUT_FEE_CENTS, PAYOUT_MIN_CENTS } from '../../domain/params';
 import { quotePayout } from '../../domain/payout';
@@ -24,12 +24,40 @@ export async function getBalance(db: Db | Tx, userId: string): Promise<Balance> 
 	return { heldCents: sum('held'), releasedCents: sum('released'), paidOutCents: sum('paid_out') };
 }
 
+const saoPauloIsoDay = new Intl.DateTimeFormat('en-CA', {
+	timeZone: 'America/Sao_Paulo',
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit'
+});
+
+/** Start of a `YYYY-MM-DD` calendar day in America/Sao_Paulo (UTC-3, RNF-11). */
+const startOfSaoPauloDay = (iso: string) => new Date(`${iso}T03:00:00.000Z`);
+
+function recentSaoPauloWindow(now: Date, count = 7) {
+	const [year, month, day] = saoPauloIsoDay.format(now).split('-').map(Number);
+	const isoAt = (offset: number) =>
+		new Date(Date.UTC(year!, month! - 1, day! + offset)).toISOString().slice(0, 10);
+	const days = Array.from({ length: count }, (_, i) => {
+		const iso = isoAt(i - (count - 1));
+		return { iso, label: `${iso.slice(8, 10)}/${iso.slice(5, 7)}` };
+	});
+	return {
+		days,
+		from: startOfSaoPauloDay(days[0]!.iso),
+		to: startOfSaoPauloDay(isoAt(1))
+	};
+}
+
 /**
  * RF-41, RF-42, RF-45: the three totals, what is held and until when, the blocks that
- * stop a payout with their reason and next step, and what a payout costs (RN-13).
+ * stop a payout with their reason and next step, what a payout costs (RN-13), and the
+ * last 7 calendar days of net sales in America/Sao_Paulo.
  */
 export async function getMoneyPanel(ctx: Ctx, userId: string, now = new Date()) {
-	const [balance, held, blocks, payouts] = await Promise.all([
+	const window = recentSaoPauloWindow(now);
+	const saleDay = sql<string>`to_char(${ledgerEntry.createdAt} AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD')`;
+	const [balance, held, blocks, payouts, salesByDay] = await Promise.all([
 		getBalance(ctx.db, userId),
 		ctx.db
 			.select({
@@ -42,8 +70,34 @@ export async function getMoneyPanel(ctx: Ctx, userId: string, now = new Date()) 
 			.groupBy(ledgerEntry.releaseAt)
 			.orderBy(asc(ledgerEntry.releaseAt)),
 		activeBlocks(ctx.db, userId, now),
-		listPayouts(ctx, userId)
+		listPayouts(ctx, userId),
+		ctx.db
+			.select({
+				day: saleDay,
+				amountCents: sql<string>`sum(${ledgerEntry.amountCents})`,
+				entries: sql<string>`count(*)`
+			})
+			.from(ledgerEntry)
+			.where(
+				and(
+					eq(ledgerEntry.userId, userId),
+					eq(ledgerEntry.type, 'sale'),
+					ne(ledgerEntry.state, 'reversed'),
+					gte(ledgerEntry.createdAt, window.from),
+					lt(ledgerEntry.createdAt, window.to)
+				)
+			)
+			.groupBy(saleDay)
 	]);
+	const byDay = new Map(
+		salesByDay.map((s) => [
+			s.day,
+			{ amountCents: Number(s.amountCents), entries: Number(s.entries) }
+		])
+	);
+	const valuesCents = window.days.map((d) => byDay.get(d.iso)?.amountCents ?? 0);
+	const salesCount = window.days.reduce((sum, d) => sum + (byDay.get(d.iso)?.entries ?? 0), 0);
+	const totalNetCents = valuesCents.reduce((sum, v) => sum + v, 0);
 	return {
 		balance,
 		/** Held money grouped by release date: the reason is the guarantee (RN-04). */
@@ -59,7 +113,13 @@ export async function getMoneyPanel(ctx: Ctx, userId: string, now = new Date()) 
 			/** Why no payout is possible right now, if so; the screen explains it (RN-07). */
 			refusal: balance.releasedCents < 0 ? ('negative_balance' as const) : null
 		},
-		payouts
+		payouts,
+		recentSales: {
+			labels: window.days.map((d) => d.label),
+			valuesCents,
+			salesCount,
+			totalNetCents
+		}
 	};
 }
 
@@ -70,7 +130,7 @@ export const statementSchema = z.object({
 	/** Exclusive. */
 	to: z.coerce.date().optional(),
 	page: z.coerce.number().int().min(1).default(1),
-	pageSize: z.coerce.number().int().min(1).max(200).default(50)
+	pageSize: z.coerce.number().int().min(1).max(1_000).default(50)
 });
 
 /**
@@ -90,33 +150,42 @@ export async function getStatement(
 		f.from ? gte(ledgerEntry.createdAt, f.from) : undefined,
 		f.to ? lt(ledgerEntry.createdAt, f.to) : undefined
 	);
-	const rows = await ctx.db
-		.select({
-			id: ledgerEntry.id,
-			type: ledgerEntry.type,
-			state: ledgerEntry.state,
-			amountCents: ledgerEntry.amountCents,
-			reason: ledgerEntry.reason,
-			releaseAt: ledgerEntry.releaseAt,
-			createdAt: ledgerEntry.createdAt,
-			orderId: ledgerEntry.orderId,
-			payoutId: ledgerEntry.payoutId,
-			referenceId: ledgerEntry.referenceId,
-			productId: order.productId,
-			productName: product.name,
-			grossCents: order.grossCents,
-			feeCents: order.feeCents,
-			percentBp: coproduction.percentBp
-		})
-		.from(ledgerEntry)
-		.leftJoin(order, eq(order.id, ledgerEntry.orderId))
-		.leftJoin(product, eq(product.id, order.productId))
-		.leftJoin(coproduction, eq(coproduction.id, ledgerEntry.coproductionId))
-		.where(where)
-		.orderBy(desc(ledgerEntry.createdAt), desc(ledgerEntry.id))
-		.limit(f.pageSize + 1)
-		.offset((f.page - 1) * f.pageSize);
+	const [rows, [counted]] = await Promise.all([
+		ctx.db
+			.select({
+				id: ledgerEntry.id,
+				type: ledgerEntry.type,
+				state: ledgerEntry.state,
+				amountCents: ledgerEntry.amountCents,
+				reason: ledgerEntry.reason,
+				releaseAt: ledgerEntry.releaseAt,
+				createdAt: ledgerEntry.createdAt,
+				orderId: ledgerEntry.orderId,
+				payoutId: ledgerEntry.payoutId,
+				referenceId: ledgerEntry.referenceId,
+				productId: order.productId,
+				productName: product.name,
+				grossCents: order.grossCents,
+				feeCents: order.feeCents,
+				percentBp: coproduction.percentBp
+			})
+			.from(ledgerEntry)
+			.leftJoin(order, eq(order.id, ledgerEntry.orderId))
+			.leftJoin(product, eq(product.id, order.productId))
+			.leftJoin(coproduction, eq(coproduction.id, ledgerEntry.coproductionId))
+			.where(where)
+			.orderBy(desc(ledgerEntry.createdAt), desc(ledgerEntry.id))
+			.limit(f.pageSize + 1)
+			.offset((f.page - 1) * f.pageSize),
+		ctx.db
+			.select({ count: sql<string>`count(*)` })
+			.from(ledgerEntry)
+			.leftJoin(order, eq(order.id, ledgerEntry.orderId))
+			.where(where)
+	]);
 
+	const totalCount = Number(counted?.count ?? 0);
+	const pageCount = Math.max(1, Math.ceil(totalCount / f.pageSize));
 	const page = rows.slice(0, f.pageSize);
 	const coproducerOrders = page.filter((r) => r.percentBp !== null).map((r) => r.orderId!);
 	const producerParts = coproducerOrders.length
@@ -139,7 +208,9 @@ export async function getStatement(
 					? null
 					: (producerParts.find((p) => p.orderId === r.orderId)?.amountCents ?? null)
 		})),
-		hasMore: rows.length > f.pageSize
+		hasMore: rows.length > f.pageSize,
+		totalCount,
+		pageCount
 	};
 }
 
