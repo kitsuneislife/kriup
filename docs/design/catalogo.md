@@ -30,7 +30,7 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | Componente | Quando usar | Quando não usar | Variantes |
 | --- | --- | --- | --- |
 | `Page` | Envolver o conteúdo de uma tela: centraliza e limita a largura | Dentro de outro `Page` | `width`: `text`, `page` |
-| `Shell` | Moldura do app: barra lateral e painel de conteúdo | Telas públicas curtas (login, checkout) | Slot `sidebar` |
+| `Shell` | Moldura do app: barra lateral e painel de conteúdo | Telas públicas curtas (login, checkout) | Slots `brand` (opcional) e `sidebar` |
 | `Stack` | Empilhar itens na vertical com espaço da escala | Itens lado a lado (use `Cluster`) | `gap`, `align`, `as` |
 | `Cluster` | Itens em linha que quebram sozinhos: ações, etiquetas, cabeçalho | Colunas de largura igual (use `Grid`) | `gap`, `align`, `justify`, `wrap` |
 | `Grid` | Cartões em colunas que se ajustam à largura | Poucos itens em linha (use `Cluster`) | `min`: `sm`, `md`, `lg`; `gap` |

@@ -34,8 +34,8 @@
 
 	/* ---------- Semantic: text ---------- */
 	--color-text: light-dark(rgb(28 28 30), rgb(255 255 255));
-	/* light at 76%, not Apple's 60%: 60% is 3.3:1 on the app background, below WCAG AA */
-	--color-text-secondary: light-dark(rgb(60 60 67 / 0.76), rgb(235 235 245 / 0.6));
+	/* light at 76% and dark at 70%, not Apple's 60%: 60% falls below WCAG AA on app and fill surfaces */
+	--color-text-secondary: light-dark(rgb(60 60 67 / 0.76), rgb(235 235 245 / 0.7));
 	--color-text-tertiary: light-dark(rgb(60 60 67 / 0.3), rgb(235 235 245 / 0.3));
 	--color-text-quaternary: light-dark(rgb(60 60 67 / 0.18), rgb(235 235 245 / 0.16));
 	--color-text-on-accent: rgb(255 255 255);

@@ -43,7 +43,7 @@ Regras:
 
 - **Profundidade pelo tom, não pela sombra.** No escuro, camada mais alta é mais clara. No claro, o painel branco se destaca do fundo cinza. A sombra é só um reforço sutil.
 - **Preenchimentos são cinza com transparência** (`--color-fill-*`): hover, pressionado e selecionado funcionam sobre qualquer superfície sem cor nova.
-- **Texto por opacidade**, como na Apple: primário, secundário (76% no claro, 60% no escuro), terciário (30%, só placeholder e desabilitado) e quaternário (decoração). O secundário claro foge dos 60% da Apple porque eles dão 3,3:1 sobre o fundo do app, abaixo do mínimo AA de 4,5:1; com 76% fica em 5:1. Texto que a pessoa precisa ler nunca usa o terciário.
+- **Texto por opacidade**, como na Apple: primário, secundário (76% no claro, 70% no escuro), terciário (30%, só placeholder e desabilitado) e quaternário (decoração). O secundário foge dos 60% da Apple nos dois temas porque eles dão 3,3:1 sobre o fundo claro do app e 4,37:1 sobre preenchimentos em cartões escuros, abaixo do mínimo AA de 4,5:1; com 76% e 70% fica acima de 5:1. Texto que a pessoa precisa ler nunca usa o terciário.
 - **Contraste aumentado:** com `prefers-contrast: more` os cinzas assumem os valores "Increased contrast" da paleta.
 
 ## 3. Borda dupla

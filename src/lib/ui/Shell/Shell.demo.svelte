@@ -1,13 +1,19 @@
 <script lang="ts">
-	import { Skeleton, Stack, Text } from '../index';
+	import { Icon, Skeleton, Stack, Text } from '../index';
 </script>
 
 <Stack gap={6}>
-	<!-- A miniature of the frame: sidebar on the app background, content in an inset panel. -->
+	<!-- A miniature of the frame: brand + sidebar on the app background, content in an inset panel. -->
 	<div class="window" aria-hidden="true">
 		<div class="side">
-			<span class="pill" data-current="true"></span>
-			{#each [1, 2, 3, 4] as item (item)}<span class="pill"></span>{/each}
+			<div class="brand">
+				<Icon name="sparkles" size="sm" />
+				<Text variant="footnote" weight="semibold" as="span">Marca</Text>
+			</div>
+			<div class="pills">
+				<span class="pill" data-current="true"></span>
+				{#each [1, 2, 3] as item (item)}<span class="pill"></span>{/each}
+			</div>
 		</div>
 		<div class="panel">
 			<Stack gap={4}>
@@ -23,11 +29,12 @@
 	</div>
 	<Stack gap={1}>
 		<Text variant="subhead">
-			Barra lateral sobre o fundo, conteúdo num painel arredondado afastado das bordas. Esta página
-			usa o próprio Shell.
+			Barra lateral com espaço opcional para marca (`brand`) sobre o fundo, conteúdo num painel
+			arredondado afastado das bordas. Esta página usa o próprio Shell.
 		</Text>
 		<Text variant="footnote" tone="secondary">
-			Só o painel rola. Em tela estreita (até 40rem) a barra lateral passa para cima do conteúdo.
+			Só o painel rola. Em tela estreita (até 40rem) a barra lateral vira uma faixa compacta acima
+			do conteúdo, mantendo todas as áreas visíveis.
 		</Text>
 	</Stack>
 </Stack>
@@ -37,7 +44,7 @@
 		display: grid;
 		grid-template-columns: var(--width-column-sm) minmax(0, 1fr);
 		gap: var(--space-2);
-		block-size: calc(var(--control-lg) * 6);
+		min-block-size: calc(var(--control-lg) * 6);
 		padding: var(--space-2);
 		border-radius: var(--radius-lg);
 		background: var(--color-bg-app);
@@ -48,8 +55,22 @@
 	.side {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-2);
+		gap: var(--space-3);
 		padding: var(--space-2);
+	}
+	.brand {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		color: var(--color-text);
+	}
+	.brand :global(svg) {
+		color: var(--color-accent);
+	}
+	.pills {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
 	}
 	.pill {
 		block-size: var(--space-6);
@@ -83,8 +104,12 @@
 		.window {
 			grid-template-columns: minmax(0, 1fr);
 		}
-		.side {
-			display: none;
+		.pills {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+		.pill {
+			inline-size: var(--space-12);
 		}
 	}
 </style>
