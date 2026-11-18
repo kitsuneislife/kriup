@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { auditActionText, auditTargetText, blockChoice } from './support-text';
+import {
+	auditActionText,
+	auditTargetText,
+	blockChoice,
+	formatHoursMetric,
+	payoutsBannerTitle,
+	pluralOrders
+} from './support-text';
 
 describe('blockChoice', () => {
 	it('reads the balance and a product of the select', () => {
@@ -52,5 +59,30 @@ describe('auditTargetText', () => {
 
 	it('says when the target is gone', () => {
 		expect(auditTargetText(null)).toBe('Alvo não encontrado');
+	});
+});
+
+describe('payoutsBannerTitle', () => {
+	it('pluralizes pending payouts for the queue alert', () => {
+		expect(payoutsBannerTitle(1)).toBe('1 saque aguardando revisão');
+		expect(payoutsBannerTitle(3)).toBe('3 saques aguardando revisão');
+	});
+});
+
+describe('formatHoursMetric', () => {
+	it('formats missing, sub-hour and multi-hour medians in Portuguese', () => {
+		expect(formatHoursMetric(null)).toBe('Sem dados');
+		expect(formatHoursMetric(0)).toBe('0 min');
+		expect(formatHoursMetric(0.5)).toBe('30 min');
+		expect(formatHoursMetric(2)).toBe('2 h');
+		expect(formatHoursMetric(3.5)).toBe('3,5 h');
+	});
+});
+
+describe('pluralOrders', () => {
+	it('formats order counts for chart tooltips and summaries', () => {
+		expect(pluralOrders(0)).toBe('0 pedidos');
+		expect(pluralOrders(1)).toBe('1 pedido');
+		expect(pluralOrders(4)).toBe('4 pedidos');
 	});
 });

@@ -11,7 +11,12 @@ test('opens a ticket on an order, writes again and closes it', async ({
 }) => {
 	test.slow(); // five screens and axe on each
 	const producer = await createUser('Paulo Lima');
-	const { offerId } = await publishedProduct(ctx, producer.id, 9_790);
+	const { offerId } = await publishedProduct(
+		ctx,
+		producer.id,
+		9_790,
+		'Curso de confeitaria artesanal'
+	);
 	const student = await createUser('Bia Rocha');
 	const orderId = await buy(ctx, offerId, student.email);
 	await signIn(student);
@@ -53,7 +58,9 @@ test('opens a ticket on an order, writes again and closes it', async ({
 	await expectAccessible(page);
 
 	await page.getByRole('link', { name: 'Chamados' }).first().click();
-	await expect(page.getByRole('link', { name: /Não consigo acessar/ })).toContainText('Fechado');
+	const card = page.getByRole('link', { name: /Não consigo acessar/ });
+	await expect(card).toContainText('Fechado');
+	await expect(card).toContainText('Curso de confeitaria artesanal');
 	await expectAccessible(page);
 });
 

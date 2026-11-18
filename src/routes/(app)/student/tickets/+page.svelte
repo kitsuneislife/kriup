@@ -42,6 +42,7 @@
 									</Text>
 								</Cluster>
 								<Text variant="title3" as="h2" truncate>{ticket.subject}</Text>
+								<Text variant="footnote" tone="secondary">{ticket.productName}</Text>
 							</Stack>
 						</Card>
 					</li>

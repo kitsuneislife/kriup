@@ -1,18 +1,28 @@
+import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
+import { user } from '../db/schema';
 import { NotFoundError } from '../errors';
+import { createProduct, publishProduct } from './catalog';
 import { completePayout, releaseHeld, requestPayout } from './money';
-import { escalateOverdueRefunds, requestRefund, supportDecision } from './refunds';
+import {
+	escalateOverdueRefunds,
+	producerDecision,
+	requestRefund,
+	supportDecision
+} from './refunds';
 import {
 	closeTicket,
 	createBlock,
 	findBlockTarget,
+	getPlatformMetrics,
 	liftBlock,
 	listActiveBlocks,
 	listAuditTrail,
+	listMyTickets,
 	openTicket
 } from './support';
-import { buy, days, db, newUser, publishedProduct, resetDb, testCtx } from './testing';
+import { brand, buy, days, db, newUser, publishedProduct, resetDb, testCtx } from './testing';
 
 beforeEach(resetDb);
 
@@ -179,5 +189,273 @@ describe('listAuditTrail', () => {
 	it('answers NotFound to anyone but support', async () => {
 		const someone = await newUser('p@example.com');
 		await expect(listAuditTrail(testCtx(), someone)).rejects.toBeInstanceOf(NotFoundError);
+	});
+});
+
+describe('listMyTickets', () => {
+	it('returns the student tickets newest first with their productName', async () => {
+		const ctx = testCtx();
+		const producer = await newUser('p@example.com', 'user', 'Paulo Lima');
+		const { offerId: breadOffer } = await publishedProduct(
+			ctx,
+			producer.id,
+			10_000,
+			'Curso de pão'
+		);
+		const { offerId: cakeOffer } = await publishedProduct(
+			ctx,
+			producer.id,
+			15_000,
+			'Curso de bolo'
+		);
+		const orderBread = await buy(ctx, breadOffer, 'bia@example.com');
+		const sale = await db.query.order.findFirst({ where: (o, { eq }) => eq(o.id, orderBread) });
+		const studentId = sale!.studentId;
+		const orderCake = await buy(ctx, cakeOffer, 'bia@example.com');
+		const otherOrder = await buy(ctx, breadOffer, 'outro@example.com');
+		const otherSale = await db.query.order.findFirst({
+			where: (o, { eq }) => eq(o.id, otherOrder)
+		});
+
+		await openTicket(ctx, studentId, {
+			orderId: orderBread,
+			subject: 'Acesso ao módulo 1',
+			body: 'Ajuda'
+		});
+		await openTicket(ctx, otherSale!.studentId, {
+			orderId: otherOrder,
+			subject: 'Chamado de outra aluna',
+			body: 'Oi'
+		});
+		const secondTicketId = await openTicket(ctx, studentId, {
+			orderId: orderCake,
+			subject: 'Receita em PDF',
+			body: 'Onde baixo?'
+		});
+
+		const tickets = await listMyTickets(ctx, studentId);
+		expect(tickets).toHaveLength(2);
+		expect(tickets.map((t) => [t.subject, t.productName])).toEqual([
+			['Receita em PDF', 'Curso de bolo'],
+			['Acesso ao módulo 1', 'Curso de pão']
+		]);
+		expect(tickets[0]?.id).toBe(secondTicketId);
+	});
+});
+
+describe('getPlatformMetrics', () => {
+	it('answers NotFound to anyone but support', async () => {
+		const someone = await newUser('p@example.com');
+		await expect(getPlatformMetrics(testCtx(), someone)).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('returns null medians and zeroed totals when the platform has no activity', async () => {
+		const ctx = testCtx();
+		const support = await newUser('s@example.com', 'support');
+		const metrics = await getPlatformMetrics(ctx, support, new Date('2026-06-15T15:00:00Z'));
+
+		expect(metrics.medianHoursToFirstPublish).toBeNull();
+		expect(metrics.conversion).toEqual({
+			totalProducts: 0,
+			publishedProducts: 0,
+			publishedRatePercent: 0
+		});
+		expect(metrics.medianHoursToFirstRefundResponse).toBeNull();
+		expect(metrics.ticketsByProducer).toEqual([]);
+		expect(metrics.paidOrdersCount).toBe(0);
+		expect(metrics.grossVolumeCents).toBe(0);
+		expect(metrics.platformFeeCents).toBe(0);
+		expect(metrics.activeBlocksCount).toBe(0);
+		expect(metrics.dailyOrders.labels).toHaveLength(7);
+		expect(metrics.dailyOrders.counts).toEqual([0, 0, 0, 0, 0, 0, 0]);
+		expect(metrics.dailyOrders.volumeCents).toEqual([0, 0, 0, 0, 0, 0, 0]);
+	});
+
+	it('computes Lean Canvas medians, conversion, ticketsByProducer, active totals and 7-day buckets', async () => {
+		const ctx = testCtx();
+		const support = await newUser('s@example.com', 'support', 'Sara Dias');
+		const t0 = new Date('2026-06-01T10:00:00Z');
+		const hours = (from: Date, h: number) => new Date(from.getTime() + h * 3_600_000);
+
+		const paulo = await newUser('paulo@example.com', 'user', 'Paulo Lima');
+		const bia = await newUser('bia@example.com', 'user', 'Bia Rocha');
+		const caio = await newUser('caio@example.com', 'user', 'Caio Melo');
+		for (const u of [paulo, bia, caio]) {
+			await db.update(user).set({ createdAt: t0 }).where(eq(user.id, u.id));
+		}
+
+		// Paulo publishes at +2h and +10h -> min is 2h.
+		const pauloFirst = await createProduct(ctx, paulo.id, {
+			templateSlug: 'online-course',
+			name: 'Curso de pão',
+			audience: 'iniciantes',
+			priceCents: 10_000,
+			brand
+		});
+		await publishProduct(ctx, paulo.id, pauloFirst, hours(t0, 2));
+
+		const pauloSecond = await createProduct(ctx, paulo.id, {
+			templateSlug: 'online-course',
+			name: 'Pão avançado',
+			audience: 'padeiros',
+			priceCents: 20_000,
+			brand
+		});
+		await publishProduct(ctx, paulo.id, pauloSecond, hours(t0, 10));
+
+		// Bia publishes at +5h and keeps one draft; Caio keeps one draft -> 3 of 5 published (60%).
+		const biaPublished = await createProduct(ctx, bia.id, {
+			templateSlug: 'online-course',
+			name: 'Confeitaria fina',
+			audience: 'confeiteiros',
+			priceCents: 10_000,
+			brand
+		});
+		await publishProduct(ctx, bia.id, biaPublished, hours(t0, 5));
+
+		await createProduct(ctx, bia.id, {
+			templateSlug: 'online-course',
+			name: 'Rascunho da Bia',
+			audience: 'iniciantes',
+			priceCents: 10_000,
+			brand
+		});
+		await createProduct(ctx, caio.id, {
+			templateSlug: 'online-course',
+			name: 'Rascunho do Caio',
+			audience: 'iniciantes',
+			priceCents: 10_000,
+			brand
+		});
+
+		const [pauloOffer] = await db.query.offer.findMany({
+			where: (o, { eq }) => eq(o.productId, pauloFirst)
+		});
+		const [biaOffer] = await db.query.offer.findMany({
+			where: (o, { eq }) => eq(o.productId, biaPublished)
+		});
+
+		// Now is 2026-06-15T15:00:00Z (12:00 in São Paulo -> window 09/06 .. 15/06).
+		const now = new Date('2026-06-15T15:00:00Z');
+		const oldPaidAt = new Date('2026-06-02T12:00:00Z');
+		const order1 = await buy(ctx, pauloOffer!.id, 'aluna1@example.com', oldPaidAt);
+		const order2 = await buy(ctx, biaOffer!.id, 'aluna2@example.com', oldPaidAt);
+		// Recent order inside the 7-day São Paulo window (2026-06-15T01:30:00Z = 14/06 22:30 BRT).
+		const order3 = await buy(
+			ctx,
+			pauloOffer!.id,
+			'aluna3@example.com',
+			new Date('2026-06-15T01:30:00Z')
+		);
+
+		const s1 = (await db.query.order.findFirst({ where: (o, { eq }) => eq(o.id, order1) }))!;
+		const s2 = (await db.query.order.findFirst({ where: (o, { eq }) => eq(o.id, order2) }))!;
+		const s3 = (await db.query.order.findFirst({ where: (o, { eq }) => eq(o.id, order3) }))!;
+
+		// Refunds outside guarantee: one answered in 4h, one answered in 8h, one unanswered.
+		const openedAt = days(oldPaidAt, 10);
+		const refund1 = await requestRefund(
+			ctx,
+			s1.studentId,
+			{ orderId: order1, reason: 'Motivo 1' },
+			openedAt
+		);
+		await producerDecision(
+			ctx,
+			paulo.id,
+			refund1,
+			{ decision: 'decline', reason: 'Acesso usado' },
+			hours(openedAt, 4)
+		);
+
+		const refund2 = await requestRefund(
+			ctx,
+			s2.studentId,
+			{ orderId: order2, reason: 'Motivo 2' },
+			openedAt
+		);
+		await producerDecision(
+			ctx,
+			bia.id,
+			refund2,
+			{ decision: 'decline', reason: 'Conteúdo completo' },
+			hours(openedAt, 8)
+		);
+
+		const orderUnanswered = await buy(ctx, biaOffer!.id, 'aluna4@example.com', oldPaidAt);
+		const s4 = (await db.query.order.findFirst({
+			where: (o, { eq }) => eq(o.id, orderUnanswered)
+		}))!;
+		await requestRefund(
+			ctx,
+			s4.studentId,
+			{ orderId: orderUnanswered, reason: 'Ainda sem resposta' },
+			openedAt
+		);
+
+		// Tickets: Paulo gets 2 (1 closed, 1 open), Bia gets 1 (open).
+		const closedId = await openTicket(ctx, s1.studentId, {
+			orderId: order1,
+			subject: 'Dúvida 1',
+			body: 'Oi'
+		});
+		await closeTicket(ctx, support, closedId, now);
+		await openTicket(ctx, s3.studentId, {
+			orderId: order3,
+			subject: 'Dúvida 2',
+			body: 'Oi'
+		});
+		await openTicket(ctx, s2.studentId, {
+			orderId: order2,
+			subject: 'Dúvida 3',
+			body: 'Oi'
+		});
+
+		await createBlock(ctx, support.id, {
+			userId: caio.id,
+			target: 'balance',
+			reason,
+			nextStep
+		});
+
+		const metrics = await getPlatformMetrics(ctx, support, now);
+		expect(metrics.medianHoursToFirstPublish).toBe(3.5);
+		expect(metrics.conversion).toEqual({
+			totalProducts: 5,
+			publishedProducts: 3,
+			publishedRatePercent: 60
+		});
+		expect(metrics.medianHoursToFirstRefundResponse).toBe(6);
+		expect(metrics.ticketsByProducer).toEqual([
+			{
+				producerId: paulo.id,
+				producerName: 'Paulo Lima',
+				producerEmail: 'paulo@example.com',
+				ticketCount: 2,
+				openTicketCount: 1
+			},
+			{
+				producerId: bia.id,
+				producerName: 'Bia Rocha',
+				producerEmail: 'bia@example.com',
+				ticketCount: 1,
+				openTicketCount: 1
+			}
+		]);
+		expect(metrics.paidOrdersCount).toBe(4);
+		expect(metrics.grossVolumeCents).toBe(40_000);
+		expect(metrics.platformFeeCents).toBe(s1.feeCents * 4);
+		expect(metrics.activeBlocksCount).toBe(1);
+		expect(metrics.dailyOrders.labels).toEqual([
+			'09/06',
+			'10/06',
+			'11/06',
+			'12/06',
+			'13/06',
+			'14/06',
+			'15/06'
+		]);
+		expect(metrics.dailyOrders.counts).toEqual([0, 0, 0, 0, 0, 1, 0]);
+		expect(metrics.dailyOrders.volumeCents).toEqual([0, 0, 0, 0, 0, 10_000, 0]);
 	});
 });

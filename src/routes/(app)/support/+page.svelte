@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { escalationText, supportDeadline } from '#lib/refund-text';
+	import { payoutsBannerTitle } from '#lib/support-text';
 	import {
+		Alert,
 		Badge,
 		Button,
 		Card,
@@ -29,12 +31,21 @@
 			</Text>
 		</Stack>
 
-		{#if data.refunds.length === 0 && data.tickets.length === 0}
+		{#if data.refunds.length === 0 && data.tickets.length === 0 && data.payouts.length === 0}
 			<EmptyState icon="check-circle" title="A fila está vazia">
 				Quando um produtor perder o prazo, um aluno contestar uma recusa ou abrir um chamado, o
 				pedido aparece aqui.
 			</EmptyState>
 		{:else}
+			{#if data.payouts.length > 0}
+				<Alert tone="info" title={payoutsBannerTitle(data.payouts.length)}>
+					Há solicitações aguardando transferência e confirmação da equipe.
+					{#snippet action()}
+						<Button size="sm" href={resolve('/(app)/support/payouts')}>Revisar saques</Button>
+					{/snippet}
+				</Alert>
+			{/if}
+
 			<Stack gap={4} as="section">
 				<Stack gap={1}>
 					<Text variant="title3" as="h2">Reembolsos</Text>

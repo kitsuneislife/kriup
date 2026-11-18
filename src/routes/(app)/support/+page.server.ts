@@ -7,6 +7,6 @@ import type { PageServerLoad } from './$types';
 // tickets, oldest first. Payouts have their own screen. `now` goes with the data so the
 // server and the browser read the deadlines at the same instant.
 export const load: PageServerLoad = async ({ locals }) => {
-	const { refunds, tickets } = await getSupportQueue(ctx, requireSupport(locals));
-	return { refunds, tickets, now: new Date() };
+	const { refunds, tickets, payouts } = await getSupportQueue(ctx, requireSupport(locals));
+	return { refunds, tickets, payouts, now: new Date() };
 };

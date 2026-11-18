@@ -5,6 +5,7 @@
 import { randomUUID } from 'node:crypto';
 import type { SessionUser } from '../src/lib/server/auth/session';
 import type { Ctx } from '../src/lib/server/context';
+import { requestPayout } from '../src/lib/server/services/money';
 import {
 	contestRefund,
 	escalateOverdueRefunds,
@@ -13,7 +14,7 @@ import {
 	requestRefund
 } from '../src/lib/server/services/refunds';
 import { openTicket } from '../src/lib/server/services/support';
-import { days } from '../src/lib/server/services/testing';
+import { days, releaseSalesOf } from '../src/lib/server/services/testing';
 import { buy, expect, expectAccessible, hydrated, publishedProduct, test } from './fixtures';
 
 /**
@@ -247,6 +248,7 @@ test('anyone but support gets 404 on the support screens and actions', async ({
 		await signIn(person);
 		for (const path of [
 			'/support',
+			'/support/metrics',
 			`/support/refunds/${refundId}`,
 			`/support/tickets/${ticketId}`
 		]) {
@@ -281,6 +283,53 @@ test('anyone but support gets 404 on the support screens and actions', async ({
 	await expect(page.getByRole('heading', { name: 'O aluno contestou a recusa' })).toBeVisible();
 	await page.goto(`/support/tickets/${ticketId}`);
 	await expect(page.getByRole('button', { name: 'Encerrar chamado' })).toBeVisible();
+});
+
+test('shows pending payouts alert on the queue and renders Lean Canvas metrics dashboard', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	test.slow();
+	const producer = await createUser(tagged('Paulo Lima'));
+	const { offerId } = await publishedProduct(ctx, producer.id, 15_000, tagged('Curso de pão'));
+	const student = await createUser(tagged('Lia Fontes'));
+	const orderId = await buy(ctx, offerId, student.email);
+	await openTicket(ctx, student.id, {
+		orderId,
+		subject: tagged('Acesso às aulas'),
+		body: 'Preciso de ajuda com o vídeo.'
+	});
+	await releaseSalesOf(producer.id);
+	await requestPayout(ctx, producer.id, 6_000);
+
+	await signIn(await createUser('Sara Dias', 'support'));
+	await page.goto('/support');
+	await expect(page.getByText(/\d+ saques? aguardando revisão/)).toBeVisible();
+	const reviewLink = page.getByRole('link', { name: 'Revisar saques' });
+	await expect(reviewLink).toBeVisible();
+	await expectAccessible(page);
+
+	await reviewLink.click();
+	await expect(page.getByRole('heading', { name: 'Saques', level: 1 })).toBeVisible();
+
+	await page.goto('/support/metrics');
+	await expect(
+		page.getByRole('heading', { name: 'Métricas da plataforma', level: 1 })
+	).toBeVisible();
+	await expect(page.getByText('Tempo até publicar')).toBeVisible();
+	await expect(page.getByText('Taxa de publicação')).toBeVisible();
+	await expect(page.getByText('Primeira resposta em reembolso')).toBeVisible();
+	await expect(page.getByText('Total de chamados')).toBeVisible();
+	await expect(page.getByText('Volume pago')).toBeVisible();
+	await expect(page.getByText('Receita de taxa da plataforma')).toBeVisible();
+	await expect(page.getByRole('img', { name: 'Pedidos pagos nos últimos 7 dias' })).toBeVisible();
+
+	const table = page.getByRole('table', { name: 'Chamados por produtor' });
+	await expect(table.getByText(producer.name)).toBeVisible();
+	await expect(table.getByText(producer.email)).toBeVisible();
+	await expectAccessible(page);
 });
 
 test.describe('without JavaScript', () => {

@@ -1,7 +1,21 @@
 // Support (RF-35, RF-60 to RF-62). Every write by support is audited in its transaction.
 // Refund and payout decisions live in refunds.ts and money.ts; they audit the same way.
 
-import { and, asc, desc, eq, gt, inArray, isNull, or } from 'drizzle-orm';
+import {
+	and,
+	asc,
+	desc,
+	eq,
+	gt,
+	gte,
+	inArray,
+	isNotNull,
+	isNull,
+	lte,
+	min,
+	or,
+	sql
+} from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { assertTransition, DomainError, TICKET_TRANSITIONS } from '../../domain/states';
@@ -215,8 +229,19 @@ export async function getTicket(ctx: Ctx, viewer: SessionUser, ticketId: string)
 
 export async function listMyTickets(ctx: Ctx, studentId: string) {
 	return ctx.db
-		.select()
+		.select({
+			id: ticket.id,
+			orderId: ticket.orderId,
+			studentId: ticket.studentId,
+			subject: ticket.subject,
+			status: ticket.status,
+			createdAt: ticket.createdAt,
+			closedAt: ticket.closedAt,
+			productName: product.name
+		})
 		.from(ticket)
+		.innerJoin(order, eq(order.id, ticket.orderId))
+		.innerJoin(product, eq(product.id, order.productId))
 		.where(eq(ticket.studentId, studentId))
 		.orderBy(desc(ticket.createdAt));
 }
@@ -383,4 +408,190 @@ export async function listAuditTrail(ctx: Ctx, viewer: SessionUser, limit = 100)
 		target: targetOf(detail),
 		reason: typeof detail.reason === 'string' ? detail.reason : null
 	}));
+}
+
+// ---------------------------------------------------------------------------
+// Lean Canvas & operational platform metrics (modelo-de-dados.md section 6)
+
+const saoPauloParts = new Intl.DateTimeFormat('en-CA', {
+	timeZone: 'America/Sao_Paulo',
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit'
+});
+
+function saoPauloCalendarDay(date: Date) {
+	const parts = saoPauloParts.formatToParts(date);
+	const part = (type: Intl.DateTimeFormatPartTypes) =>
+		parts.find((p) => p.type === type)?.value ?? '';
+	const year = part('year');
+	const month = part('month');
+	const day = part('day');
+	return {
+		key: `${year}-${month}-${day}`,
+		label: `${day}/${month}`,
+		year: Number(year),
+		month: Number(month),
+		day: Number(day)
+	};
+}
+
+function median(values: number[]): number | null {
+	if (values.length === 0) return null;
+	const sorted = [...values].sort((a, b) => a - b);
+	const mid = Math.floor(sorted.length / 2);
+	return sorted.length % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+}
+
+/**
+ * Lean Canvas indicators (regras-de-negocio.md section 8, modelo-de-dados.md section 6)
+ * alongside active paid-order totals (`order.status = 'paid'`), active blocks, and the
+ * last 7 calendar days of paid orders in `America/Sao_Paulo`.
+ */
+export async function getPlatformMetrics(ctx: Ctx, viewer: SessionUser, now = new Date()) {
+	assertSupport(viewer);
+
+	const today = saoPauloCalendarDay(now);
+	const buckets = Array.from({ length: 7 }, (_, idx) => {
+		const offset = 6 - idx;
+		const anchor = new Date(Date.UTC(today.year, today.month - 1, today.day - offset, 12, 0, 0));
+		const d = saoPauloCalendarDay(anchor);
+		return { key: d.key, label: d.label, count: 0, volumeCents: 0 };
+	});
+	const bucketByKey = new Map(buckets.map((b) => [b.key, b]));
+	const windowStartBound = new Date(Date.UTC(today.year, today.month - 1, today.day - 7, 0, 0, 0));
+	const windowEndBound = new Date(Date.UTC(today.year, today.month - 1, today.day + 2, 0, 0, 0));
+
+	const [
+		firstPublishes,
+		productTotals,
+		refundResponses,
+		producerTicketRows,
+		paidOrderTotals,
+		activeBlocksRows,
+		recentPaidOrders
+	] = await Promise.all([
+		ctx.db
+			.select({
+				userCreatedAt: user.createdAt,
+				firstPublishedAt: min(product.publishedAt)
+			})
+			.from(product)
+			.innerJoin(user, eq(user.id, product.producerId))
+			.where(isNotNull(product.publishedAt))
+			.groupBy(user.id, user.createdAt),
+		ctx.db
+			.select({
+				totalProducts: sql<number>`count(*)::int`,
+				publishedProducts: sql<number>`count(*) filter (where ${product.publishedAt} is not null)::int`
+			})
+			.from(product),
+		ctx.db
+			.select({
+				openedAt: refund.openedAt,
+				firstResponseAt: refund.firstResponseAt
+			})
+			.from(refund)
+			.where(isNotNull(refund.firstResponseAt)),
+		ctx.db
+			.select({
+				producerId: user.id,
+				producerName: user.name,
+				producerEmail: user.email,
+				ticketCount: sql<number>`count(*)::int`,
+				openTicketCount: sql<number>`count(*) filter (where ${ticket.status} = 'open')::int`
+			})
+			.from(ticket)
+			.innerJoin(order, eq(order.id, ticket.orderId))
+			.innerJoin(product, eq(product.id, order.productId))
+			.innerJoin(user, eq(user.id, product.producerId))
+			.groupBy(user.id, user.name, user.email)
+			.orderBy(desc(sql`count(*)`), asc(user.name)),
+		ctx.db
+			.select({
+				paidOrdersCount: sql<number>`count(*)::int`,
+				grossVolumeCents: sql<string>`coalesce(sum(${order.grossCents}), 0)::bigint`,
+				platformFeeCents: sql<string>`coalesce(sum(${order.feeCents}), 0)::bigint`
+			})
+			.from(order)
+			.where(eq(order.status, 'paid')),
+		ctx.db
+			.select({ count: sql<number>`count(*)::int` })
+			.from(block)
+			.where(and(isNull(block.liftedAt), or(isNull(block.endsAt), gt(block.endsAt, now)))),
+		ctx.db
+			.select({
+				paidAt: order.paidAt,
+				grossCents: order.grossCents
+			})
+			.from(order)
+			.where(
+				and(
+					eq(order.status, 'paid'),
+					isNotNull(order.paidAt),
+					gte(order.paidAt, windowStartBound),
+					lte(order.paidAt, windowEndBound)
+				)
+			)
+	]);
+
+	const publishHours = firstPublishes
+		.filter((row) => row.firstPublishedAt !== null)
+		.map((row) =>
+			Math.max(
+				0,
+				(new Date(row.firstPublishedAt!).getTime() - row.userCreatedAt.getTime()) / 3_600_000
+			)
+		);
+
+	const responseHours = refundResponses.map((row) =>
+		Math.max(0, (row.firstResponseAt!.getTime() - row.openedAt.getTime()) / 3_600_000)
+	);
+
+	const totalProducts = Number(productTotals[0]?.totalProducts ?? 0);
+	const publishedProducts = Number(productTotals[0]?.publishedProducts ?? 0);
+	const publishedRatePercent =
+		totalProducts === 0 ? 0 : Math.round((publishedProducts / totalProducts) * 100);
+
+	const ticketsByProducer = producerTicketRows
+		.map((row) => ({
+			producerId: row.producerId,
+			producerName: row.producerName,
+			producerEmail: row.producerEmail,
+			ticketCount: Number(row.ticketCount),
+			openTicketCount: Number(row.openTicketCount)
+		}))
+		.sort(
+			(a, b) =>
+				b.ticketCount - a.ticketCount || a.producerName.localeCompare(b.producerName, 'pt-BR')
+		);
+
+	for (const row of recentPaidOrders) {
+		if (!row.paidAt) continue;
+		const bucket = bucketByKey.get(saoPauloCalendarDay(row.paidAt).key);
+		if (bucket) {
+			bucket.count += 1;
+			bucket.volumeCents += row.grossCents;
+		}
+	}
+
+	return {
+		medianHoursToFirstPublish: median(publishHours),
+		conversion: {
+			totalProducts,
+			publishedProducts,
+			publishedRatePercent
+		},
+		medianHoursToFirstRefundResponse: median(responseHours),
+		ticketsByProducer,
+		paidOrdersCount: Number(paidOrderTotals[0]?.paidOrdersCount ?? 0),
+		grossVolumeCents: Number(paidOrderTotals[0]?.grossVolumeCents ?? 0),
+		platformFeeCents: Number(paidOrderTotals[0]?.platformFeeCents ?? 0),
+		activeBlocksCount: Number(activeBlocksRows[0]?.count ?? 0),
+		dailyOrders: {
+			labels: buckets.map((b) => b.label),
+			counts: buckets.map((b) => b.count),
+			volumeCents: buckets.map((b) => b.volumeCents)
+		}
+	};
 }

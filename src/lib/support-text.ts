@@ -58,3 +58,22 @@ export function auditTargetText(target: AuditTarget | null): string {
 			return `Chamado de ${target.studentName}: ${target.subject}`;
 	}
 }
+
+const hoursFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+
+/** Title of the support queue notice when producers have requested payouts waiting. */
+export function payoutsBannerTitle(count: number): string {
+	return count === 1 ? '1 saque aguardando revisão' : `${count} saques aguardando revisão`;
+}
+
+/** Formats a median duration in hours for the Lean Canvas metrics cards. */
+export function formatHoursMetric(hours: number | null): string {
+	if (hours === null) return 'Sem dados';
+	if (hours < 1) return `${Math.round(hours * 60)} min`;
+	return `${hoursFormat.format(Math.round(hours * 10) / 10)} h`;
+}
+
+/** Label for an order count in charts and hints. */
+export function pluralOrders(count: number): string {
+	return count === 1 ? '1 pedido' : `${count} pedidos`;
+}

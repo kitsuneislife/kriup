@@ -5,6 +5,8 @@ const required = (name: string) => (value: string | undefined) => {
 	return value;
 };
 
+const optional = (value: string | undefined) => (value?.trim() ? value.trim() : undefined);
+
 export const variables = defineEnvVars({
 	DATABASE_URL: {
 		description: 'Postgres connection string',
@@ -22,5 +24,21 @@ export const variables = defineEnvVars({
 	JOBS_TOKEN: {
 		description: 'Bearer token the scheduler sends to POST /api/jobs/daily',
 		schema: required('JOBS_TOKEN')
+	},
+	ASAAS_API_KEY: {
+		description: 'Optional Asaas API key; when unset, the simulated payment gateway is used',
+		schema: optional
+	},
+	ASAAS_BASE_URL: {
+		description: 'Optional Asaas API base URL (e.g. https://sandbox.asaas.com/api/v3)',
+		schema: optional
+	},
+	RESEND_API_KEY: {
+		description: 'Optional Resend API key; when unset, e-mails are logged instead of sent',
+		schema: optional
+	},
+	EMAIL_FROM: {
+		description: 'Optional sender address for outgoing e-mails (e.g. Cakto <noreply@example.com>)',
+		schema: optional
 	}
 });
