@@ -4,7 +4,8 @@ import { readdirSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { requestPasswordReset } from './auth/password-token';
 import { inviteCoproducer } from './services/coproduction';
-import { buy, newUser, publishedProduct, resetDb, testCtx } from './services/testing';
+import { requestRefund } from './services/refunds';
+import { buy, days, newUser, publishedProduct, resetDb, testCtx } from './services/testing';
 
 beforeEach(resetDb);
 
@@ -66,5 +67,24 @@ describe('e-mail links', () => {
 			durationDays: null
 		});
 		expectLinksToRoutes(ctx, 1);
+	});
+
+	it('the out-of-guarantee refund notice to the producer does', async () => {
+		const ctx = testCtx();
+		const producer = await newUser('p@example.com');
+		const student = await newUser('s@example.com');
+		const { offerId } = await publishedProduct(ctx, producer.id);
+		const now = new Date();
+		const orderId = await buy(ctx, offerId, student.email, days(now, -10));
+		ctx.mail.sent.length = 0;
+		const refundId = await requestRefund(
+			ctx,
+			student.id,
+			{ orderId, reason: 'Não era o que eu esperava.' },
+			now
+		);
+		expectLinksToRoutes(ctx, 1);
+		expect(ctx.mail.sent[0]).toMatchObject({ to: producer.email });
+		expect(ctx.mail.sent[0]!.text).toContain(`${ctx.appUrl}/producer/refunds/${refundId}`);
 	});
 });

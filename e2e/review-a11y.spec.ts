@@ -56,6 +56,7 @@ const supportRoutes = (s: Story): Record<string, string> => ({
 	'/(app)/support': '/support',
 	'/(app)/support/audit': '/support/audit',
 	'/(app)/support/blocks': '/support/blocks',
+	'/(app)/support/metrics': '/support/metrics',
 	'/(app)/support/payouts': '/support/payouts',
 	'/(app)/support/refunds/[id]': `/support/refunds/${s.refundId}`,
 	'/(app)/support/tickets/[id]': `/support/tickets/${s.ticketId}`

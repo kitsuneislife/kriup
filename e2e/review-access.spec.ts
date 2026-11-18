@@ -179,7 +179,13 @@ function visits(one: Story): Visit[] {
 			allowed: ['student', 'support'],
 			denied: ['student2', 'producer', 'producer2', 'coproducer']
 		},
-		...['/support', '/support/audit', '/support/blocks', '/support/payouts'].map((url) => ({
+		...[
+			'/support',
+			'/support/audit',
+			'/support/blocks',
+			'/support/metrics',
+			'/support/payouts'
+		].map((url) => ({
 			route: `/(app)${url}`,
 			url,
 			allowed: ['support' as const, 'support2' as const],
@@ -247,6 +253,7 @@ test('other profiles and other owners get a 404, and anonymous visitors the logi
 }) => {
 	test.slow();
 	const [one, two] = [await seedStory(ctx, createUser), await seedStory(ctx, createUser)];
+	await db.update(product).set({ name: 'Segredo de Paulo' }).where(eq(product.id, one.productId));
 	const who = people(one, two);
 	const apis: Record<string, APIRequestContext> = { anonymous: await signedIn(baseURL!) };
 	for (const [name, user] of Object.entries(who)) apis[name] = await signedIn(baseURL!, user);
@@ -276,6 +283,30 @@ test('other profiles and other owners get a 404, and anonymous visitors the logi
 			expect(anonymous.status(), `anonymous opens ${v.url}`).toBe(303);
 			expect(anonymous.headers().location, `anonymous opens ${v.url}`).toBe('/login');
 		}
+
+		// GET /api/statement/export: anonymous goes to /login; other users never see one.producer's sales
+		const anonExport = await apis.anonymous!.get('/api/statement/export');
+		expect(anonExport.status(), 'anonymous exports CSV').toBe(303);
+		expect(anonExport.headers().location, 'anonymous exports CSV').toBe('/login');
+
+		const ownerExport = await apis.producer!.get('/api/statement/export');
+		expect(ownerExport.status(), 'producer exports own CSV').toBe(200);
+		expect(await ownerExport.text()).toContain('Segredo de Paulo');
+
+		const csvHeaderOnly = '\uFEFFData;Produto;Tipo;Regra aplicada;Estado;Valor (R$)';
+		const studentExport = await apis.student!.get('/api/statement/export');
+		expect(studentExport.status(), 'student exports CSV').toBe(200);
+		expect(await studentExport.text()).toBe(csvHeaderOnly);
+
+		const filteredStrangerExport = await apis.producer2!.get(
+			`/api/statement/export?product=${one.productId}`
+		);
+		expect(filteredStrangerExport.status(), 'producer2 exports victim product CSV').toBe(200);
+		expect(await filteredStrangerExport.text()).toBe(csvHeaderOnly);
+
+		const strangerExport = await apis.producer2!.get('/api/statement/export');
+		expect(strangerExport.status(), 'producer2 exports own CSV').toBe(200);
+		expect(await strangerExport.text()).not.toContain('Segredo de Paulo');
 	} finally {
 		await Promise.all(Object.values(apis).map((a) => a.dispose()));
 	}
@@ -326,6 +357,8 @@ test('forms of other people resources answer 404 and change nothing', async ({
 	});
 	add(outsiders, `${p}?/publish`);
 	add(outsiders, `${p}/page?/save`, {});
+	add(outsiders, `${p}/page?/save&type=checkout`, {});
+	add(outsiders, `${p}/page?/save&type=access_email`, {});
 	add(outsiders, `${p}/offers?/addOffer`, {
 		name: 'Oferta falsa',
 		price: '97,00',

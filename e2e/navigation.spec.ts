@@ -142,6 +142,12 @@ test('every link support sees leads somewhere', async ({ page, createUser, signI
 	await signIn(await createUser('Sara Dias', 'support'));
 	const support = await crawl(page, baseURL!);
 	expect([...support]).toEqual(
-		expect.arrayContaining(['/support', '/support/payouts', '/support/blocks', '/support/audit'])
+		expect.arrayContaining([
+			'/support',
+			'/support/metrics',
+			'/support/payouts',
+			'/support/blocks',
+			'/support/audit'
+		])
 	);
 });

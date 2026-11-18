@@ -1,28 +1,24 @@
 # Status
 
-> **Summary.** Frontend do MVP em 99%: fases 0 a 8 e lotes 9.1 a 9.3 concluídos (jornada completa entre perfis, navegação e prévia, revisão de acessibilidade, acesso e LCP). Falta o 9.4, teste de uso com pessoas reais, com roteiro pronto.
+> **Summary.** Código do MVP de Ouro concluído: fases 0 a 8, lotes 9.1 a 9.3, assinaturas mensais (D5), adaptadores reais Asaas e Resend (D2), métricas Lean Canvas, encerramento LGPD (RNF-06) e exportação CSV. Falta o lote 9.4 (teste de uso com pessoas reais).
 
-Atualizado em 13/11/2026.
+Atualizado em 18/11/2026.
 
 ## Estado
 
-- Fases 0 a 7 de `tecnico/frontend-plano.md` concluídas. Na fase 7, o produtor convida coprodutores e simula uma venda no editor (`…/coproduction`), e o coprodutor lê o contrato e aceita ou recusa (`/coproductions/[id]`). A parte dele aparece no extrato só a partir do aceite.
-- Fase 8 concluída: o suporte tem fila, decisão de reembolso, chamados, bloqueios, auditoria e saques (`/support/**`). F2 decidida: quem conclui o saque é o suporte.
-- Lotes 9.1 a 9.3 concluídos: jornada completa entre perfis num só e2e, links e e-mails conferidos, prévia do produto (`…/preview`, RF-16), axe em todas as rotas, varredura de acesso sem vazamento e LCP das páginas públicas abaixo de 1 s. Detalhes em `tecnico/frontend-plano.md`, fase 9.
-- Gates verdes na main [measured]: lint, check, 262 testes unitários, 112 de integração e 257 e2e (desktop e 375 px; 1 pulado de propósito no mobile).
+- Fases 0 a 8 e lotes 9.1 a 9.3 de `tecnico/frontend-plano.md` concluídos (jornadas entre perfis, prévia, axe em todas as rotas, varredura de acesso e LCP público entre 376 ms e 440 ms [measured]).
+- Passe MVP de Ouro concluído [measured]: modelos extras (`subscription-club`, `workshop`, migração `0005`) e assinatura mensal ponta a ponta (D5); adaptadores `asaasGateway` e `resendMailer` ativados por variáveis opcionais (D2); `Shell` com marca, barra mobile compacta e contadores ao vivo (`listPendingCounts`); `/account` com edição de nome, tema (`cakto_theme`) e encerramento/anonimização LGPD (`closeAccount`, RNF-06) + `?next=` seguro no `/login`.
+- Estúdio, dinheiro, aluno e suporte completos [measured]: editor das 3 páginas (`sales`, `checkout`, `access_email`), prévia em 4 visões, `CopyField` do link público, prévia ao vivo da marca, contagens de aulas/vendas e simulador ao vivo de coprodução; gráfico de 7 dias, total de páginas e CSV sanitizado (`GET /api/statement/export`); e-mail ao produtor em reembolso fora da garantia, máscara CPF/CNPJ, política no checkout, navegação completa no player e painel `/support/metrics` (`getPlatformMetrics`).
+- Gates verdes [measured]: `pnpm lint` e `pnpm check` sem erros ou avisos; 276 testes unitários (38 arquivos), 129 de integração (12 arquivos) e 289 e2e aprovados + 1 ignorado (desktop e mobile 375 px); `pnpm test:review` com build de produção, LCP mediano de 376–440 ms (orçamento ≤ 2500 ms) e 70 capturas (35 desktop + 35 mobile) em `test-results/captures/`.
 
 ## Próximo passo
 
-Lote 9.4: rodar o teste de uso com 3 a 5 pessoas não técnicas seguindo `produto/teste-de-uso.md` e corrigir o que travar. LCP e capturas finais: `pnpm test:review`.
+Rodar o lote 9.4: teste de uso com 3 a 5 pessoas não técnicas seguindo `produto/teste-de-uso.md`. LCP e capturas finais: `pnpm test:review`.
 
 ## Riscos e pendências
 
-- Decisões em aberto: F1 (logo e anexos só por URL ou com upload), em `tecnico/frontend-plano.md` seção 5; D3 a D6 em `tecnico/telas-testes-roadmap.md`.
-- O pagamento ainda é simulado. A troca pelo Asaas está em `tecnico/pagamentos.md` seção 3.
-- Ambiente local: o `pnpm` fixado em `packageManager` não tem binário darwin-x64. Rode com `pnpm_config_pm_on_fail=ignore` [measured].
-- Banco local: depois de puxar a fase 8, rode `pnpm db:migrate` (migração 0004) [measured].
-- Ambiente local: neste perfil, o docker só acha o colima com `DOCKER_HOST=unix://$HOME/.colima/default/docker.sock` [measured].
-- Ambiente local: o banco sobe com `colima start` e `pnpm db:up`.
-- Ambiente local: worktrees em paralelo precisam de banco próprio no `.env` (por exemplo `/app_m1`, que vira `app_m1_e2e`) e de `E2E_PORT` próprio [measured].
-- Ambiente local: worktree com `node_modules` em symlink não roda `pnpm check` direito, porque o `$app/tsconfig` gerado aponta para o outro checkout. Rode o check no checkout que tem o `node_modules` real [measured].
-- Ambiente local: com a máquina carregada, o e2e completo pode dar timeout. Use `--workers=4` [measured].
+- Decisões em aberto: F1 (logo e anexos só por URL ou com upload) em `tecnico/frontend-plano.md`; D1, D3, D4 e D6 em `tecnico/telas-testes-roadmap.md` (D2, D5 e F2 decididas).
+- Provedores externos: sem `ASAAS_API_KEY` ou `RESEND_API_KEY`/`EMAIL_FROM`, o app usa o simulador de pagamentos e o log no console (`tecnico/pagamentos.md`).
+- Ambiente local: rode `pnpm` com `pnpm_config_pm_on_fail=ignore` e o Docker/Colima com `DOCKER_HOST=unix://$HOME/.colima/default/docker.sock` [measured].
+- Banco local: suba com `colima start` e `pnpm db:up` e aplique `pnpm db:migrate` (até a migração `0005`) [measured].
+- Execução paralela: worktrees precisam de banco e `E2E_PORT` próprios, `node_modules` real para `pnpm check` e `--workers=4` sob carga alta [measured].

@@ -41,6 +41,7 @@ test('captures the main screens', async ({ page, ctx, createUser, signIn }, info
 		['content', `${p}/content`],
 		['offers', `${p}/offers`],
 		['page', `${p}/page`],
+		['preview', `${p}/preview`],
 		['coproduction', `${p}/coproduction`],
 		['refunds', '/producer/refunds'],
 		['refund', `/producer/refunds/${story.refundId}`],
@@ -72,6 +73,7 @@ test('captures the main screens', async ({ page, ctx, createUser, signIn }, info
 	await signIn(story.support);
 	for (const [name, url] of [
 		['queue', '/support'],
+		['metrics', '/support/metrics'],
 		['refund', `/support/refunds/${story.refundId}`],
 		['ticket', `/support/tickets/${story.ticketId}`],
 		['blocks', '/support/blocks'],
