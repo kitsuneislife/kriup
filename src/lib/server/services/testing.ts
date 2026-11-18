@@ -21,10 +21,10 @@ const url = process.env.DATABASE_URL;
 if (!url) throw new Error('DATABASE_URL is not set');
 export const db = createDb(url);
 
-const seedSql = readFileSync(
-	new URL('../../../../drizzle/0003_seed_templates.sql', import.meta.url),
-	'utf8'
-);
+const seedSql = [
+	'../../../../drizzle/0003_seed_templates.sql',
+	'../../../../drizzle/0005_seed_templates_extra.sql'
+].map((path) => readFileSync(new URL(path, import.meta.url), 'utf8'));
 
 /** Empties every table, then restores the template seed. */
 export async function resetDb() {
@@ -34,7 +34,7 @@ export async function resetDb() {
 	const tables = rows.map((r) => `"public"."${r.tablename}"`).join(', ');
 	// TRUNCATE skips row triggers, so append-only tables can be emptied between tests.
 	if (tables) await db.execute(sql.raw(`TRUNCATE ${tables} CASCADE`));
-	await db.execute(sql.raw(seedSql));
+	for (const seed of seedSql) await db.execute(sql.raw(seed));
 }
 
 export type TestCtx = Ctx & {

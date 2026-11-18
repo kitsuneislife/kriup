@@ -36,6 +36,13 @@
       "when": 1794596723689,
       "tag": "0004_payout_decline_reason",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794600000000,
+      "tag": "0005_seed_templates_extra",
+      "breakpoints": true
     }
   ]
 }
