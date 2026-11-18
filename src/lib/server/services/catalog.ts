@@ -15,6 +15,7 @@ import {
 	lesson,
 	module,
 	offer,
+	order,
 	page,
 	type PageType,
 	pageType,
@@ -104,11 +105,12 @@ export const lessonSchema = z.object({
 	attachmentUrl: httpsUrl.nullable().default(null)
 });
 
-/** Only one-time offers until decision D5 (subscriptions) is made. */
+/** RF-15: one-time or monthly subscription offers (D5). */
 export const offerSchema = z.object({
 	name: text(80),
 	priceCents: priceSchema,
-	guaranteeDays: z.number().int().min(GUARANTEE_DAYS).max(365).default(GUARANTEE_DAYS)
+	guaranteeDays: z.number().int().min(GUARANTEE_DAYS).max(365).default(GUARANTEE_DAYS),
+	recurrence: z.enum(['one_time', 'monthly']).default('one_time')
 });
 
 const idList = z.array(z.uuid()).max(500);
@@ -221,9 +223,12 @@ export async function createProduct(
 					.values(mod.lessons.map((l, i) => ({ moduleId: m!.id, title: l.title, position: i })));
 			}
 		}
-		await tx
-			.insert(offer)
-			.values({ productId, name: 'Oferta principal', priceCents: answers.priceCents });
+		await tx.insert(offer).values({
+			productId,
+			name: 'Oferta principal',
+			priceCents: answers.priceCents,
+			recurrence: tpl!.productType === 'subscription' ? 'monthly' : 'one_time'
+		});
 		return productId;
 	});
 }
@@ -231,25 +236,53 @@ export async function createProduct(
 // ---------------------------------------------------------------------------
 // Producer reads
 
-/** Newest first, each with its offer count and lowest price (null without offers). */
+/** Newest first, each with its offer, lesson and paid-sale counts plus lowest price. */
 export async function listProducerProducts(ctx: Ctx, producerId: string) {
-	return ctx.db
-		.select({
-			id: product.id,
-			name: product.name,
-			type: product.type,
-			status: product.status,
-			brand: product.brand,
-			publishedAt: product.publishedAt,
-			createdAt: product.createdAt,
-			minPriceCents: min(offer.priceCents),
-			offerCount: count(offer.id)
-		})
-		.from(product)
-		.leftJoin(offer, eq(offer.productId, product.id))
-		.where(eq(product.producerId, producerId))
-		.groupBy(product.id)
-		.orderBy(desc(product.createdAt), desc(product.id));
+	const [products, lessonCounts, paidOrderCounts] = await Promise.all([
+		ctx.db
+			.select({
+				id: product.id,
+				name: product.name,
+				type: product.type,
+				status: product.status,
+				brand: product.brand,
+				publishedAt: product.publishedAt,
+				createdAt: product.createdAt,
+				minPriceCents: min(offer.priceCents),
+				offerCount: count(offer.id)
+			})
+			.from(product)
+			.leftJoin(offer, eq(offer.productId, product.id))
+			.where(eq(product.producerId, producerId))
+			.groupBy(product.id)
+			.orderBy(desc(product.createdAt), desc(product.id)),
+		ctx.db
+			.select({
+				productId: module.productId,
+				n: count(lesson.id)
+			})
+			.from(module)
+			.innerJoin(product, eq(product.id, module.productId))
+			.innerJoin(lesson, eq(lesson.moduleId, module.id))
+			.where(eq(product.producerId, producerId))
+			.groupBy(module.productId),
+		ctx.db
+			.select({
+				productId: order.productId,
+				n: count(order.id)
+			})
+			.from(order)
+			.innerJoin(product, eq(product.id, order.productId))
+			.where(and(eq(product.producerId, producerId), eq(order.status, 'paid')))
+			.groupBy(order.productId)
+	]);
+	const lessonsByProduct = new Map(lessonCounts.map((r) => [r.productId, r.n]));
+	const paidByProduct = new Map(paidOrderCounts.map((r) => [r.productId, r.n]));
+	return products.map((p) => ({
+		...p,
+		lessonCount: lessonsByProduct.get(p.id) ?? 0,
+		paidOrderCount: paidByProduct.get(p.id) ?? 0
+	}));
 }
 
 /** Everything the editor shows, including pendencies (RF-15) and the fee per offer (RN-02). */
@@ -585,10 +618,11 @@ export async function getSalesPage(ctx: Ctx, productId: string, now = new Date()
 				id: offer.id,
 				name: offer.name,
 				priceCents: offer.priceCents,
-				guaranteeDays: offer.guaranteeDays
+				guaranteeDays: offer.guaranteeDays,
+				recurrence: offer.recurrence
 			})
 			.from(offer)
-			.where(and(eq(offer.productId, productId), eq(offer.recurrence, 'one_time')))
+			.where(eq(offer.productId, productId))
 			.orderBy(asc(offer.priceCents))
 	]);
 	return {
@@ -620,7 +654,8 @@ export async function getCheckout(ctx: Ctx, offerId: string, now = new Date()) {
 			id: found.id,
 			name: found.name,
 			priceCents: found.priceCents,
-			guaranteeDays: found.guaranteeDays
+			guaranteeDays: found.guaranteeDays,
+			recurrence: found.recurrence
 		},
 		page: checkout!.content
 	};

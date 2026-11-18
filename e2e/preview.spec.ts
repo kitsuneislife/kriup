@@ -36,6 +36,50 @@ test('shows the sales page and the course as the student sees them', async ({
 	await expect(page).toHaveURL(`/producer/products/${productId}`);
 });
 
+test('previews checkout, access e-mail and monthly subscription offers read-only', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	test.slow(); // three views checked with axe in both themes
+	const producer = await createUser('Paulo Lima');
+	const productId = await createProduct(ctx, producer.id, {
+		templateSlug: 'subscription-club',
+		name: 'Clube do pão',
+		audience: 'padeiros',
+		priceCents: 4_900,
+		brand
+	});
+	await signIn(producer);
+
+	await page.goto(`/producer/products/${productId}/preview`);
+	await expect(page.getByText('Mensal', { exact: true })).toBeVisible();
+	await expect(page.getByText('/mês')).toBeVisible();
+	await expectAccessible(page);
+
+	const switcher = page.getByRole('navigation', { name: 'O que visualizar' });
+	await switcher.getByRole('link', { name: 'Checkout' }).click();
+	await expect(page).toHaveURL(/view=checkout/);
+	await expect(page.getByRole('heading', { name: 'Finalizar compra', level: 1 })).toBeVisible();
+	await expect(page.getByText('Você está assinando Clube do pão')).toBeVisible();
+	await expect(page.getByText('Mensal', { exact: true })).toBeVisible();
+	await expect(page.getByText('/mês')).toBeVisible();
+	await page.getByText('Política de reembolso').click();
+	await expect(page.getByText(/reembolso da primeira cobrança de Clube do pão/)).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Gerar Pix' })).toHaveCount(0);
+	await expectAccessible(page);
+
+	await switcher.getByRole('link', { name: 'E-mail de acesso' }).click();
+	await expect(page).toHaveURL(/view=email/);
+	await expect(page.getByRole('heading', { name: 'E-mail de acesso', level: 1 })).toBeVisible();
+	await expect(
+		page.getByRole('heading', { name: 'Seu acesso ao clube Clube do pão está liberado' })
+	).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Acessar área de membros' })).toBeVisible();
+	await expectAccessible(page);
+});
+
 test('without lessons, the course view leads to the content screen', async ({
 	page,
 	ctx,
@@ -66,7 +110,7 @@ test('fits a phone', async ({ page, ctx, createUser, signIn }) => {
 	const producer = await createUser('Paulo Lima');
 	const { productId } = await publishedProduct(ctx, producer.id);
 	await signIn(producer);
-	for (const view of ['', '?view=course']) {
+	for (const view of ['', '?view=checkout', '?view=email', '?view=course']) {
 		await page.goto(`/producer/products/${productId}/preview${view}`);
 		await expect(page.getByText('Prévia: assim o aluno vê')).toBeVisible();
 		const overflow = await page.evaluate(

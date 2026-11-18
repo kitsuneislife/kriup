@@ -66,6 +66,66 @@ test('edits texts, adds an image and moves a section', async ({
 	});
 });
 
+test('edits the checkout summary and the access e-mail', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	test.slow(); // two saves and two axe checks
+	const producer = await createUser('Paulo Lima');
+	const id = await createProduct(ctx, producer.id, draft);
+	await signIn(producer);
+	await page.goto(`/producer/products/${id}/page`);
+
+	const pagesNav = page.getByRole('navigation', { name: 'Páginas do produto' });
+	await pagesNav.getByRole('link', { name: 'Checkout' }).click();
+	await expect(page).toHaveURL(/type=checkout/);
+	await expect(page.getByRole('heading', { name: 'Página de checkout', level: 1 })).toBeVisible();
+	await expect(page.getByLabel('Imagem', { exact: true })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Descer seção' })).toHaveCount(0);
+
+	const summary = section(page, 'Resumo da compra');
+	await summary.getByLabel('Título', { exact: true }).fill('Resumo da sua inscrição');
+	await summary.getByLabel('Observação').fill('Liberação imediata por Pix ou cartão.');
+	await save(page);
+	await expect(page.getByText('Alterações salvas.')).toBeVisible();
+	await expectAccessible(page);
+
+	await pagesNav.getByRole('link', { name: 'E-mail de acesso' }).click();
+	await expect(page).toHaveURL(/type=access_email/);
+	await expect(page.getByRole('heading', { name: 'E-mail de acesso', level: 1 })).toBeVisible();
+	await expect(page.getByLabel('Imagem', { exact: true })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Subir seção' })).toHaveCount(0);
+
+	const email = section(page, 'E-mail de acesso');
+	await email.getByLabel('Assunto').fill('Bem-vindo à fornada');
+	await email.getByLabel('Mensagem').fill('Seu acesso às aulas já está disponível.');
+	await save(page);
+	await expect(page.getByText('Alterações salvas.')).toBeVisible();
+	await expectAccessible(page);
+
+	const editor = await getProductEditor(ctx, producer.id, id);
+	expect(editor.pages.checkout.sections).toEqual([
+		{
+			kind: 'summary',
+			fields: {
+				title: 'Resumo da sua inscrição',
+				note: 'Liberação imediata por Pix ou cartão.'
+			}
+		}
+	]);
+	expect(editor.pages.access_email.sections).toEqual([
+		{
+			kind: 'email',
+			fields: {
+				subject: 'Bem-vindo à fornada',
+				body: 'Seu acesso às aulas já está disponível.'
+			}
+		}
+	]);
+});
+
 test("answers 404 for another producer's page", async ({ page, ctx, createUser, signIn }) => {
 	const owner = await createUser('Paulo Lima');
 	const id = await createProduct(ctx, owner.id, draft);

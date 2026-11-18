@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { addOffer, createProduct } from '../src/lib/server/services/catalog';
 import { brand } from '../src/lib/server/services/testing';
-import { expect, expectAccessible, publishedProduct, test } from './fixtures';
+import { buy, expect, expectAccessible, publishedProduct, test } from './fixtures';
 
 const draft = {
 	templateSlug: 'mentorship',
@@ -30,8 +31,9 @@ test('lists the products newest first, with state, price and the next step', asy
 }) => {
 	test.slow(); // two products, two axe checks, and it ends on the editor
 	const producer = await createUser('Paulo Lima');
-	const { productId } = await publishedProduct(ctx, producer.id, 10_000);
+	const { productId, offerId } = await publishedProduct(ctx, producer.id, 10_000);
 	await addOffer(ctx, producer.id, productId, { name: 'Promoção', priceCents: 7_900 });
+	await buy(ctx, offerId, `aluno.${randomUUID()}@e2e.test`);
 	const draftId = await createProduct(ctx, producer.id, draft);
 	await signIn(producer);
 	await page.goto('/producer');
@@ -39,9 +41,11 @@ test('lists the products newest first, with state, price and the next step', asy
 	const cards = page.getByRole('listitem');
 	await expect(cards).toHaveCount(2);
 	await expect(cards.nth(0)).toContainText('Mentoria de fermentação');
+	await expect(cards.nth(0)).toContainText('2 aulas · 0 vendas');
 	await expect(cards.nth(0)).toContainText('Rascunho');
 	await expect(cards.nth(0)).toContainText(/R\$\s250,00/);
 	await expect(cards.nth(1)).toContainText('Curso de pão');
+	await expect(cards.nth(1)).toContainText('5 aulas · 1 venda');
 	await expect(cards.nth(1)).toContainText('Publicado');
 	await expect(cards.nth(1)).toContainText(/a partir de\s*R\$\s79,00/);
 	await expect(page.getByRole('link', { name: 'Novo produto' })).toBeVisible();

@@ -23,8 +23,14 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const editor = await orNotFound(getProductEditor(ctx, requireUser(locals).id, params.id));
 	const { name, type, status, brand, refundPolicy } = editor.product;
+	const hero = editor.pages.sales.sections.find((s) => s.kind === 'hero')?.fields;
 	return {
 		product: { name, type, status, brand, refundPolicy },
+		publicUrl: `${ctx.appUrl}/p/${params.id}`,
+		hero: {
+			subtitle: hero?.subtitle ?? '',
+			cta: hero?.cta || 'Quero comprar'
+		},
 		pendencies: editor.pendencies,
 		sectionCount: editor.pages.sales.sections.length,
 		moduleCount: editor.modules.length,

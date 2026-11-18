@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { inReadingOrder, pageFieldText } from './product-text';
+import { inReadingOrder, pageFieldText, recurrenceText } from './product-text';
+
+describe('recurrence text', () => {
+	it('names one-time and monthly billing in Portuguese', () => {
+		expect(recurrenceText).toEqual({
+			one_time: 'Pagamento único',
+			monthly: 'Mensal'
+		});
+	});
+});
 
 describe('page fields', () => {
 	it('names the numbered fields', () => {

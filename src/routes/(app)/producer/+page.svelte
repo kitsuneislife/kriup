@@ -16,6 +16,7 @@
 	} from '#lib/ui';
 
 	let { data } = $props();
+	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 </script>
 
 <svelte:head><title>Produtos</title></svelte:head>
@@ -55,6 +56,13 @@
 									<Text variant="footnote" tone="secondary">{type.label}</Text>
 								</Cluster>
 								<Text variant="title3" as="h2" truncate>{product.name}</Text>
+								<Text variant="footnote" tone="secondary">
+									{plural(product.lessonCount, 'aula', 'aulas')} · {plural(
+										product.paidOrderCount,
+										'venda',
+										'vendas'
+									)}
+								</Text>
 							</Stack>
 							<Cluster justify="between" gap={3}>
 								<Badge tone={status.tone} dot>{status.label}</Badge>

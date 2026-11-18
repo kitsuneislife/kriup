@@ -7,12 +7,14 @@
 	import {
 		Alert,
 		Badge,
+		BrandHero,
 		Breadcrumb,
 		Button,
 		Card,
 		Checklist,
 		Cluster,
 		ColorField,
+		CopyField,
 		Grid,
 		Icon,
 		type IconName,
@@ -64,6 +66,18 @@
 		brandFonts.includes(data.product.brand.font)
 			? brandFonts
 			: [data.product.brand.font, ...brandFonts]
+	);
+
+	// live brand state in "Dados básicos", synced from typed refusal or saved product
+	let liveName = $derived(typed?.name ?? data.product.name);
+	let liveColor = $derived(typed?.color ?? data.product.brand.color);
+	let liveFont = $derived(typed?.font ?? data.product.brand.font);
+	let liveLogoUrl = $derived(typed?.logoUrl ?? data.product.brand.logoUrl ?? '');
+	const previewColor = $derived(
+		/^#[0-9a-f]{6}$/i.test(liveColor) ? liveColor : data.product.brand.color
+	);
+	const previewLogoUrl = $derived(
+		/^https?:\/\/\S+$/i.test(liveLogoUrl.trim()) ? liveLogoUrl.trim() : null
 	);
 
 	// ?tab=data opens the form, so a link reaches it even without JavaScript
@@ -121,10 +135,18 @@
 				{#if current === 'overview'}
 					<Stack gap={8}>
 						{#if data.product.status === 'published'}
-							<Alert tone="success" title="Produto publicado">
-								Seu produto está à venda. Você continua podendo editar tudo, e as mudanças valem
-								para as próximas vendas.
-							</Alert>
+							<Stack gap={4}>
+								<Alert tone="success" title="Produto publicado">
+									Seu produto está à venda. Você continua podendo editar tudo, e as mudanças valem
+									para as próximas vendas.
+								</Alert>
+								<CopyField
+									label="Link da página de venda"
+									value={data.publicUrl}
+									copyLabel="Copiar link"
+									copiedLabel="Link copiado"
+								/>
+							</Stack>
 						{:else}
 							<Stack gap={4}>
 								<Text variant="title2" as="h2">Antes de publicar</Text>
@@ -200,7 +222,7 @@
 							<TextField
 								name="name"
 								label="Nome do produto"
-								value={typed?.name ?? data.product.name}
+								bind:value={liveName}
 								error={errors.name}
 							/>
 							<ColorField
@@ -208,14 +230,14 @@
 								label="Cor principal"
 								hint="Aparece nos botões e destaques das suas páginas."
 								pickerLabel="Escolher a cor principal"
-								value={typed?.color ?? data.product.brand.color}
+								bind:value={liveColor}
 								error={errors.color}
 							/>
 							<Select
 								name="font"
 								label="Fonte"
 								options={fonts.map((font) => ({ value: font, label: font }))}
-								value={typed?.font ?? data.product.brand.font}
+								bind:value={liveFont}
 								error={errors.font}
 							/>
 							<TextField
@@ -223,7 +245,7 @@
 								type="url"
 								label="Endereço da logo"
 								hint="Opcional. O link da imagem, começando com https://."
-								value={typed?.logoUrl ?? data.product.brand.logoUrl ?? ''}
+								bind:value={liveLogoUrl}
 								error={errors.logoUrl}
 							/>
 							<TextField
@@ -234,6 +256,18 @@
 								value={typed?.refundPolicy ?? data.product.refundPolicy}
 								error={errors.refundPolicy}
 							/>
+							<Card variant="frame">
+								{#snippet header()}Prévia da marca{/snippet}
+								<BrandHero
+									size="preview"
+									title={liveName.trim() || data.product.name}
+									subtitle={data.hero.subtitle}
+									cta={data.hero.cta}
+									color={previewColor}
+									font={liveFont}
+									logoUrl={previewLogoUrl}
+								/>
+							</Card>
 							<Button type="submit" variant="primary" loading={save.loading('Salvando')}>
 								Salvar alterações
 							</Button>

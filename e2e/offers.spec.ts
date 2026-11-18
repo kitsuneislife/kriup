@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { createProduct, deleteOffer, getProductEditor } from '../src/lib/server/services/catalog';
 import { brand } from '../src/lib/server/services/testing';
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, hydrated, test } from './fixtures';
 
 const draft = {
 	templateSlug: 'online-course',
@@ -78,8 +78,44 @@ test('edits the offers, then publishes once nothing is missing', async ({
 
 	const editor = await getProductEditor(ctx, producer.id, id);
 	expect(editor.product.status).toBe('published');
-	expect(editor.offers.map((o) => [o.name, o.priceCents, o.guaranteeDays])).toEqual([
-		['À vista', 12_000, 30]
+	expect(editor.offers.map((o) => [o.name, o.priceCents, o.guaranteeDays, o.recurrence])).toEqual([
+		['À vista', 12_000, 30, 'one_time']
+	]);
+});
+
+test('adds and edits monthly subscription offers', async ({ page, ctx, createUser, signIn }) => {
+	test.slow(); // two saves and axe in both themes
+	const producer = await createUser('Paulo Lima');
+	const id = await createProduct(ctx, producer.id, draft);
+	await signIn(producer);
+	await page.goto(`/producer/products/${id}/offers`);
+	await hydrated(page);
+
+	const add = newOffer(page);
+	await add.getByRole('radio', { name: 'Mensal' }).check();
+	await add.getByLabel('Nome da oferta').fill('Plano mensal');
+	await add.getByLabel('Preço em reais').fill('49,90');
+	await add.getByRole('button', { name: 'Adicionar oferta' }).click();
+
+	const monthlyCard = offerCard(page, 'Plano mensal');
+	await expect(monthlyCard).toBeVisible();
+	await expect(monthlyCard.locator('.header').getByText('Mensal', { exact: true })).toBeVisible();
+	await expect(monthlyCard).toContainText('R$ 49,90');
+	await expect(monthlyCard).toContainText('/mês');
+	await expectAccessible(page);
+
+	const mainCard = offerCard(page, 'Oferta principal');
+	await expect(mainCard.locator('.header').getByText('Mensal', { exact: true })).toHaveCount(0);
+	await mainCard.getByText('Editar oferta').click();
+	await mainCard.getByRole('radio', { name: 'Mensal' }).check();
+	await mainCard.getByRole('button', { name: 'Salvar oferta' }).click();
+	await expect(mainCard.getByText('Oferta salva.')).toBeVisible();
+	await expect(mainCard.locator('.header').getByText('Mensal', { exact: true })).toBeVisible();
+
+	const editor = await getProductEditor(ctx, producer.id, id);
+	expect(editor.offers.map((o) => [o.name, o.recurrence])).toEqual([
+		['Oferta principal', 'monthly'],
+		['Plano mensal', 'monthly']
 	]);
 });
 

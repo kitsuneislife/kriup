@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { getProductEditor } from '../src/lib/server/services/catalog';
 import { expect, expectAccessible, hydrated, test } from './fixtures';
 
 const question = (page: Page, name: string) =>
@@ -39,9 +40,10 @@ test('asks one question per step and keeps the answers', async ({ page, createUs
 	await proceed(page);
 
 	await question(page, 'Escolha um modelo');
-	// the preview already carries the answers
-	await expect(page.getByText('Pão de fermentação natural', { exact: true })).toBeVisible();
+	// the preview already carries the answers, and courses offer both course and workshop templates
+	await expect(page.getByText('Pão de fermentação natural', { exact: true }).first()).toBeVisible();
 	await expect(page.getByText('Quero começar por R$ 97,90')).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Criar com Oficina prática' })).toBeVisible();
 	await expectAccessible(page);
 
 	// the answers survive a reload and going back
@@ -92,6 +94,41 @@ test('offers only the templates of the chosen type', async ({ page, createUser, 
 	const result = await response.json();
 	expect(result).toMatchObject({ type: 'failure', status: 400 });
 	expect(result.data).toContain('invalid_input');
+});
+
+test('creates a subscription club with a monthly offer', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	const producer = await createUser('Ana Souza');
+	await signIn(producer);
+	await page.goto('/producer/new');
+	await hydrated(page);
+	await page.getByLabel('Tipo de produto').selectOption({ label: 'Assinatura' });
+	await proceed(page);
+	await page.getByLabel('Nome do produto').fill('Clube da Massa');
+	await proceed(page);
+	await page.getByLabel('Preço em reais').fill('49,90');
+	await proceed(page);
+	await page.getByLabel('Público').fill('quem assa toda semana');
+	await proceed(page);
+	await proceed(page);
+
+	await question(page, 'Escolha um modelo');
+	await expect(page.getByRole('button', { name: /^Criar com/ })).toHaveText([
+		'Criar com Clube de assinatura'
+	]);
+	await page.getByRole('button', { name: 'Criar com Clube de assinatura' }).click();
+	await expect(page).toHaveURL(/\/producer\/products\/[0-9a-f-]{36}$/);
+	await expect(page.getByRole('heading', { name: 'Clube da Massa', level: 1 })).toBeVisible();
+	await expect(page.getByText('Assinatura', { exact: true })).toBeVisible();
+
+	const id = page.url().split('/').at(-1)!;
+	const editor = await getProductEditor(ctx, producer.id, id);
+	expect(editor.product.type).toBe('subscription');
+	expect(editor.offers).toMatchObject([{ priceCents: 4_990, recurrence: 'monthly' }]);
 });
 
 test('refuses a wrong answer under its field', async ({ page, createUser, signIn }) => {

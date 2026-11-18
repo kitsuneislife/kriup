@@ -5,7 +5,6 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { addDays } from '../../domain/money';
 import { platformFee } from '../../domain/split';
-import { DomainError } from '../../domain/states';
 import { normalizeTaxId } from '../../domain/tax-id';
 import { emailSchema, nameSchema } from '../auth/credentials';
 import type { SessionUser } from '../auth/session';
@@ -56,9 +55,6 @@ export async function startCheckout(
 		const [off] = await tx.select().from(offer).where(eq(offer.id, data.offerId));
 		const found = assertFound(off, 'offer');
 		const prod = assertFound(await onSale(tx, found.productId, now), 'product');
-		if (found.recurrence !== 'one_time') {
-			throw new DomainError('recurrence_not_supported', 'subscriptions wait for decision D5');
-		}
 		const account = buyer ?? (await findOrCreateAccount(tx, data.email, data.name));
 		const [row] = await tx
 			.insert(order)

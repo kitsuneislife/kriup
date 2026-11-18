@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import {
 		Alert,
+		Badge,
 		BrandHero,
 		BrandScope,
 		Breadcrumb,
@@ -9,6 +10,7 @@
 		Card,
 		Cluster,
 		Disclosure,
+		Divider,
 		EmptyState,
 		Icon,
 		LessonList,
@@ -28,6 +30,14 @@
 	const lessonHref = (id: string) => `${preview}?view=course&lesson=${id}`;
 	const hero = $derived(data.sections.find((section) => section.kind === 'hero')?.fields);
 	const rest = $derived(data.sections.filter((section) => section.kind !== 'hero'));
+	const checkoutSummary = $derived(
+		data.checkoutSections.find((section) => section.kind === 'summary')?.fields
+	);
+	const emailFields = $derived(
+		data.emailSections.find((section) => section.kind === 'email')?.fields
+	);
+	const emailParagraphs = $derived(paragraphs(emailFields?.body ?? ''));
+	const sampleOffer = $derived(data.offers[0]);
 	const video = $derived(data.current?.videoUrl ? videoOf(data.current.videoUrl) : null);
 	const days = (n: number) => `${n} ${n === 1 ? 'dia' : 'dias'}`;
 </script>
@@ -35,7 +45,7 @@
 <svelte:head><title>Prévia de {data.product.name}</title></svelte:head>
 
 <BrandScope color={data.product.brand.color} font={data.product.brand.font}>
-	<Page width={data.view === 'sales' ? 'text' : 'page'}>
+	<Page width={data.view === 'course' ? 'page' : 'text'}>
 		<Stack gap={8}>
 			<Stack gap={4}>
 				<Breadcrumb
@@ -66,6 +76,24 @@
 						>
 							Página de venda{#if data.view === 'sales'}<span class="visually-hidden">
 									(aberta)</span
+								>{/if}
+						</Button>
+						<Button
+							size="sm"
+							variant={data.view === 'checkout' ? 'primary' : 'neutral'}
+							href="{preview}?view=checkout"
+						>
+							Checkout{#if data.view === 'checkout'}<span class="visually-hidden">
+									(aberto)</span
+								>{/if}
+						</Button>
+						<Button
+							size="sm"
+							variant={data.view === 'email' ? 'primary' : 'neutral'}
+							href="{preview}?view=email"
+						>
+							E-mail de acesso{#if data.view === 'email'}<span class="visually-hidden">
+									(aberto)</span
 								>{/if}
 						</Button>
 						<Button
@@ -106,8 +134,18 @@
 							<Card padding="lg">
 								<Stack gap={3}>
 									<Cluster justify="between" align="baseline" gap={4}>
-										<Text variant="title3" as="h3">{offer.name}</Text>
-										<Money cents={offer.priceCents} variant="title1" weight="bold" />
+										<Cluster gap={2} align="center">
+											<Text variant="title3" as="h3">{offer.name}</Text>
+											{#if offer.recurrence === 'monthly'}
+												<Badge tone="indigo" size="sm">Mensal</Badge>
+											{/if}
+										</Cluster>
+										<Cluster gap={1} align="baseline" wrap={false}>
+											<Money cents={offer.priceCents} variant="title1" weight="bold" />
+											{#if offer.recurrence === 'monthly'}
+												<Text variant="subhead" tone="secondary">/mês</Text>
+											{/if}
+										</Cluster>
 									</Cluster>
 									<Cluster gap={2} wrap={false}>
 										<Text tone="secondary"><Icon name="shield" /></Text>
@@ -133,8 +171,120 @@
 					</Stack>
 
 					<Disclosure title="Política de reembolso" icon="refresh">
-						<Text tone="secondary">{data.product.refundPolicy}</Text>
+						<Text tone="secondary">
+							{data.product.refundPolicy || 'Política de reembolso ainda não preenchida.'}
+						</Text>
 					</Disclosure>
+				</Stack>
+			{:else if data.view === 'checkout'}
+				<Stack gap={6}>
+					<Cluster justify="between" gap={3}>
+						<Text weight="semibold">{data.product.name}</Text>
+						<Cluster gap={1}>
+							<Text tone="secondary"><Icon name="lock" size="sm" /></Text>
+							<Text variant="footnote" tone="secondary">Compra segura</Text>
+						</Cluster>
+					</Cluster>
+
+					<Text variant="title1" as="h1">Finalizar compra</Text>
+
+					{#if sampleOffer}
+						<Card padding="lg" as="section">
+							<Stack gap={3}>
+								<Text variant="subhead" tone="secondary">
+									{checkoutSummary?.title || `Você está comprando ${data.product.name}`}
+								</Text>
+								<Cluster justify="between" align="baseline" gap={3}>
+									<Cluster gap={2} align="center">
+										<Text variant="title3" as="h2">{sampleOffer.name}</Text>
+										{#if sampleOffer.recurrence === 'monthly'}
+											<Badge tone="indigo" size="sm">Mensal</Badge>
+										{/if}
+									</Cluster>
+									<Cluster gap={1} align="baseline" wrap={false}>
+										<Money cents={sampleOffer.priceCents} variant="title2" weight="bold" />
+										{#if sampleOffer.recurrence === 'monthly'}
+											<Text variant="subhead" tone="secondary">/mês</Text>
+										{/if}
+									</Cluster>
+								</Cluster>
+								<Divider />
+								<Cluster gap={2} wrap={false} align="start">
+									<Text tone="secondary"><Icon name="shield" size="sm" /></Text>
+									<Text variant="footnote" tone="secondary">
+										Garantia de {days(sampleOffer.guaranteeDays)}. {checkoutSummary?.note ?? ''}
+									</Text>
+								</Cluster>
+							</Stack>
+						</Card>
+					{:else}
+						<EmptyState icon="receipt" title="Nenhuma oferta ainda">
+							Crie uma oferta para ver o resumo completo do checkout.
+							{#snippet action()}
+								<Button
+									variant="primary"
+									href={resolve('/(app)/producer/products/[id]/offers', { id: params.id })}
+								>
+									Criar uma oferta
+								</Button>
+							{/snippet}
+						</EmptyState>
+					{/if}
+
+					<Card variant="frame" padding="lg" as="section">
+						{#snippet header()}Dados e forma de pagamento{/snippet}
+						<Stack gap={4}>
+							<Cluster gap={2}>
+								<Badge tone="success" dot>Pix</Badge>
+								<Badge>Cartão</Badge>
+							</Cluster>
+							<Text variant="subhead" tone="secondary">
+								No checkout publicado, o comprador informa nome, e-mail e CPF ou CNPJ e paga por Pix
+								ou cartão na cor da sua marca.
+							</Text>
+						</Stack>
+					</Card>
+
+					<Disclosure title="Política de reembolso" icon="shield">
+						<Text tone="secondary">
+							{data.product.refundPolicy || 'Política de reembolso ainda não preenchida.'}
+						</Text>
+					</Disclosure>
+				</Stack>
+			{:else if data.view === 'email'}
+				<Stack gap={6}>
+					<Text variant="title1" as="h1">E-mail de acesso</Text>
+
+					<Card variant="frame" padding="lg" as="article">
+						{#snippet header()}
+							Para: aluno@exemplo.com · Enviado após a confirmação do pagamento
+						{/snippet}
+						<Stack gap={6}>
+							<Stack gap={1}>
+								<Text variant="footnote" tone="secondary">Assunto</Text>
+								<Text variant="title2" as="h2">
+									{emailFields?.subject || `Seu acesso a ${data.product.name}`}
+								</Text>
+							</Stack>
+							<Divider />
+							<Stack gap={3}>
+								{#each emailParagraphs as line, index (index)}
+									<Text>{line}</Text>
+								{:else}
+									<Text>
+										Olá! Sua compra de {data.product.name} foi confirmada.
+									</Text>
+								{/each}
+							</Stack>
+							<Cluster>
+								<Button variant="primary" iconEnd="arrow-right">Acessar área de membros</Button>
+							</Cluster>
+							<Text variant="footnote" tone="secondary">
+								No primeiro acesso, este botão leva o aluno a definir a senha; quem já tem conta
+								entra direto na área de membros.
+							</Text>
+						</Stack>
+					</Card>
 				</Stack>
 			{:else if !data.current}
 				<EmptyState icon="book" title="Este curso ainda não tem aulas">

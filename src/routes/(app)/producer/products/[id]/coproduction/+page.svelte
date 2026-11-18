@@ -5,6 +5,7 @@
 		PLATFORM_FEE_BP,
 		PLATFORM_FIXED_FEE_CENTS
 	} from '#lib/domain/params';
+	import { parsePercent, simulateSale } from '#lib/domain/simulation';
 	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
 	import {
@@ -33,6 +34,14 @@
 
 	const invite = new Submission({ reset: true });
 	const sim = $derived(data.simulation);
+	let livePercent = $derived(sim.percentText);
+	let liveOfferId = $derived(sim.offerId);
+	const liveOffer = $derived(data.offers.find((o) => o.id === liveOfferId) ?? data.offers[0]);
+	const liveBp = $derived(livePercent ? parsePercent(livePercent) : undefined);
+	const liveInvalid = $derived(livePercent !== '' && liveBp === undefined);
+	const liveSale = $derived(
+		liveOffer && liveBp !== undefined ? simulateSale(liveOffer.priceCents, liveBp) : null
+	);
 
 	const statusText: Record<(typeof data.terms)[number]['status'], { label: string; tone: Tone }> = {
 		invited: { label: 'Aguardando aceite', tone: 'warning' },
@@ -116,14 +125,14 @@
 						name="percent"
 						label="Parte do coprodutor, em %"
 						hint="Por exemplo: 30 ou 12,5."
-						value={sim.percentText}
-						error={sim.invalid ? errorText('invalid_input') : undefined}
+						bind:value={livePercent}
+						error={liveInvalid ? errorText('invalid_input') : undefined}
 					/>
 					{#if data.offers.length > 1}
 						<Select
 							name="offer"
 							label="Oferta"
-							value={sim.offerId}
+							bind:value={liveOfferId}
 							options={data.offers.map((o) => ({
 								value: o.id,
 								label: `${o.name} (${formatMoney(o.priceCents)})`
@@ -137,20 +146,20 @@
 				<EmptyState icon="receipt" title="Sem oferta para simular">
 					Crie uma oferta para ver como uma venda se divide.
 				</EmptyState>
-			{:else if sim.sale}
+			{:else if liveSale}
 				<Card variant="frame">
 					<Cluster gap={8} align="start">
 						<Stat label="Valor da venda"
-							><Money cents={sim.sale.grossCents} weight="semibold" /></Stat
+							><Money cents={liveSale.grossCents} weight="semibold" /></Stat
 						>
 						<Stat label="Taxa da plataforma">
-							<Money cents={sim.sale.feeCents} tone="secondary" />
+							<Money cents={liveSale.feeCents} tone="secondary" />
 						</Stat>
 						<Stat label="Sua parte" tone="success">
-							<Money cents={sim.sale.producerCents} weight="semibold" />
+							<Money cents={liveSale.producerCents} weight="semibold" />
 						</Stat>
 						<Stat label="Parte do coprodutor">
-							<Money cents={sim.sale.coproducerCents} weight="semibold" />
+							<Money cents={liveSale.coproducerCents} weight="semibold" />
 						</Stat>
 					</Cluster>
 				</Card>
@@ -184,7 +193,7 @@
 					name="percent"
 					label="Percentual do coprodutor"
 					hint={`De 0,01 a ${COPRODUCTION_MAX_BP / 100}, em %. Por exemplo: 30.`}
-					value={typed?.percent ?? sim.percentText}
+					value={typed?.percent ?? livePercent}
 					error={percentError}
 				/>
 				<TextField

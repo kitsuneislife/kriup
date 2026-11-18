@@ -19,8 +19,10 @@ import {
 	listTemplates,
 	publishProduct,
 	reorderModules,
+	updateOffer,
 	updatePage
 } from './catalog';
+import { startCheckout } from './checkout';
 import { createBlock } from './support';
 import {
 	brand,
@@ -30,7 +32,8 @@ import {
 	publishedProduct,
 	rejectsCode,
 	resetDb,
-	testCtx
+	testCtx,
+	VALID_CPF
 } from './testing';
 
 beforeEach(resetDb);
@@ -48,9 +51,14 @@ describe('guided creation (RF-10 to RF-12)', () => {
 		const ctx = testCtx();
 		const producer = await newUser('p@example.com');
 		const templates = await listTemplates(ctx);
-		expect(templates.map((t) => t.slug).sort()).toEqual(['mentorship', 'online-course']);
+		expect(templates.map((t) => t.slug).sort()).toEqual([
+			'mentorship',
+			'online-course',
+			'subscription-club',
+			'workshop'
+		]);
 
-		for (const { slug } of templates) {
+		for (const { slug, productType } of templates) {
 			const id = await createProduct(ctx, producer.id, { ...answers, templateSlug: slug });
 			const editor = await getProductEditor(ctx, producer.id, id);
 			expect(editor.product.status).toBe('draft');
@@ -63,7 +71,13 @@ describe('guided creation (RF-10 to RF-12)', () => {
 			expect(sales).not.toContain('{{');
 			expect(editor.product.refundPolicy).toContain('Curso de pão');
 			expect(editor.modules.flatMap((m) => m.lessons).length).toBeGreaterThan(0);
-			expect(editor.offers).toMatchObject([{ priceCents: 9_700, feeCents: 734 }]);
+			expect(editor.offers).toMatchObject([
+				{
+					priceCents: 9_700,
+					feeCents: 734,
+					recurrence: productType === 'subscription' ? 'monthly' : 'one_time'
+				}
+			]);
 			expect(editor.pendencies).toEqual([]);
 		}
 	});
@@ -101,19 +115,50 @@ describe('editor and ownership (RNF-05)', () => {
 		);
 	});
 
-	it('lists only the own products, newest first, with offer count and lowest price', async () => {
+	it('lists only the own products, newest first, with offer, lesson and paid-sale counts', async () => {
 		const ctx = testCtx();
 		const owner = await newUser('p@example.com');
 		const other = await newUser('o@example.com');
 		const first = await createProduct(ctx, owner.id, answers);
 		const second = await createProduct(ctx, owner.id, { ...answers, name: 'Mentoria' });
-		await addOffer(ctx, owner.id, second, { name: 'Promoção', priceCents: 4_900 });
+		const promoOfferId = await addOffer(ctx, owner.id, second, {
+			name: 'Promoção',
+			priceCents: 4_900
+		});
+		await publishProduct(ctx, owner.id, second);
+		await buy(ctx, promoOfferId, 'paid1@example.com');
+		await buy(ctx, promoOfferId, 'paid2@example.com');
+		await startCheckout(ctx, null, {
+			offerId: promoOfferId,
+			method: 'pix',
+			name: 'Pendente',
+			email: 'pending@example.com',
+			taxId: VALID_CPF
+		});
 		await deleteOffer(ctx, owner.id, (await getProductEditor(ctx, owner.id, first)).offers[0]!.id);
 		await createProduct(ctx, other.id, answers);
 
+		const secondLessons = (await getProductEditor(ctx, owner.id, second)).modules.flatMap(
+			(m) => m.lessons
+		).length;
+		const firstLessons = (await getProductEditor(ctx, owner.id, first)).modules.flatMap(
+			(m) => m.lessons
+		).length;
 		expect(await listProducerProducts(ctx, owner.id)).toMatchObject([
-			{ id: second, offerCount: 2, minPriceCents: 4_900 },
-			{ id: first, offerCount: 0, minPriceCents: null }
+			{
+				id: second,
+				offerCount: 2,
+				minPriceCents: 4_900,
+				lessonCount: secondLessons,
+				paidOrderCount: 2
+			},
+			{
+				id: first,
+				offerCount: 0,
+				minPriceCents: null,
+				lessonCount: firstLessons,
+				paidOrderCount: 0
+			}
 		]);
 	});
 
@@ -287,5 +332,56 @@ describe('public pages (RF-20)', () => {
 		const { offerId } = await publishedProduct(ctx, producer.id);
 		await buy(ctx, offerId, 'a@example.com');
 		await rejectsCode(deleteOffer(ctx, producer.id, offerId), 'offer_has_orders');
+	});
+
+	it('sells and checks out monthly subscription offers (D5)', async () => {
+		const ctx = testCtx();
+		const producer = await newUser('p@example.com');
+		const productId = await createProduct(ctx, producer.id, {
+			...answers,
+			templateSlug: 'subscription-club',
+			name: 'Clube do pão',
+			priceCents: 4_900
+		});
+		const vipOfferId = await addOffer(ctx, producer.id, productId, {
+			name: 'Plano VIP',
+			priceCents: 8_900,
+			recurrence: 'monthly'
+		});
+		const oneTimeOfferId = await addOffer(ctx, producer.id, productId, {
+			name: 'Acesso avulso',
+			priceCents: 19_900
+		});
+		await updateOffer(ctx, producer.id, oneTimeOfferId, {
+			name: 'Acesso anual à vista',
+			priceCents: 29_900,
+			recurrence: 'one_time'
+		});
+		await publishProduct(ctx, producer.id, productId);
+
+		const sales = await getSalesPage(ctx, productId);
+		expect(sales.offers).toMatchObject([
+			{ name: 'Oferta principal', priceCents: 4_900, recurrence: 'monthly' },
+			{ id: vipOfferId, name: 'Plano VIP', priceCents: 8_900, recurrence: 'monthly' },
+			{
+				id: oneTimeOfferId,
+				name: 'Acesso anual à vista',
+				priceCents: 29_900,
+				recurrence: 'one_time'
+			}
+		]);
+
+		const checkout = await getCheckout(ctx, vipOfferId);
+		expect(checkout.offer).toMatchObject({
+			id: vipOfferId,
+			name: 'Plano VIP',
+			priceCents: 8_900,
+			recurrence: 'monthly'
+		});
+
+		await buy(ctx, vipOfferId, 'assinante@example.com');
+		expect(await listProducerProducts(ctx, producer.id)).toMatchObject([
+			{ id: productId, offerCount: 3, paidOrderCount: 1 }
+		]);
 	});
 });

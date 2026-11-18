@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { createProduct, getProductEditor, updateProduct } from '../src/lib/server/services/catalog';
 import { brand } from '../src/lib/server/services/testing';
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, hydrated, test } from './fixtures';
 
 const draft = {
 	templateSlug: 'online-course',
@@ -87,6 +87,41 @@ test('refuses a wrong field under it and keeps what was typed', async ({
 
 	await page.reload();
 	await expect(page.getByRole('heading', { name: 'Curso de pão', level: 1 })).toBeVisible();
+});
+
+test('updates the brand preview live and copies the public sales link once published', async ({
+	page,
+	context,
+	ctx,
+	createUser,
+	signIn,
+	baseURL
+}) => {
+	test.slow(); // publish + axe checks in both themes
+	await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+	const producer = await createUser('Paulo Lima');
+	const id = await createProduct(ctx, producer.id, draft);
+	await signIn(producer);
+	await page.goto(`/producer/products/${id}?tab=data`);
+	await hydrated(page);
+
+	const previewCard = page.locator('[data-variant="frame"]').filter({ hasText: 'Prévia da marca' });
+	await expect(previewCard).toContainText('Curso de pão');
+
+	// changing fields updates the brand preview immediately, before saving
+	await page.getByLabel('Nome do produto').fill('Fornada artesanal');
+	await page.getByLabel('Cor principal', { exact: true }).fill('#15803d');
+	await page.getByLabel('Fonte').selectOption('Montserrat');
+	await expect(previewCard).toContainText('Fornada artesanal');
+	await expectAccessible(page);
+
+	await openTab(page, 'Resumo');
+	await page.getByRole('button', { name: 'Publicar produto' }).click();
+	await expect(page.getByText('Seu produto está à venda.')).toBeVisible();
+	await expect(page.getByLabel('Link da página de venda')).toHaveValue(`${baseURL}/p/${id}`);
+	await page.getByRole('button', { name: 'Copiar link' }).click();
+	await expect(page.getByRole('button', { name: 'Link copiado' })).toBeVisible();
+	await expectAccessible(page);
 });
 
 test("refuses to save another producer's product", async ({

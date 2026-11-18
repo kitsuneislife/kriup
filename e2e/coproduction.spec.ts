@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { addOffer } from '../src/lib/server/services/catalog';
 import {
 	inviteCoproducer,
 	listProductCoproductions
@@ -84,6 +85,42 @@ test('simulates a sale, invites a coproducer and cancels the invite', async ({
 	await page.getByRole('dialog').getByRole('button', { name: 'Cancelar convite' }).click();
 	await expect(page.getByRole('row', { name: /Rita Souza/ })).toContainText('Cancelada');
 	await expect(page.getByRole('button', { name: 'Cancelar convite' })).toHaveCount(0);
+});
+
+test('updates the sale simulation and invite percentage live as the producer types', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	const producer = await createUser('Paulo Lima');
+	const { productId } = await publishedProduct(ctx, producer.id);
+	const vipOfferId = await addOffer(ctx, producer.id, productId, {
+		name: 'Plano VIP',
+		priceCents: 20_000
+	});
+	await signIn(producer);
+	await page.goto(`/producer/products/${productId}/coproduction`);
+	await hydrated(page);
+
+	const sim = page.getByRole('form', { name: 'Simulação' });
+	const invite = page.getByRole('form', { name: 'Novo convite' });
+	const result = page.locator('main');
+
+	// typing updates the 4 Stat cards and prefills the invite form without submitting
+	await sim.getByLabel('Parte do coprodutor, em %').fill('25');
+	await expect(result).toContainText(money('100,00'));
+	await expect(result).toContainText(money('7,49'));
+	await expect(result).toContainText(money('69,39'));
+	await expect(result).toContainText(money('23,12'));
+	await expect(invite.getByLabel('Percentual do coprodutor')).toHaveValue('25');
+
+	// switching the offer recalculates immediately
+	await sim.getByLabel('Oferta').selectOption(vipOfferId);
+	await expect(result).toContainText(money('200,00'));
+	await expect(result).toContainText(money('12,49'));
+	await expect(result).toContainText(money('140,64'));
+	await expect(result).toContainText(money('46,87'));
 });
 
 test('fits a phone', async ({ page, ctx, createUser, signIn }) => {

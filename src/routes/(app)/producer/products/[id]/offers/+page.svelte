@@ -8,8 +8,10 @@
 	} from '#lib/domain/params';
 	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
+	import { recurrenceText } from '#lib/product-text';
 	import {
 		Alert,
+		Badge,
 		Breadcrumb,
 		Button,
 		Card,
@@ -21,6 +23,7 @@
 		formatMoney,
 		Money,
 		Page,
+		SegmentedControl,
 		Stack,
 		Stat,
 		Text,
@@ -32,9 +35,19 @@
 
 	// one Submission for the edit forms and one for the add form (that one empties itself);
 	// `active` says which form is on its way, so only its button shows the loading state
-	const edit = new Submission();
-	const add = new Submission({ reset: true });
 	let active = $state('');
+	const recurrences: Record<string, 'one_time' | 'monthly'> = $state({});
+	const edit = new Submission({
+		done: () => {
+			if (active) delete recurrences[active];
+		}
+	});
+	const add = new Submission({
+		reset: true,
+		done: () => {
+			delete recurrences['new-offer'];
+		}
+	});
 	const loading = (key: string, text: string) =>
 		active === key ? (edit.loading(text) ?? add.loading(text)) : undefined;
 
@@ -62,6 +75,17 @@
 	// an offer opens to be edited; a refusal opens it
 	const opened: Record<string, boolean> = $state({});
 	const isOpen = (id: string) => opened[id] ?? form?.for === `offer:${id}`;
+	const recurrenceOf = (
+		key: string,
+		typed?: Record<string, string>,
+		offer?: (typeof data.offers)[number]
+	): 'one_time' | 'monthly' =>
+		recurrences[key] ??
+		(typed?.recurrence === 'monthly'
+			? 'monthly'
+			: typed?.recurrence === 'one_time'
+				? 'one_time'
+				: (offer?.recurrence ?? 'one_time'));
 </script>
 
 <svelte:head><title>Ofertas · {data.product.name}</title></svelte:head>
@@ -78,6 +102,22 @@
 {#snippet fields(key: string, offer?: (typeof data.offers)[number])}
 	{@const typed = typedOf(key)}
 	{@const errors = errorsOf(key)}
+	{@const currentRecurrence = recurrenceOf(key, typed, offer)}
+	<Stack gap={2} align="start">
+		<Text variant="footnote" weight="medium" tone="secondary">Cobrança</Text>
+		<SegmentedControl
+			name="recurrence"
+			label="Cobrança"
+			options={[
+				{ value: 'one_time', label: recurrenceText.one_time },
+				{ value: 'monthly', label: recurrenceText.monthly }
+			]}
+			bind:value={
+				() => currentRecurrence,
+				(value) => (recurrences[key] = value === 'monthly' ? 'monthly' : 'one_time')
+			}
+		/>
+	</Stack>
 	<TextField
 		name="name"
 		label="Nome da oferta"
@@ -88,7 +128,7 @@
 	<TextField
 		name="price"
 		label="Preço em reais"
-		hint={priceHint}
+		hint={currentRecurrence === 'monthly' ? `${priceHint} Cobrado por mês (/mês).` : priceHint}
 		value={typed?.price ?? (offer ? formatDecimal(offer.priceCents) : '')}
 		error={errors.price}
 	/>
@@ -136,7 +176,12 @@
 			<Card variant="frame" as="section">
 				{#snippet header()}
 					<Stack gap={1}>
-						<Text variant="title3" as="h2">{offer.name}</Text>
+						<Cluster gap={2} align="center">
+							<Text variant="title3" as="h2">{offer.name}</Text>
+							{#if offer.recurrence === 'monthly'}
+								<Badge tone="indigo" size="sm">Mensal</Badge>
+							{/if}
+						</Cluster>
 						<Text variant="footnote" tone="secondary">
 							Garantia de {days(offer.guaranteeDays)}
 						</Text>
@@ -145,7 +190,14 @@
 				<Stack gap={6}>
 					<!-- three short numbers: side by side when they fit, stacked on a phone -->
 					<Cluster gap={8} align="start">
-						<Stat label="Preço"><Money cents={offer.priceCents} weight="semibold" /></Stat>
+						<Stat label="Preço">
+							<Cluster gap={1} align="baseline" wrap={false}>
+								<Money cents={offer.priceCents} weight="semibold" />
+								{#if offer.recurrence === 'monthly'}
+									<Text variant="footnote" tone="secondary">/mês</Text>
+								{/if}
+							</Cluster>
+						</Stat>
 						<Stat label="Taxa da plataforma">
 							<Money cents={offer.feeCents} tone="secondary" />
 						</Stat>

@@ -2,15 +2,21 @@
 // client: the server import is a type only.
 
 import type { Pendency } from './domain/publish';
-import type { product } from './server/db/schema';
+import type { offer, product } from './server/db/schema';
 import type { IconName, Tone } from './ui';
 
 type Product = typeof product.$inferSelect;
+type Offer = typeof offer.$inferSelect;
 
 export const productTypeText: Record<Product['type'], { label: string; icon: IconName }> = {
 	course: { label: 'Curso', icon: 'book' },
 	mentorship: { label: 'Mentoria', icon: 'users' },
 	subscription: { label: 'Assinatura', icon: 'refresh' }
+};
+
+export const recurrenceText: Record<Offer['recurrence'], string> = {
+	one_time: 'Pagamento único',
+	monthly: 'Mensal'
 };
 
 export const productStatusText: Record<Product['status'], { label: string; tone: Tone }> = {
