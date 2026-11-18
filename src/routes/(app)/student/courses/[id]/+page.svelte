@@ -59,6 +59,12 @@
 				</Stack>
 			</Stack>
 
+			{#if pct === 100 && data.lessonCount > 0}
+				<Alert tone="success" title="Curso concluído!">
+					Você concluiu todas as aulas deste curso. Você pode rever qualquer aula quando quiser.
+				</Alert>
+			{/if}
+
 			{#if !data.current}
 				<EmptyState icon="book" title="Este curso ainda não tem aulas">
 					Assim que o produtor publicar as aulas, elas aparecem aqui.
@@ -71,7 +77,9 @@
 			{:else}
 				<Stack gap={6}>
 					<Stack gap={2}>
-						<Text variant="footnote" tone="secondary">Aula atual</Text>
+						<Text variant="footnote" tone="secondary">
+							{data.current.moduleTitle} · Aula {data.current.number} de {data.lessonCount}
+						</Text>
 						<Text variant="title2" as="h2">{data.current.title}</Text>
 					</Stack>
 
@@ -135,6 +143,11 @@
 								</Button>
 							{/if}
 						</form>
+						{#if data.prevId}
+							<Button variant="ghost" icon="arrow-left" href={lessonHref(data.prevId)}>
+								Aula anterior
+							</Button>
+						{/if}
 						{#if data.nextId}
 							<Button variant="neutral" iconEnd="arrow-right" href={lessonHref(data.nextId)}>
 								Próxima aula

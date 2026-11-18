@@ -7,9 +7,10 @@ import {
 } from '../auth/password-token';
 import { createSession, validateSession } from '../auth/session';
 import { verifyPassword } from '../auth/password';
-import { auditLog, order, user } from '../db/schema';
+import { auditLog, offer, order, user } from '../db/schema';
 import { NotFoundError } from '../errors';
 import { runDailyJobs } from '../jobs/daily';
+import { createProduct, publishProduct } from './catalog';
 import { startCheckout } from './checkout';
 import { getCourse, listMyOrders, listMyProducts, setLessonDone } from './members';
 import { requestRefund } from './refunds';
@@ -24,6 +25,7 @@ import {
 	openTicket
 } from './support';
 import {
+	brand,
 	buy,
 	days,
 	db,
@@ -56,7 +58,7 @@ describe('members area (RF-23, RF-24, RN-16)', () => {
 		await setLessonDone(ctx, student.id, first.id, true);
 		expect((await getCourse(ctx, student.id, productId)).completedCount).toBe(1);
 		expect(await listMyProducts(ctx, student.id)).toMatchObject([
-			{ id: productId, completedCount: 1, lessonCount: course.lessonCount }
+			{ id: productId, type: 'course', completedCount: 1, lessonCount: course.lessonCount }
 		]);
 		expect(await getCourse(ctx, producer.id, productId)).toBeTruthy(); // preview (RF-16)
 
@@ -68,6 +70,31 @@ describe('members area (RF-23, RF-24, RN-16)', () => {
 		expect(await listMyOrders(ctx, student.id)).toMatchObject([
 			{ status: 'refunded', enrollmentStatus: 'revoked', refundStatus: 'completed' }
 		]);
+	});
+
+	it('includes each enrolled product type in listMyProducts', async () => {
+		const { ctx, producer, productId, student } = await enrolled();
+		const mentorshipId = await createProduct(ctx, producer.id, {
+			templateSlug: 'mentorship',
+			name: 'Mentoria de fermentação',
+			audience: 'padeiros',
+			priceCents: 25_000,
+			brand
+		});
+		await publishProduct(ctx, producer.id, mentorshipId);
+		const [mentorshipOffer] = await db
+			.select()
+			.from(offer)
+			.where(eq(offer.productId, mentorshipId));
+		await buy(ctx, mentorshipOffer!.id, student.email);
+
+		const products = await listMyProducts(ctx, student.id);
+		expect(products).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: productId, type: 'course' }),
+				expect.objectContaining({ id: mentorshipId, type: 'mentorship' })
+			])
+		);
 	});
 });
 

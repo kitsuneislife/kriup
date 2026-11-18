@@ -37,6 +37,7 @@ test('lists the course with progress and plays lessons until it is finished', as
 
 	await page.goto('/student');
 	await expect(page.getByRole('heading', { name: 'Meus cursos', level: 1 })).toBeVisible();
+	await expect(page.getByText('Curso', { exact: true })).toBeVisible();
 	await expect(page.getByRole('heading', { name: 'Curso de pão', level: 2 })).toBeVisible();
 	await expect(page.getByText(`0 de ${lessons.length} aulas concluídas`)).toBeVisible();
 	await expectAccessible(page);
@@ -44,7 +45,9 @@ test('lists the course with progress and plays lessons until it is finished', as
 	// "Começar" opens the first lesson
 	await page.getByRole('link', { name: 'Começar: Curso de pão' }).click();
 	await expect(page).toHaveURL(new RegExp(`lesson=${first!.id}`));
+	await expect(page.getByText(`Boas-vindas · Aula 1 de ${lessons.length}`)).toBeVisible();
 	await expect(page.getByRole('heading', { name: first!.title, level: 2 })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Aula anterior' })).toHaveCount(0);
 	await expect(page.getByRole('link', { name: first!.title })).toHaveAttribute(
 		'aria-current',
 		'true'
@@ -57,11 +60,12 @@ test('lists the course with progress and plays lessons until it is finished', as
 	await expect(page.getByText(`1 de ${lessons.length} aulas concluídas`)).toBeVisible();
 	await expect(page.getByRole('heading', { name: first!.title, level: 2 })).toBeVisible();
 
-	// the next lesson, then one lesson picked from the list
+	// the next lesson, then back via "Aula anterior"
 	await page.getByRole('link', { name: 'Próxima aula' }).click();
+	await expect(page.getByText(`Boas-vindas · Aula 2 de ${lessons.length}`)).toBeVisible();
 	await expect(page.getByRole('heading', { name: second!.title, level: 2 })).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Marcar como concluída' })).toBeVisible();
-	await page.getByRole('link', { name: first!.title }).click();
+	await page.getByRole('link', { name: 'Aula anterior' }).click();
 	await expect(page.getByRole('heading', { name: first!.title, level: 2 })).toBeVisible();
 
 	// undo
@@ -69,7 +73,7 @@ test('lists the course with progress and plays lessons until it is finished', as
 	await expect(page.getByRole('button', { name: 'Marcar como concluída' })).toBeVisible();
 	await expect(page.getByText(`0 de ${lessons.length} aulas concluídas`)).toBeVisible();
 
-	// finish everything: the course shows as done on the list
+	// finish everything: the completion banner appears and the course shows as done on the list
 	for (const lesson of lessons) {
 		// a click on the lesson already open reloads it, and that load could land after the save
 		if (!page.url().includes(`lesson=${lesson.id}`)) {
@@ -80,6 +84,9 @@ test('lists the course with progress and plays lessons until it is finished', as
 		await expect(page.getByRole('button', { name: 'Concluída, desfazer' })).toBeVisible();
 	}
 	await expect(page.getByText('100%')).toBeVisible();
+	await expect(page.getByText('Curso concluído!')).toBeVisible();
+	await expect(page.getByText('Você concluiu todas as aulas deste curso.')).toBeVisible();
+	await expectAccessible(page);
 	await page.getByRole('link', { name: 'Meus cursos', exact: true }).first().click();
 	await expect(page.getByText('Concluído', { exact: true })).toBeVisible();
 	await expect(page.getByRole('link', { name: 'Rever aulas: Curso de pão' })).toBeVisible();

@@ -3,8 +3,9 @@
 
 import { randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
+import { startCheckout } from '../src/lib/server/services/checkout';
 import { producerDecision } from '../src/lib/server/services/refunds';
-import { days } from '../src/lib/server/services/testing';
+import { VALID_CPF, days } from '../src/lib/server/services/testing';
 import { buy, expect, expectAccessible, publishedProduct, test } from './fixtures';
 
 /** Opens the refund form of the student's only order and sends it; returns the refund id. */
@@ -22,6 +23,28 @@ test('shows an empty state before the first purchase', async ({ page, createUser
 	await page.goto('/student/orders');
 	await expect(page.getByText('Você ainda não comprou nada')).toBeVisible();
 	await expectAccessible(page);
+});
+
+test('offers to finish payment on a pending order', async ({ page, ctx, createUser, signIn }) => {
+	const producer = await createUser('Paulo Lima');
+	const { offerId } = await publishedProduct(ctx, producer.id);
+	const student = await createUser('Bia Rocha');
+	const { orderId } = await startCheckout(ctx, student, {
+		offerId,
+		method: 'pix',
+		name: student.name,
+		email: student.email,
+		taxId: VALID_CPF
+	});
+	await signIn(student);
+
+	await page.goto('/student/orders');
+	await expect(page.getByRole('link', { name: 'Concluir pagamento' })).toBeVisible();
+	await expectAccessible(page);
+
+	await page.getByRole('link', { name: 'Concluir pagamento' }).click();
+	await expect(page).toHaveURL(`/orders/${orderId}`);
+	await expect(page.getByRole('heading', { name: 'Falta só o pagamento' })).toBeVisible();
 });
 
 test('inside the guarantee the refund is approved and the access ends', async ({

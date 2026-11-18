@@ -13,7 +13,7 @@ import {
 	ORDER_TRANSITIONS
 } from '../../domain/states';
 import type { SessionUser } from '../auth/session';
-import type { Ctx } from '../context';
+import { type Ctx, link, sendAfterCommit } from '../context';
 import type { Tx } from '../db/client';
 import {
 	coproduction,
@@ -109,9 +109,28 @@ export async function requestRefund(
 				.returning({ id: refund.id, status: refund.status }),
 			[{ code: PG.UNIQUE, error: 'refund_exists' }]
 		);
-		return inserted!;
+		return { ...inserted!, productId: found.productId };
 	});
-	if (created.status === 'approved') await settle(ctx, created.id, now);
+	if (created.status === 'approved') {
+		await settle(ctx, created.id, now);
+	} else if (created.status === 'with_producer') {
+		const [owner] = await ctx.db
+			.select({
+				productName: product.name,
+				producerName: user.name,
+				producerEmail: user.email
+			})
+			.from(product)
+			.innerJoin(user, eq(user.id, product.producerId))
+			.where(eq(product.id, created.productId));
+		if (owner) {
+			await sendAfterCommit(ctx, {
+				to: owner.producerEmail,
+				subject: `Novo pedido de reembolso em ${owner.productName}`,
+				text: `Olá, ${owner.producerName}.\n\nUm aluno pediu reembolso em ${owner.productName} fora do prazo de garantia. Você tem 3 dias corridos para aprovar ou recusar o pedido antes que ele passe para o suporte da plataforma.\n\nResponda em:\n${link(ctx, `/producer/refunds/${created.id}`)}`
+			});
+		}
+	}
 	return created.id;
 }
 

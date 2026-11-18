@@ -12,7 +12,9 @@ import { pickLesson } from './player';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const course = await orNotFound(getCourse(ctx, requireUser(locals).id, params.id));
-	const flat = course.modules.flatMap((m) => m.lessons);
+	const flat = course.modules.flatMap((m) =>
+		m.lessons.map((l) => ({ ...l, moduleTitle: m.title }))
+	);
 	const current = pickLesson(flat, url.searchParams.get('lesson'));
 	// the address always names the lesson, so marking one done does not jump to another
 	if (current && url.searchParams.get('lesson') !== current.id) {
@@ -21,7 +23,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			`${resolve('/(app)/student/courses/[id]', { id: params.id })}?lesson=${current.id}`
 		);
 	}
-	const next = current ? flat[flat.indexOf(current) + 1] : undefined;
+	const index = current ? flat.indexOf(current) : -1;
+	const prev = index > 0 ? flat[index - 1] : undefined;
+	const next = index >= 0 ? flat[index + 1] : undefined;
 	return {
 		product: course.product,
 		lessonCount: course.lessonCount,
@@ -34,11 +38,14 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		current: current && {
 			id: current.id,
 			title: current.title,
+			moduleTitle: current.moduleTitle,
+			number: index + 1,
 			videoUrl: current.videoUrl,
 			body: current.body,
 			attachmentUrl: current.attachmentUrl,
 			done: current.completedAt !== null
 		},
+		prevId: prev?.id ?? null,
 		nextId: next?.id ?? null
 	};
 };

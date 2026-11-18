@@ -4,10 +4,12 @@
 	import { Submission } from '#lib/forms.svelte';
 	import {
 		Alert,
+		Badge,
 		BrandScope,
 		Button,
 		Card,
 		Cluster,
+		Disclosure,
 		Divider,
 		Icon,
 		Money,
@@ -21,10 +23,25 @@
 	let { data, form, params } = $props();
 	const pay = new Submission();
 
+	function formatTaxId(raw: string): string {
+		if (!/^[\d.\-/\s]*$/.test(raw)) return raw;
+		const d = raw.replace(/\D/g, '');
+		if (d.length === 0 || d.length > 14) return raw;
+		if (d.length <= 3) return d;
+		if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+		if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+		if (d.length <= 11) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+		if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+		return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+	}
+
+	const isMonthly = (o: { recurrence?: string }) => o.recurrence === 'monthly';
 	const typed = $derived(form?.typed);
 	const errors = $derived(form?.fields ?? {});
+	let taxId = $derived(typed?.taxId ?? '');
 	// what was chosen survives a refusal; Pix is the default (no card fee, instant access)
 	let method = $derived(typed?.method === 'card' ? 'card' : 'pix');
+	const monthly = $derived(isMonthly(data.offer));
 	const summary = $derived(data.sections.find((section) => section.kind === 'summary')?.fields);
 	const days = (n: number) => `${n} ${n === 1 ? 'dia' : 'dias'}`;
 </script>
@@ -56,12 +73,22 @@
 
 				<Card padding="lg" as="section">
 					<Stack gap={3}>
+						{#if monthly}
+							<Cluster>
+								<Badge tone="indigo" size="sm">Assinatura mensal</Badge>
+							</Cluster>
+						{/if}
 						<Text variant="subhead" tone="secondary">
 							{summary?.title || `Você está comprando ${data.product.name}`}
 						</Text>
 						<Cluster justify="between" align="baseline" gap={3}>
 							<Text variant="title3" as="h2">{data.offer.name}</Text>
-							<Money cents={data.offer.priceCents} variant="title2" weight="bold" />
+							<Cluster gap={1} align="baseline" wrap={false}>
+								<Money cents={data.offer.priceCents} variant="title2" weight="bold" />
+								{#if monthly}
+									<Text as="span" variant="subhead" tone="secondary">/mês</Text>
+								{/if}
+							</Cluster>
 						</Cluster>
 						<Divider />
 						<Cluster gap={2} wrap={false} align="start">
@@ -108,7 +135,7 @@
 								hint="Pedido pelo meio de pagamento. Não guardamos esse número."
 								autocomplete="off"
 								inputmode="numeric"
-								value={typed?.taxId ?? ''}
+								bind:value={() => taxId, (v) => (taxId = formatTaxId(v))}
 								error={errors.taxId}
 								required
 							/>
@@ -151,6 +178,10 @@
 						</Stack>
 					</Stack>
 				</form>
+
+				<Disclosure title="Ler política de reembolso" icon="shield">
+					<Text tone="secondary">{data.product.refundPolicy}</Text>
+				</Disclosure>
 
 				<Text variant="subhead">
 					<a href={resolve('/(public)/p/[id]', { id: params.id })}

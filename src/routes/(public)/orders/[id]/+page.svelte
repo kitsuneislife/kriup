@@ -60,7 +60,12 @@
 		<Page width="text">
 			<Stack gap={6}>
 				<Cluster justify="between" gap={3}>
-					<Text weight="semibold">{data.product.name}</Text>
+					<Cluster gap={2}>
+						{#if data.product.brand.logoUrl}
+							<img class="logo" src={data.product.brand.logoUrl} alt={data.product.name} />
+						{/if}
+						<Text weight="semibold">{data.product.name}</Text>
+					</Cluster>
 					<StatusBadge status={badge.status} label={badge.label} />
 				</Cluster>
 
@@ -90,14 +95,19 @@
 				</Stack>
 
 				{#if data.status === 'paid'}
-					<Button
-						variant="primary"
-						size="lg"
-						iconEnd="arrow-right"
-						href={resolve('/(app)/student')}
-					>
-						Ir para meus produtos
-					</Button>
+					<Cluster gap={3}>
+						<Button
+							variant="primary"
+							size="lg"
+							iconEnd="arrow-right"
+							href={resolve('/(app)/student')}
+						>
+							Ir para meus produtos
+						</Button>
+						<Button variant="neutral" size="lg" href={resolve('/(app)/student/orders')}>
+							Ver meus pedidos
+						</Button>
+					</Cluster>
 				{:else if pix}
 					<Card padding="lg">
 						<Stack gap={4}>
@@ -161,6 +171,11 @@
 </BrandScope>
 
 <style>
+	.logo {
+		max-block-size: var(--space-8);
+		max-inline-size: 8rem;
+		object-fit: contain;
+	}
 	.seal {
 		display: inline-grid;
 		place-items: center;

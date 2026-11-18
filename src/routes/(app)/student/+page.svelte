@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { productTypeText } from '#lib/product-text';
 	import {
 		Badge,
 		Button,
@@ -7,6 +8,7 @@
 		Cluster,
 		EmptyState,
 		Grid,
+		Icon,
 		Page,
 		Progress,
 		Stack,
@@ -36,15 +38,22 @@
 		{:else}
 			<Grid as="ul" min="md" gap={4}>
 				{#each data.products as product (product.id)}
+					{@const type = productTypeText[product.type]}
 					{@const done = product.completedCount}
 					{@const total = product.lessonCount}
 					{@const finished = total > 0 && done === total}
 					<Card as="li" padding="lg">
 						<Stack gap={6}>
-							<Cluster justify="between" gap={3} wrap={false}>
+							<Stack gap={2}>
+								<Cluster justify="between" gap={3} wrap={false}>
+									<Cluster gap={2} wrap={false}>
+										<Text tone="secondary"><Icon name={type.icon} size="sm" /></Text>
+										<Text variant="footnote" tone="secondary">{type.label}</Text>
+									</Cluster>
+									{#if finished}<Badge tone="success" dot>Concluído</Badge>{/if}
+								</Cluster>
 								<Text variant="title3" as="h2" truncate>{product.name}</Text>
-								{#if finished}<Badge tone="success" dot>Concluído</Badge>{/if}
-							</Cluster>
+							</Stack>
 							<Stack gap={2}>
 								<Progress
 									label="Progresso em {product.name}"

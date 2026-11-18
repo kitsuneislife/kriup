@@ -69,6 +69,16 @@
 								{/if}
 							</Text>
 							<Cluster gap={2}>
+								{#if order.status === 'pending'}
+									<Button
+										variant="primary"
+										iconEnd="arrow-right"
+										href={resolve('/(public)/orders/[id]', { id: order.id })}
+										label="Concluir pagamento de {order.productName}"
+									>
+										Concluir pagamento
+									</Button>
+								{/if}
 								{#if order.enrollmentStatus === 'active'}
 									<Button
 										variant="primary"

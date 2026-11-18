@@ -32,7 +32,12 @@ async function canView(db: Db, userId: string, productId: string) {
 /** "Meus produtos": every product the student can open, with progress. */
 export async function listMyProducts(ctx: Ctx, studentId: string) {
 	const rows = await ctx.db
-		.selectDistinct({ id: product.id, name: product.name, brand: product.brand })
+		.selectDistinct({
+			id: product.id,
+			name: product.name,
+			type: product.type,
+			brand: product.brand
+		})
 		.from(enrollment)
 		.innerJoin(order, eq(order.id, enrollment.orderId))
 		.innerJoin(product, eq(product.id, order.productId))

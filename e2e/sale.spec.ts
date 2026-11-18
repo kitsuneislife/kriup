@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
 import { createProduct } from '../src/lib/server/services/catalog';
 import { VALID_CPF, brand } from '../src/lib/server/services/testing';
-import { expect, expectAccessible, publishedProduct, test } from './fixtures';
+import { expect, expectAccessible, hydrated, publishedProduct, test } from './fixtures';
 
 /** Fills the guest checkout and sends it with `method`. */
 async function checkout(page: Page, method: 'Pix' | 'Cartão', taxId = VALID_CPF) {
@@ -44,6 +44,9 @@ test('shows the sales page and buys with Pix until the student area', async ({
 	await expect(page.getByRole('heading', { name: 'Finalizar compra' })).toBeVisible();
 	// a signed-in buyer buys as themself
 	await expect(page.getByText(`Comprando como ${buyer.name}`)).toBeVisible();
+	await page.getByText('Ler política de reembolso').click();
+	await expect(page.getByText(/reembolso de Curso de pão em até 7 dias/)).toBeVisible();
+	await expectAccessible(page);
 	await page.getByLabel('CPF ou CNPJ').fill(VALID_CPF);
 	await page.getByRole('button', { name: 'Gerar Pix' }).click();
 
@@ -53,6 +56,7 @@ test('shows the sales page and buys with Pix until the student area', async ({
 
 	await simulate(page, 'Aprovar pagamento');
 	await expect(page.getByRole('heading', { name: 'Pagamento confirmado' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Ver meus pedidos' })).toBeVisible();
 	await page.getByRole('link', { name: 'Ir para meus produtos' }).click();
 	await expect(page).toHaveURL('/student');
 	await expect(page.getByRole('heading', { name: 'Meus cursos' })).toBeVisible();
@@ -78,6 +82,28 @@ test('the order page notices a payment on its own', async ({ page, ctx, createUs
 	await expect(page.getByRole('heading', { name: 'Pagamento confirmado' })).toBeVisible({
 		timeout: 10_000
 	});
+});
+
+test('formats CPF and CNPJ digits progressively and leaves letters untouched', async ({
+	page,
+	ctx,
+	createUser
+}) => {
+	const producer = await createUser('Paulo Lima');
+	const { productId, offerId } = await publishedProduct(ctx, producer.id);
+	await page.goto(`/p/${productId}/checkout?offer=${offerId}`);
+	await hydrated(page);
+
+	const field = page.getByLabel('CPF ou CNPJ');
+	await field.fill('52998224725');
+	await expect(field).toHaveValue('529.982.247-25');
+
+	await field.fill('11222333000181');
+	await expect(field).toHaveValue('11.222.333/0001-81');
+
+	await checkout(page, 'Pix', 'abc123');
+	await expect(page.getByText('CPF ou CNPJ inválido.')).toBeVisible();
+	await expect(field).toHaveValue('abc123');
 });
 
 test('refuses an invalid CPF and keeps what was typed', async ({ page, ctx, createUser }) => {

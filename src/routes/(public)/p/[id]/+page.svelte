@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import {
+		Badge,
 		BrandHero,
 		BrandScope,
 		Button,
@@ -24,6 +25,7 @@
 	// one offer: the hero button buys it; several: it leads to the choice
 	const buy = $derived(data.offers.length === 1 ? checkout(data.offers[0]!.id) : '#ofertas');
 	const days = (n: number) => `${n} ${n === 1 ? 'dia' : 'dias'}`;
+	const isMonthly = (o: { recurrence?: string }) => o.recurrence === 'monthly';
 	const description = $derived(hero?.subtitle ?? data.product.name);
 </script>
 
@@ -57,11 +59,22 @@
 							{data.offers.length === 1 ? 'Garanta seu acesso' : 'Escolha como comprar'}
 						</Text>
 						{#each data.offers as offer (offer.id)}
+							{@const monthly = isMonthly(offer)}
 							<Card padding="lg">
 								<Stack gap={4}>
+									{#if monthly}
+										<Cluster>
+											<Badge tone="indigo" size="sm">Assinatura mensal</Badge>
+										</Cluster>
+									{/if}
 									<Cluster justify="between" align="baseline" gap={4}>
 										<Text variant="title3" as="h3">{offer.name}</Text>
-										<Money cents={offer.priceCents} variant="title1" weight="bold" />
+										<Cluster gap={1} align="baseline" wrap={false}>
+											<Money cents={offer.priceCents} variant="title1" weight="bold" />
+											{#if monthly}
+												<Text as="span" variant="subhead" tone="secondary">/mês</Text>
+											{/if}
+										</Cluster>
 									</Cluster>
 									<Cluster gap={2} wrap={false}>
 										<Text tone="secondary"><Icon name="shield" /></Text>

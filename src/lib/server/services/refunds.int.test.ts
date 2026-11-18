@@ -49,6 +49,7 @@ describe('inside the guarantee (RN-03, RN-06)', () => {
 		);
 
 		expect(ctx.refunds).toEqual([externalId]);
+		expect(ctx.mail.sent.filter((m) => m.to === producer.email)).toHaveLength(0);
 		expect(await refundOf(orderId)).toMatchObject({ status: 'completed', owner: 'platform' });
 		const [o] = await db.select().from(order).where(eq(order.id, orderId));
 		expect(o!.status).toBe('refunded');
@@ -113,6 +114,12 @@ describe('outside the guarantee (RN-08 to RN-10)', () => {
 	it('goes to the producer, who declines with a reason; a contest goes to support', async () => {
 		const { ctx, producer, orderId, student } = await scenario();
 		const id = await requestRefund(ctx, student.id, { orderId, reason: 'x' }, days(PAID, 10));
+		const notice = ctx.mail.sent.find((m) => m.to === producer.email);
+		expect(notice).toBeDefined();
+		expect(notice!.subject).toBe('Novo pedido de reembolso em Curso de pão');
+		expect(notice!.text).toContain('Curso de pão');
+		expect(notice!.text).toContain('3 dias');
+		expect(notice!.text).toContain(`${ctx.appUrl}/producer/refunds/${id}`);
 		expect(await refundOf(orderId)).toMatchObject({
 			status: 'with_producer',
 			owner: 'producer',
