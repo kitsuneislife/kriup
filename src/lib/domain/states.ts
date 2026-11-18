@@ -30,7 +30,8 @@ export const DOMAIN_ERROR_CODES = [
 	...PAYOUT_REFUSALS,
 	'invalid_token',
 	'email_taken',
-	'invalid_credentials'
+	'invalid_credentials',
+	'account_has_open_obligations'
 ] as const;
 
 export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number];

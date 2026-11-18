@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
-	import { Alert, Button, Card, Page, Stack, Text, TextField } from '#lib/ui';
+	import { Alert, Button, Card, Cluster, Icon, Page, Stack, Text, TextField } from '#lib/ui';
 
 	let { form } = $props();
 	const signUp = new Submission();
@@ -14,6 +14,10 @@
 	<Page width="text">
 		<Stack gap={6}>
 			<Stack gap={2}>
+				<Cluster gap={2}>
+					<Icon name="sparkles" />
+					<Text weight="semibold">Cakto</Text>
+				</Cluster>
 				<Text variant="title1" as="h1">Criar conta</Text>
 				<Text tone="secondary">Com uma conta você vende, compra e coproduz.</Text>
 			</Stack>

@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
+import { register } from '../src/lib/server/auth/accounts';
 import { createPasswordToken, RESET_TOKEN_TTL_MS } from '../src/lib/server/auth/password-token';
 import { findOrCreateAccount } from '../src/lib/server/users';
 import { db } from '../src/lib/server/services/testing';
-import { buy, expect, expectAccessible, publishedProduct, test } from './fixtures';
+import { buy, expect, expectAccessible, hydrated, publishedProduct, test } from './fixtures';
 
 const password = 'pão quentinho';
 const uniqueEmail = (name: string) => `${name}.${randomUUID()}@e2e.test`;
@@ -84,6 +85,100 @@ test('sends a signed-in visitor from the login to their home', async ({
 	await expect(page).toHaveURL('/support');
 });
 
+test('redirects to a safe ?next= target on login and ignores unsafe ones', async ({
+	page,
+	ctx
+}) => {
+	const email = uniqueEmail('ana');
+	await register(ctx, { name: 'Ana Souza', email, password });
+
+	await page.goto('/login?next=%2Fproducer%2Fmoney');
+	await fillLogin(page, email, password);
+	await expect(page).toHaveURL('/producer/money');
+
+	await page.context().clearCookies();
+	await page.goto('/login?next=%2F%2Fevil.example');
+	await fillLogin(page, email, password);
+	await expect(page).toHaveURL('/producer');
+});
+
+test('edits the display name and switches the theme with persistence', async ({
+	page,
+	createUser,
+	signIn
+}) => {
+	test.slow();
+	await signIn(await createUser('Ana Souza'));
+	await page.goto('/account');
+	await hydrated(page);
+
+	await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+
+	const nameInput = page.getByLabel('Seu nome');
+	await nameInput.fill('   ');
+	await page.getByRole('button', { name: 'Salvar nome' }).click();
+	await expect(nameInput).toHaveAccessibleDescription('Preencha este campo.');
+	await expect(nameInput).toHaveValue('   ');
+
+	await nameInput.fill('Ana Clara');
+	await page.getByRole('button', { name: 'Salvar nome' }).click();
+	await expect(page.getByRole('status').filter({ hasText: 'Nome salvo.' })).toBeVisible();
+	await expect(areas(page).getByRole('link', { name: 'Ana Clara' })).toBeVisible();
+
+	await page.getByRole('radio', { name: 'Escuro' }).click();
+	await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+	await page.getByRole('button', { name: 'Salvar tema' }).click();
+	await expect(page.getByRole('status').filter({ hasText: 'Tema salvo.' })).toBeVisible();
+
+	await page.reload();
+	await hydrated(page);
+	await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+	await expect(page.getByRole('radio', { name: 'Escuro' })).toBeChecked();
+
+	await page.getByRole('radio', { name: 'Sistema' }).click();
+	await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+	await page.getByRole('button', { name: 'Salvar tema' }).click();
+	await expect(page.getByRole('status').filter({ hasText: 'Tema salvo.' })).toBeVisible();
+	await page.reload();
+	await hydrated(page);
+	await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+
+	const overflows = await page.evaluate(
+		() => document.documentElement.scrollWidth > window.innerWidth
+	);
+	expect(overflows).toBe(false);
+	await expectAccessible(page);
+});
+
+test('closes an account from the confirmation dialog and refuses a wrong password', async ({
+	page,
+	ctx
+}) => {
+	test.slow();
+	const email = uniqueEmail('encerrar');
+	await register(ctx, { name: 'Ana Souza', email, password });
+
+	await page.goto('/login?next=%2Faccount');
+	await fillLogin(page, email, password);
+	await expect(page).toHaveURL('/account');
+	await hydrated(page);
+
+	await page.getByRole('button', { name: 'Encerrar conta' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Encerrar conta' });
+	await expect(dialog).toBeVisible();
+	await dialog.getByLabel('Confirme sua senha').fill('senha errada');
+	await dialog.getByRole('button', { name: 'Encerrar minha conta' }).click();
+	await expect(dialog.getByRole('alert')).toHaveText('E-mail ou senha incorretos.');
+	await expectAccessible(page);
+
+	await dialog.getByLabel('Confirme sua senha').fill(password);
+	await dialog.getByRole('button', { name: 'Encerrar minha conta' }).click();
+	await expect(page).toHaveURL('/login');
+
+	await fillLogin(page, email, password);
+	await expect(page.getByRole('alert')).toHaveText('E-mail ou senha incorretos.');
+});
+
 test('asks for a recovery link without telling whether the account exists', async ({ page }) => {
 	await page.goto('/login');
 	await page.getByRole('link', { name: 'Esqueci minha senha' }).click();
@@ -161,5 +256,35 @@ test.describe('without JavaScript', () => {
 		await fillLogin(page, email, 'senha errada');
 		await expect(page.getByRole('alert')).toHaveText('E-mail ou senha incorretos.');
 		await expect(page.getByLabel('E-mail')).toHaveValue(email);
+	});
+
+	test('edits account settings and closes the account via ?close=1 card', async ({ page, ctx }) => {
+		const email = uniqueEmail('semjs');
+		await register(ctx, { name: 'Ana Souza', email, password });
+
+		await page.goto('/login?next=%2Faccount');
+		await fillLogin(page, email, password);
+		await expect(page).toHaveURL('/account');
+
+		await page.getByLabel('Seu nome').fill('Ana Sem JS');
+		await page.getByRole('button', { name: 'Salvar nome' }).click();
+		await expect(page.getByRole('status')).toContainText('Nome salvo.');
+		await expect(areas(page).getByRole('link', { name: 'Ana Sem JS' })).toBeVisible();
+
+		await page.getByRole('radio', { name: 'Escuro' }).check({ force: true });
+		await page.getByRole('button', { name: 'Salvar tema' }).click();
+		await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+		await page.getByRole('link', { name: 'Encerrar conta' }).click();
+		await expect(page).toHaveURL('/account?close=1');
+		await expect(page.getByRole('heading', { name: 'Confirmar encerramento' })).toBeVisible();
+
+		await page.getByLabel('Confirme sua senha').fill('errada');
+		await page.getByRole('button', { name: 'Encerrar minha conta' }).click();
+		await expect(page.getByRole('alert')).toHaveText('E-mail ou senha incorretos.');
+
+		await page.getByLabel('Confirme sua senha').fill(password);
+		await page.getByRole('button', { name: 'Encerrar minha conta' }).click();
+		await expect(page).toHaveURL('/login');
 	});
 });

@@ -14,6 +14,12 @@ describe('errorText', () => {
 	it('shows the payout minimum in reais', () => {
 		expect(errorText('below_minimum')).toBe('O saque mínimo é de R$ 50,00.');
 	});
+
+	it('explains why an account with open obligations cannot be closed', () => {
+		expect(errorText('account_has_open_obligations')).toBe(
+			'Resolva os saldos, saques, reembolsos ou bloqueios em aberto antes de encerrar a conta.'
+		);
+	});
 });
 
 describe('issueText', () => {

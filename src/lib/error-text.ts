@@ -34,7 +34,9 @@ const errors = {
 	insufficient_balance: 'O valor passa do seu saldo liberado.',
 	invalid_token: 'Este link é inválido ou expirou. Peça um novo.',
 	email_taken: 'Já existe uma conta com este e-mail. Entre ou recupere a senha.',
-	invalid_credentials: 'E-mail ou senha incorretos.'
+	invalid_credentials: 'E-mail ou senha incorretos.',
+	account_has_open_obligations:
+		'Resolva os saldos, saques, reembolsos ou bloqueios em aberto antes de encerrar a conta.'
 } satisfies Record<ErrorCode, string>;
 
 export function errorText(code: ErrorCode): string {

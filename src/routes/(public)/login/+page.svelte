@@ -2,9 +2,9 @@
 	import { resolve } from '$app/paths';
 	import { errorText } from '#lib/error-text';
 	import { Submission } from '#lib/forms.svelte';
-	import { Alert, Button, Card, Page, Stack, Text, TextField } from '#lib/ui';
+	import { Alert, Button, Card, Cluster, Icon, Page, Stack, Text, TextField } from '#lib/ui';
 
-	let { form } = $props();
+	let { data, form } = $props();
 	const signIn = new Submission();
 </script>
 
@@ -14,11 +14,19 @@
 	<Page width="text">
 		<Stack gap={6}>
 			<Stack gap={2}>
+				<Cluster gap={2}>
+					<Icon name="sparkles" />
+					<Text weight="semibold">Cakto</Text>
+				</Cluster>
 				<Text variant="title1" as="h1">Entrar</Text>
 				<Text tone="secondary">Use o e-mail e a senha da sua conta.</Text>
 			</Stack>
 			<Card padding="lg">
-				<form method="post" use:signIn.enhance>
+				<form
+					method="post"
+					action={data.next ? `?next=${encodeURIComponent(data.next)}` : undefined}
+					use:signIn.enhance
+				>
 					<Stack gap={4}>
 						<TextField
 							name="email"

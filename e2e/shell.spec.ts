@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test';
 import { inviteCoproducer } from '../src/lib/server/services/coproduction';
+import { requestRefund } from '../src/lib/server/services/refunds';
+import { days } from '../src/lib/server/services/testing';
 import { buy, expect, expectAccessible, publishedProduct, test } from './fixtures';
 
 const areas = (page: Page) => page.getByRole('navigation', { name: 'Áreas' });
@@ -53,6 +55,43 @@ test('adds the student and coproduction areas when the account has them', async 
 	);
 	await areas(page).getByRole('link', { name: 'Convites' }).click();
 	await expect(page.getByRole('heading', { name: 'Convites de coprodução' })).toBeVisible();
+	await expectAccessible(page);
+});
+
+test('shows live pending badges and brand in the sidebar without horizontal overflow', async ({
+	page,
+	ctx,
+	createUser,
+	signIn
+}) => {
+	const producer = await createUser('Paulo Lima');
+	const otherProducer = await createUser('Rita Souza');
+	const student = await createUser('Bia Rocha');
+	const { offerId } = await publishedProduct(ctx, producer.id);
+	const { productId: otherProductId } = await publishedProduct(ctx, otherProducer.id);
+
+	const orderId = await buy(ctx, offerId, student.email, days(new Date(), -10));
+	await requestRefund(ctx, student.id, { orderId, reason: 'Preciso cancelar.' });
+	await inviteCoproducer(ctx, otherProducer.id, {
+		productId: otherProductId,
+		email: producer.email,
+		name: producer.name,
+		percentBp: 1_500,
+		durationDays: null
+	});
+
+	await signIn(producer);
+	await page.goto('/producer');
+
+	await expect(page.getByRole('complementary').getByText('Cakto')).toBeVisible();
+	await expect(areas(page).getByRole('link', { name: 'Reembolsos' })).toContainText('1');
+	await expect(areas(page).getByRole('link', { name: 'Convites' })).toContainText('1');
+	await expect(areas(page).getByRole('link', { name: 'Produtos' })).toHaveText('Produtos');
+
+	const overflows = await page.evaluate(
+		() => document.documentElement.scrollWidth > window.innerWidth
+	);
+	expect(overflows).toBe(false);
 	await expectAccessible(page);
 });
 

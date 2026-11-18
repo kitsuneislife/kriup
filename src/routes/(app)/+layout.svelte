@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { NavItem, Shell, Stack, Text } from '#lib/ui';
+	import { Badge, Cluster, Icon, NavItem, Shell, Stack, Text } from '#lib/ui';
 	import { currentRoute, sections } from './nav';
 
 	let { data, children } = $props();
@@ -13,9 +13,32 @@
 			...mine.flatMap((section) => section.items.map((item) => item.route))
 		])
 	);
+
+	type BadgeSpec = { count: number; tone: 'warning' | 'accent' };
+
+	function badgeFor(route: string): BadgeSpec | undefined {
+		switch (route) {
+			case '/(app)/producer/refunds':
+				return { count: data.counts.producerRefunds, tone: 'warning' };
+			case '/(app)/coproductions':
+				return { count: data.counts.coproducerInvites, tone: 'accent' };
+			case '/(app)/support':
+				return { count: data.counts.supportQueue, tone: 'warning' };
+			case '/(app)/support/payouts':
+				return { count: data.counts.supportPayouts, tone: 'accent' };
+			default:
+				return undefined;
+		}
+	}
 </script>
 
 <Shell>
+	{#snippet brand()}
+		<Cluster gap={2}>
+			<Icon name="sparkles" />
+			<Text weight="semibold">Cakto</Text>
+		</Cluster>
+	{/snippet}
 	{#snippet sidebar()}
 		<nav aria-label="Áreas">
 			<Stack gap={6}>
@@ -23,9 +46,27 @@
 					<Stack gap={1}>
 						<Text variant="caption" tone="secondary" weight="semibold">{section.title}</Text>
 						{#each section.items as item (item.route)}
-							<NavItem href={resolve(item.route)} icon={item.icon} current={current === item.route}>
-								{item.label}
-							</NavItem>
+							{@const badge = badgeFor(item.route)}
+							{#if badge && badge.count > 0}
+								<NavItem
+									href={resolve(item.route)}
+									icon={item.icon}
+									current={current === item.route}
+								>
+									{item.label}
+									{#snippet trailing()}
+										<Badge tone={badge.tone} size="sm">{badge.count}</Badge>
+									{/snippet}
+								</NavItem>
+							{:else}
+								<NavItem
+									href={resolve(item.route)}
+									icon={item.icon}
+									current={current === item.route}
+								>
+									{item.label}
+								</NavItem>
+							{/if}
 						{/each}
 					</Stack>
 				{/each}
