@@ -40,6 +40,8 @@ python3 docs/faculdade/gerar-docx.py
 
 O script usa só a biblioteca padrão do Python. Ele lê os quatro capítulos e escreve `saida/documentacao.docx` sobre o modelo da faculdade (`modelo/template-docs-startup.docx`), mantendo o cabeçalho dele. Também escreve um .docx por item do roteiro (1.1 a 3.1 e cada apêndice) em `saida/secoes/`, no mesmo modelo, sem capa nem sumário; são esses arquivos que vão anexados nos cartões do Trello. O formato segue o pedido: corpo em Arial 11, justificado, espaçamento 1,5; títulos em negrito; itálico só nos destaques.
 
+Para levar os arquivos ao Trello, rode `python3 docs/faculdade/trello-sync.py` (com `--board` na primeira vez, para deixar o quadro público e aplicar o fundo `docs/design/marca/trello-fundo.png`). Ele anexa cada .docx e cada PNG de diagrama no seu cartão, troca o anexo antigo de mesmo nome e deixa na descrição só o resumo e um link do GitHub. A chave e o token da API ficam em `~/.config/trello/env` (app `kriup-sync`), fora do repositório. Uma tarefa agendada no app do Claude roda isso no dia 1 de cada mês.
+
 - Capa e sumário são montados pelo script. No Word, clique com o botão direito no sumário e escolha "Atualizar campo" para aparecerem os números de página.
 - Se um marcador `{{...}}` voltar ao texto, ele sai realçado em amarelo.
 - Tabelas ficam alinhadas à esquerda e com espaço simples, e itens com endereço da web ficam à esquerda, para não abrir buracos entre as palavras.
