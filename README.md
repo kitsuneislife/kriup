@@ -2,6 +2,8 @@
 
 Plataforma de infoprodutos com criação guiada, venda única e assinatura mensal, área de membros, divisão de coprodução, reembolso com prazos, extrato auditável e operação de suporte (MVP acadêmico). Documentação completa em [`docs/`](docs/README.md) e estado atual em [`docs/status.md`](docs/status.md).
 
+Repositório: <https://github.com/kitsuneislife/kriup>. Quadro do projeto no Trello: <https://trello.com/b/eCZtlNHZ/kriup>.
+
 ## Requisitos
 
 Node 22 ou mais novo, pnpm 11 e Docker.
