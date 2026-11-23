@@ -2,8 +2,8 @@
 """Sync the Kriup Trello board with the files in this repository.
 
 For every card in the "Entrega acadêmica" and "Diagramas" lists, uploads the
-matching file as a real attachment (the per-item .docx from saida/secoes/ or
-the diagram PNG), replacing an older upload with the same name, and trims the
+matching files as real attachments (the per-item .docx and .pdf from
+saida/secoes/, or the diagram PNG), replacing an older upload with the same name, and trims the
 description to its summary plus one GitHub link. With --board it also makes
 the board public and sets docs/design/marca/trello-fundo.png as background.
 
@@ -72,17 +72,20 @@ def chamar(metodo, caminho, params=None, arquivo=None):
     return json.loads(texto) if texto else None
 
 
-def arquivo_do_cartao(nome):
-    """Map a card title to its local file, or None when it has no file."""
+def arquivos_do_cartao(nome):
+    """Map a card title to its local files; empty when it has none."""
     if m := re.match(r"Figura 2\.(\d+)\b", nome):
-        return DIAGRAMAS / f"cap2-{int(m[1]):02d}.png"
+        return [DIAGRAMAS / f"cap2-{int(m[1]):02d}.png"]
     if m := re.match(r"(\d)\.(\d)\b", nome):
         achados = sorted(SECOES.glob(f"{m[1]}-{m[2]}-*.docx"))
     elif m := re.match(r"Apêndice ([A-Z])\b", nome):
         achados = sorted(SECOES.glob(f"apendice-{m[1].lower()}-*.docx"))
     else:
-        return None
-    return achados[0] if achados else None
+        return []
+    if not achados:
+        return []
+    docx = achados[0]
+    return [docx, docx.with_suffix(".pdf")]
 
 
 def descricao_curta(desc):
@@ -100,18 +103,21 @@ def sincronizar_cartoes(simular):
     for cartao in cartoes:
         if listas.get(cartao["idList"]) not in LISTAS:
             continue
-        arquivo = arquivo_do_cartao(cartao["name"])
-        if arquivo is None or not arquivo.exists():
-            print(f"sem arquivo: {cartao['name']}")
+        arquivos = arquivos_do_cartao(cartao["name"])
+        faltando = [a.name for a in arquivos if not a.exists()]
+        if not arquivos or faltando:
+            print(f"sem arquivo: {cartao['name']} {' '.join(faltando)}")
             continue
         nova = descricao_curta(cartao["desc"])
-        print(f"{cartao['name']} <- {arquivo.name}")
+        print(f"{cartao['name']} <- {', '.join(a.name for a in arquivos)}")
         if simular:
             continue
+        nomes = {a.name for a in arquivos}
         for anexo in chamar("GET", f"/cards/{cartao['id']}/attachments"):
-            if anexo["isUpload"] and anexo["name"] == arquivo.name:
+            if anexo["isUpload"] and anexo["name"] in nomes:
                 chamar("DELETE", f"/cards/{cartao['id']}/attachments/{anexo['id']}")
-        chamar("POST", f"/cards/{cartao['id']}/attachments", {"name": arquivo.name}, arquivo)
+        for arquivo in arquivos:
+            chamar("POST", f"/cards/{cartao['id']}/attachments", {"name": arquivo.name}, arquivo)
         if nova != cartao["desc"]:
             chamar("PUT", f"/cards/{cartao['id']}", {"desc": nova})
 
