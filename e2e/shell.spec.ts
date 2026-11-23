@@ -83,7 +83,7 @@ test('shows live pending badges and brand in the sidebar without horizontal over
 	await signIn(producer);
 	await page.goto('/producer');
 
-	await expect(page.getByRole('complementary').getByText('Cakto')).toBeVisible();
+	await expect(page.getByRole('complementary').getByText('Kriup')).toBeVisible();
 	await expect(areas(page).getByRole('link', { name: 'Reembolsos' })).toContainText('1');
 	await expect(areas(page).getByRole('link', { name: 'Convites' })).toContainText('1');
 	await expect(areas(page).getByRole('link', { name: 'Produtos' })).toHaveText('Produtos');

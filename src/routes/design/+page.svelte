@@ -73,7 +73,8 @@
 			items: [
 				['Swatch', 'Cores', 'sparkles'],
 				['Text', 'Tipografia', 'edit'],
-				['Icon', 'Ícones', 'star']
+				['Icon', 'Ícones', 'star'],
+				['Logo', 'Logo', 'star']
 			]
 		},
 		{
@@ -302,7 +303,7 @@
 			<!-- while searching, only the results show -->
 			{#if !needle}<Stack gap={8}>
 					<Stack gap={4}>
-						<Text variant="footnote" tone="accent" weight="semibold">Sistema Cakto</Text>
+						<Text variant="footnote" tone="accent" weight="semibold">Kriup</Text>
 						<Text variant="display" as="h1">Design kit</Text>
 						<Text variant="title3" weight="regular" tone="secondary">
 							Uma base só para todas as telas. Paleta da Apple com significado, tipografia no estilo

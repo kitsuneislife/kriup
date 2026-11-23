@@ -27,6 +27,7 @@ export { default as FileUpload } from './FileUpload/FileUpload.svelte';
 export { default as Grid } from './Grid/Grid.svelte';
 export { default as Icon } from './Icon/Icon.svelte';
 export { default as LessonList } from './LessonList/LessonList.svelte';
+export { default as Logo } from './Logo/Logo.svelte';
 export { default as Menu } from './Menu/Menu.svelte';
 export { default as Message } from './Message/Message.svelte';
 export { default as Money } from './Money/Money.svelte';

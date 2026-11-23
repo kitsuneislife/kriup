@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { Badge, Cluster, Icon, NavItem, Shell, Stack, Text } from '#lib/ui';
+	import { Badge, Logo, NavItem, Shell, Stack, Text } from '#lib/ui';
 	import { currentRoute, sections } from './nav';
 
 	let { data, children } = $props();
@@ -34,10 +34,7 @@
 
 <Shell>
 	{#snippet brand()}
-		<Cluster gap={2}>
-			<Icon name="sparkles" />
-			<Text weight="semibold">Cakto</Text>
-		</Cluster>
+		<Logo />
 	{/snippet}
 	{#snippet sidebar()}
 		<nav aria-label="Áreas">

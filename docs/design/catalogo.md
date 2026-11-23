@@ -37,6 +37,7 @@ Todos em `src/lib/ui/tokens.css`. O porquê das cores está em `cores.md`; a tip
 | `Divider` | Separar blocos que o espaço sozinho não separa | Como decoração | `orientation` |
 | `Text` | Todo texto: dá estilo, peso e tom | Texto dentro de componente que já o formata | `variant` (9 estilos), `weight`, `tone`, `numeric`, `truncate` |
 | `Icon` | Ícone do conjunto do kit | SVG solto em tela | `name`, `size`, `label` |
+| `Logo` | Marca do Kriup (ícone e nome) no topo do app e das telas públicas | Marca do produtor numa página de venda (use `BrandHero`) | Nenhuma |
 | `Button` | Qualquer ação. Uma `primary` por tela | Navegação dentro de texto corrido (use link) | `variant`: `primary`, `neutral`, `ghost`, `danger`; `size`; `icon`; só ícone; `loading`; `href`; `name` e `value` (o botão de envio pressionado manda o seu valor) |
 | `TextField` | Texto de uma ou várias linhas | Escolha entre opções (use `Select`) | `type`, `size`, `icon`, `rows`, `hint`, `error`, `disabled`, `labelHidden` (rótulo só para leitor de tela, como numa busca), `inputmode` (teclado do celular) |
 | `Select` | Escolher uma opção entre 4 ou mais | Duas ou três opções (use `SegmentedControl`) | `size`, `icon`, `hint`, `error` |
