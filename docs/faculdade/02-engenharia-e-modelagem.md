@@ -5,7 +5,7 @@
 > contêineres, camadas e implantação) e modelagem (casos de uso, classes,
 > entidade-relacionamento, sequência, estados, atividade e navegação). Todos os
 > diagramas são Mermaid e foram renderizados sem erro em 19/11/2026 [measured].
-> Fontes: `../produto/`, `../tecnico/` e o código em `src/`.
+> Fontes: `docs/produto/`, `docs/tecnico/` e o código em `src/`.
 
 ## 2.1 Método de trabalho
 
@@ -62,7 +62,7 @@ Cada fase foi dividida em lotes pequenos. Um lote só contava como pronto quando
 
 {{ORGANIZACAO_DO_GRUPO}}
 
-Integrantes: {{GRUPO}}.
+Integrantes: Camilo Fernando Bomfim, Joaquim Augusto Nardino e Luana Mackieviez.
 
 ## 2.2 Requisitos funcionais
 
@@ -371,7 +371,7 @@ flowchart LR
 
 #### Descrição dos casos de uso
 
-UC-01 a UC-09 são os casos de uso principais de `../produto/requisitos.md`. UC-10 a UC-13 completam o diagrama com o chamado, as ações do suporte e o job diário, que também existem no sistema.
+UC-01 a UC-09 são os casos de uso principais de `docs/produto/requisitos.md`. UC-10 a UC-13 completam o diagrama com o chamado, as ações do suporte e o job diário, que também existem no sistema.
 
 | ID | Caso de uso | Ator | Pré-condição | Fluxo principal | Requisitos |
 | --- | --- | --- | --- | --- | --- |
@@ -850,7 +850,7 @@ Decisões do modelo que valem destaque:
 - **O saldo nunca é uma coluna.** É sempre a soma dos lançamentos por estado, então o painel bate com o extrato por construção.
 - **Lançamento não muda.** Um gatilho no banco só deixa mudar o estado, nas transições permitidas, e nunca apagar. Correção é um novo lançamento que aponta para o original.
 - **Coprodução por versão.** Mudar o percentual cria uma nova versão; no aceite, a anterior termina no mesmo instante, então duas versões nunca valem juntas.
-- **Regras no banco, não só no código.** Mais de 20 restrições (`UNIQUE`, `CHECK`, chaves compostas e gatilhos) garantem, por exemplo, que um pedido só é pago uma vez por cobrança, que todo reembolso tem responsável e prazo e que todo bloqueio tem motivo e próximo passo. A lista completa está em `../tecnico/modelo-de-dados.md`, seção 3.
+- **Regras no banco, não só no código.** Mais de 20 restrições (`UNIQUE`, `CHECK`, chaves compostas e gatilhos) garantem, por exemplo, que um pedido só é pago uma vez por cobrança, que todo reembolso tem responsável e prazo e que todo bloqueio tem motivo e próximo passo. A lista completa está em `docs/tecnico/modelo-de-dados.md`, seção 3.
 
 ### 2.5.4 Diagramas de sequência
 

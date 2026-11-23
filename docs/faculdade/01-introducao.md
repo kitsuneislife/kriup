@@ -3,8 +3,8 @@
 > **Summary.** Apresenta o {{PRODUTO}}, uma plataforma de venda de produtos
 > digitais (cursos, mentorias, assinaturas) para quem não tem time técnico. Cobre
 > a ideia e os objetivos, as dores encontradas na pesquisa, a solução, o modelo de
-> receita e os concorrentes. Base: `../pesquisa/lean-canvas-matriz-de-dores.md`
-> e `../produto/visao-e-escopo.md`.
+> receita e os concorrentes. Base: `docs/pesquisa/lean-canvas-matriz-de-dores.md`
+> e `docs/produto/visao-e-escopo.md`.
 
 ## 1.1 Apresentação do projeto
 

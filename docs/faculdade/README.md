@@ -10,7 +10,6 @@
 | Marcador | O que é |
 | --- | --- |
 | `{{PRODUTO}}` | Nome do produto, ainda em definição. "Sistema Cakto" é só o nome provisório do repositório; Cakto é uma empresa real e concorrente, então o nome não pode ficar. |
-| `{{GRUPO}}` | Nomes dos integrantes do grupo. |
 | `{{ORGANIZACAO_DO_GRUPO}}` | Como o grupo dividiu tarefas e se reuniu (seção 2.1). |
 | `{{DATA_ENTREGA}}` | Data da apresentação, para a capa do .docx. |
 | `{{EDITOR}}` | Editor de código usado pelo grupo (seção 3.1). |
