@@ -2,7 +2,7 @@
 
 > **Summary.** Código do MVP de Ouro concluído: fases 0 a 8, lotes 9.1 a 9.3, assinaturas mensais (D5), adaptadores reais Asaas e Resend (D2), métricas Lean Canvas, encerramento LGPD (RNF-06) e exportação CSV. Falta o lote 9.4 (teste de uso com pessoas reais).
 
-Atualizado em 19/11/2026.
+Atualizado em 23/11/2026.
 
 ## Estado
 
@@ -11,7 +11,7 @@ Atualizado em 19/11/2026.
 - Estúdio, dinheiro, aluno e suporte completos [measured]: editor das 3 páginas (`sales`, `checkout`, `access_email`), prévia em 4 visões, `CopyField` do link público, prévia ao vivo da marca, contagens de aulas/vendas e simulador ao vivo de coprodução; gráfico de 7 dias, total de páginas e CSV sanitizado (`GET /api/statement/export`); e-mail ao produtor em reembolso fora da garantia, máscara CPF/CNPJ, política no checkout, navegação completa no player e painel `/support/metrics` (`getPlatformMetrics`).
 - Gates verdes [measured]: `pnpm lint` e `pnpm check` sem erros ou avisos; 276 testes unitários (38 arquivos), 129 de integração (12 arquivos) e 289 e2e aprovados + 1 ignorado (desktop e mobile 375 px); `pnpm test:review` com build de produção, LCP mediano de 376–440 ms (orçamento ≤ 2500 ms) e 70 capturas (35 desktop + 35 mobile) em `test-results/captures/`.
 
-- Documentação acadêmica em `faculdade/` (capítulos 1 a 3 e apêndices, 18 diagramas Mermaid renderizados sem erro [measured]). Faltam os marcadores `{{...}}` (nome do produto, grupo, organização, editor, data) e a geração do .docx no modelo da faculdade.
+- Documentação acadêmica em `faculdade/` (capítulos 1 a 3 e apêndices, 18 diagramas Mermaid renderizados sem erro [measured]). O .docx no modelo da faculdade sai com `python3 docs/faculdade/gerar-docx.py` em `faculdade/saida/documentacao.docx` (74 páginas, validado e conferido em PDF em 23/11/2026 [measured]). Faltam os marcadores `{{...}}` (nome do produto, organização, editor, data, resultados do teste de uso); depois de preenchidos, gere o .docx de novo.
 
 ## Próximo passo
 
