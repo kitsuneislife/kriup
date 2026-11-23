@@ -19,7 +19,9 @@ em que aparecem no capítulo 2. Para refazê-los, renderize cada bloco com
 """
 
 import re
+import shutil
 import struct
+import subprocess
 import unicodedata
 import zipfile
 from pathlib import Path
@@ -669,6 +671,18 @@ def main():
         corpo = conv.converter(md)
         diagramas = conv.diagrama
         escrever(pacote, raiz, secao, conv, corpo, SAIDA_SECOES / nome)
+
+    # Um PDF ao lado de cada .docx por item, para quem não tem o Word.
+    # Precisa do LibreOffice; sem ele, os .docx saem e os PDFs ficam como estão.
+    soffice = shutil.which("soffice")
+    if soffice is None:
+        print("LibreOffice (soffice) não encontrado: PDFs não foram gerados")
+        return
+    subprocess.run(
+        [soffice, "--headless", "--convert-to", "pdf", "--outdir", str(SAIDA_SECOES),
+         *sorted(str(p) for p in SAIDA_SECOES.glob("*.docx"))],
+        check=True, stdout=subprocess.DEVNULL,
+    )
 
 
 if __name__ == "__main__":
