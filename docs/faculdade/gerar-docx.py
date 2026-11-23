@@ -10,7 +10,8 @@ Regras de formatação pedidas para o trabalho:
 - itálico só para destaques e legendas, com moderação.
 
 Uso: python3 docs/faculdade/gerar-docx.py
-Saída: docs/faculdade/saida/documentacao.docx
+Saída: docs/faculdade/saida/documentacao.docx e um .docx por item do
+roteiro em docs/faculdade/saida/secoes/.
 
 Os diagramas Mermaid entram como PNG de img/diagramas/cap2-NN.png, na ordem
 em que aparecem no capítulo 2. Para refazê-los, renderize cada bloco com
@@ -19,6 +20,7 @@ em que aparecem no capítulo 2. Para refazê-los, renderize cada bloco com
 
 import re
 import struct
+import unicodedata
 import zipfile
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -26,6 +28,7 @@ from xml.sax.saxutils import escape
 BASE = Path(__file__).resolve().parent
 MODELO = BASE / "modelo" / "template-docs-startup.docx"
 SAIDA = BASE / "saida" / "documentacao.docx"
+SAIDA_SECOES = BASE / "saida" / "secoes"
 CAPITULOS = [
     "01-introducao.md",
     "02-engenharia-e-modelagem.md",
@@ -596,6 +599,48 @@ def sumario(titulos):
     return xml
 
 
+def secoes():
+    """Divide cada capítulo nos itens do roteiro (títulos "## ").
+
+    Cada item leva o título do capítulo na frente, e o texto de abertura do
+    capítulo vai junto com o primeiro item. Devolve (nome do arquivo, markdown).
+    """
+    for cap in CAPITULOS:
+        md = (BASE / cap).read_text(encoding="utf-8")
+        h1 = md.split("\n", 1)[0]
+        partes = re.split(r"(?m)^(?=## )", md)
+        abertura, itens = partes[0], partes[1:]
+        for k, item in enumerate(itens):
+            titulo_item = item.split("\n", 1)[0][3:].strip()
+            nome = re.sub(r"[^a-z0-9]+", "-", unicodedata.normalize("NFKD", titulo_item).encode("ascii", "ignore").decode().lower()).strip("-")
+            yield f"{nome}.docx", (abertura if k == 0 else h1 + "\n\n") + item
+
+
+def escrever(pacote_modelo, raiz, secao, conv, corpo, saida):
+    pacote = dict(pacote_modelo)
+    pacote["word/document.xml"] = (raiz + "<w:body>" + corpo + secao + "</w:body></w:document>").encode("utf-8")
+    pacote["word/styles.xml"] = montar_estilos(pacote["word/styles.xml"].decode("utf-8")).encode("utf-8")
+    pacote["word/numbering.xml"] = montar_numeracao(conv.listas_numeradas).encode("utf-8")
+
+    rels = pacote["word/_rels/document.xml.rels"].decode("utf-8")
+    tipo = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+    novas = "".join(
+        f'<Relationship Id="{rid}" Type="{tipo}" Target="media/{nome}"/>' for rid, nome, _ in conv.imagens.itens
+    )
+    pacote["word/_rels/document.xml.rels"] = rels.replace("</Relationships>", novas + "</Relationships>").encode(
+        "utf-8"
+    )
+    for _, nome, origem in conv.imagens.itens:
+        pacote[f"word/media/{nome}"] = origem.read_bytes()
+
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    ordem = ["[Content_Types].xml"] + sorted(n for n in pacote if n != "[Content_Types].xml")
+    with zipfile.ZipFile(saida, "w", zipfile.ZIP_DEFLATED) as z:
+        for nome in ordem:
+            z.writestr(nome, pacote[nome])
+    print(f"{saida.relative_to(BASE.parent.parent)}: {len(conv.imagens.itens)} figuras, {len(conv.titulos)} títulos")
+
+
 def main():
     with zipfile.ZipFile(MODELO) as z:
         pacote = {n: z.read(n) for n in z.namelist() if not n.endswith("/")}
@@ -611,30 +656,19 @@ def main():
     corpo = "".join(conv.converter((BASE / c).read_text(encoding="utf-8")) for c in CAPITULOS)
     if conv.diagrama != len(LEGENDAS_DIAGRAMAS):
         raise SystemExit(f"{conv.diagrama} diagramas no texto, {len(LEGENDAS_DIAGRAMAS)} legendas no script")
+    escrever(pacote, raiz, secao, conv, capa(conv.imagens) + sumario(conv.titulos) + corpo, SAIDA)
 
-    pacote["word/document.xml"] = (
-        raiz + "<w:body>" + capa(conv.imagens) + sumario(conv.titulos) + corpo + secao + "</w:body></w:document>"
-    ).encode("utf-8")
-    pacote["word/styles.xml"] = montar_estilos(pacote["word/styles.xml"].decode("utf-8")).encode("utf-8")
-    pacote["word/numbering.xml"] = montar_numeracao(conv.listas_numeradas).encode("utf-8")
-
-    rels = pacote["word/_rels/document.xml.rels"].decode("utf-8")
-    tipo = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
-    novas = "".join(
-        f'<Relationship Id="{rid}" Type="{tipo}" Target="media/{nome}"/>' for rid, nome, _ in conv.imagens.itens
-    )
-    pacote["word/_rels/document.xml.rels"] = rels.replace("</Relationships>", novas + "</Relationships>").encode(
-        "utf-8"
-    )
-    for _, nome, origem in conv.imagens.itens:
-        pacote[f"word/media/{nome}"] = origem.read_bytes()
-
-    SAIDA.parent.mkdir(parents=True, exist_ok=True)
-    ordem = ["[Content_Types].xml"] + sorted(n for n in pacote if n != "[Content_Types].xml")
-    with zipfile.ZipFile(SAIDA, "w", zipfile.ZIP_DEFLATED) as z:
-        for nome in ordem:
-            z.writestr(nome, pacote[nome])
-    print(f"{SAIDA.relative_to(BASE.parent.parent)}: {len(conv.imagens.itens)} figuras, {len(conv.titulos)} títulos")
+    # Um .docx por item do roteiro, no mesmo modelo, sem capa nem sumário.
+    # A contagem de diagramas segue de um item para o outro, para as figuras
+    # manterem a numeração do documento completo.
+    diagramas = 0
+    for nome, md in secoes():
+        conv = Conversor()
+        conv.secao = secao
+        conv.diagrama = diagramas
+        corpo = conv.converter(md)
+        diagramas = conv.diagrama
+        escrever(pacote, raiz, secao, conv, corpo, SAIDA_SECOES / nome)
 
 
 if __name__ == "__main__":

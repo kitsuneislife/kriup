@@ -38,7 +38,7 @@ pnpm dlx @mermaid-js/mermaid-cli -i diagrama.mmd -o docs/faculdade/img/diagramas
 python3 docs/faculdade/gerar-docx.py
 ```
 
-O script usa só a biblioteca padrão do Python. Ele lê os quatro capítulos e escreve `saida/documentacao.docx` sobre o modelo da faculdade (`modelo/template-docs-startup.docx`), mantendo o cabeçalho dele. O formato segue o pedido: corpo em Arial 11, justificado, espaçamento 1,5; títulos em negrito; itálico só nos destaques.
+O script usa só a biblioteca padrão do Python. Ele lê os quatro capítulos e escreve `saida/documentacao.docx` sobre o modelo da faculdade (`modelo/template-docs-startup.docx`), mantendo o cabeçalho dele. Também escreve um .docx por item do roteiro (1.1 a 3.1 e cada apêndice) em `saida/secoes/`, no mesmo modelo, sem capa nem sumário; são esses arquivos que vão anexados nos cartões do Trello. O formato segue o pedido: corpo em Arial 11, justificado, espaçamento 1,5; títulos em negrito; itálico só nos destaques.
 
 - Capa e sumário são montados pelo script. No Word, clique com o botão direito no sumário e escolha "Atualizar campo" para aparecerem os números de página.
 - Se um marcador `{{...}}` voltar ao texto, ele sai realçado em amarelo.
