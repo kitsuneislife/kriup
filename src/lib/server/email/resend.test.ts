@@ -9,7 +9,7 @@ describe('resendMailer', () => {
 
 		const mailer = resendMailer({
 			apiKey: 're_test_secret',
-			from: 'Cakto <noreply@example.com>',
+			from: 'Kriup <noreply@example.com>',
 			fetchImpl
 		});
 
@@ -27,7 +27,7 @@ describe('resendMailer', () => {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				from: 'Cakto <noreply@example.com>',
+				from: 'Kriup <noreply@example.com>',
 				to: 'bia@example.com',
 				subject: 'Seu acesso ao curso',
 				text: 'Olá, Bia! Defina sua senha.'
@@ -42,7 +42,7 @@ describe('resendMailer', () => {
 
 		const mailer = resendMailer({
 			apiKey: 're_test_secret',
-			from: 'Cakto <noreply@unverified.test>',
+			from: 'Kriup <noreply@unverified.test>',
 			fetchImpl
 		});
 

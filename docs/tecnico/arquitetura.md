@@ -80,7 +80,7 @@ Todo código, pasta e arquivo é em inglês (ver `convencoes.md`).
 ```
 src/
   env.ts          # validação das variáveis de ambiente obrigatórias e opcionais
-  hooks.server.ts # sessão em locals e injeção SSR do tema (cookie cakto_theme)
+  hooks.server.ts # sessão em locals e injeção SSR do tema (cookie kriup_theme)
   lib/
     domain/       # funções puras e testadas; não importam banco nem framework
       params.ts  money.ts  split.ts  simulation.ts  retention.ts  payout.ts

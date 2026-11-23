@@ -48,7 +48,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	return new Response(csv, {
 		headers: {
 			'content-type': 'text/csv; charset=utf-8',
-			'content-disposition': 'attachment; filename="extrato-cakto.csv"',
+			'content-disposition': 'attachment; filename="extrato-kriup.csv"',
 			'cache-control': 'no-store'
 		}
 	});

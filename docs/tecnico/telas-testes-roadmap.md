@@ -68,7 +68,7 @@ flowchart TD
 | Status do reembolso | RF-31, RF-33 | Etapas, responsável atual, prazo, conversa e aviso por e-mail ao produtor fora da garantia |
 | Fila e saques do suporte | RF-44, RF-60 | Reembolsos escalados por prazo, chamados abertos e banner de saques aguardando revisão |
 | Métricas da plataforma | Lean Canvas, RF-60 | Mediana até publicar, taxa de publicação, 1ª resposta em reembolso, volume, receita de taxas, bloqueios e chamados por produtor |
-| Conta e aparência | RNF-04, RNF-06 | Edição de nome, tema (`system`/`light`/`dark` em `cakto_theme`) e encerramento/anonimização LGPD em dois passos |
+| Conta e aparência | RNF-04, RNF-06 | Edição de nome, tema (`system`/`light`/`dark` em `kriup_theme`) e encerramento/anonimização LGPD em dois passos |
 
 ## 3. Plano de testes
 

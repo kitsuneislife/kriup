@@ -38,7 +38,7 @@ export const variables = defineEnvVars({
 		schema: optional
 	},
 	EMAIL_FROM: {
-		description: 'Optional sender address for outgoing e-mails (e.g. Cakto <noreply@example.com>)',
+		description: 'Optional sender address for outgoing e-mails (e.g. Kriup <noreply@example.com>)',
 		schema: optional
 	}
 });

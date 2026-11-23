@@ -217,7 +217,7 @@ test('exports a BOM CSV with filtered rows, sanitizes formulas, isolates account
 	expect(filteredRes.status()).toBe(200);
 	expect(filteredRes.headers()['content-type']).toBe('text/csv; charset=utf-8');
 	expect(filteredRes.headers()['content-disposition']).toBe(
-		'attachment; filename="extrato-cakto.csv"'
+		'attachment; filename="extrato-kriup.csv"'
 	);
 	expect(filteredRes.headers()['cache-control']).toBe('no-store');
 

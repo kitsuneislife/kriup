@@ -27,7 +27,7 @@ import { getBalance } from '../services/money';
 import { loginSchema, nameSchema, registerSchema } from './credentials';
 import { hashPassword, verifyPassword } from './password';
 
-export const THEME_COOKIE = 'cakto_theme';
+export const THEME_COOKIE = 'kriup_theme';
 export type Theme = 'system' | 'light' | 'dark';
 
 // Verified against when the e-mail is unknown, so response time does not reveal which e-mails exist.
