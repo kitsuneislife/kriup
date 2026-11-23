@@ -217,7 +217,7 @@ Ao terminar: "Agora me mostre como o aluno vai ver o seu produto."
 
 ### C.3 Resultados do teste de uso
 
-{{RESULTADOS_TESTE_DE_USO}}
+O teste de uso ainda não foi realizado. A tabela abaixo será preenchida depois das sessões.
 
 | Data | Pessoa (perfil) | Aparelho | Publicou? | Tempo | Nota | Travas |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # 1. Introdução e contextualização
 
-> **Summary.** Apresenta o {{PRODUTO}}, uma plataforma de venda de produtos
+> **Summary.** Apresenta o Kriup, uma plataforma de venda de produtos
 > digitais (cursos, mentorias, assinaturas) para quem não tem time técnico. Cobre
 > a ideia e os objetivos, as dores encontradas na pesquisa, a solução, o modelo de
 > receita e os concorrentes. Base: `docs/pesquisa/lean-canvas-matriz-de-dores.md`
@@ -10,11 +10,11 @@
 
 ### Ideia
 
-O {{PRODUTO}} é uma plataforma de infoprodutos em que qualquer pessoa monta sozinha um produto digital completo e bonito, e vê para onde vai cada real e cada reembolso.
+O Kriup é uma plataforma de infoprodutos em que qualquer pessoa monta sozinha um produto digital completo e bonito, e vê para onde vai cada real e cada reembolso.
 
 Infoproduto é o produto digital vendido pela internet: curso gravado, mentoria, workshop ou clube de assinatura. No Brasil esse mercado roda sobre plataformas como Hotmart, Kiwify e Cakto, que cuidam do checkout, do pagamento, da área de membros e do repasse ao produtor.
 
-A referência de partida é o Canva. O Canva não inventou o design gráfico; ele tirou a barreira de entrada para quem não é designer. O {{PRODUTO}} tenta fazer o mesmo com a venda de produtos digitais: manter o que uma ferramenta profissional faz e tirar a parte que hoje exige um técnico ou um freelancer.
+A referência de partida é o Canva. O Canva não inventou o design gráfico; ele tirou a barreira de entrada para quem não é designer. O Kriup tenta fazer o mesmo com a venda de produtos digitais: manter o que uma ferramenta profissional faz e tirar a parte que hoje exige um técnico ou um freelancer.
 
 ### Objetivo geral
 
@@ -56,7 +56,7 @@ A matriz completa, com as fontes, está no Apêndice D.
 
 ### Oportunidade
 
-Fora do Brasil o padrão se repete: o Kajabi é poderoso e demorado de aprender, o Stan Store é simples e limitado, e o Podia fica no meio. Nenhuma das plataformas pesquisadas junta criação guiada com transparência financeira. É esse espaço que o {{PRODUTO}} ocupa.
+Fora do Brasil o padrão se repete: o Kajabi é poderoso e demorado de aprender, o Stan Store é simples e limitado, e o Podia fica no meio. Nenhuma das plataformas pesquisadas junta criação guiada com transparência financeira. É esse espaço que o Kriup ocupa.
 
 O público mais provável para começar é quem já paga freelancer para montar o produto ou junta duas ferramentas (uma para vender e outra para a área de membros) **(hipótese)**.
 
@@ -90,7 +90,7 @@ Afiliados e marketplace, gamificação, meio de pagamento próprio e antecipaç�
 
 ### Fonte de receita
 
-O {{PRODUTO}} cobra uma taxa por venda e uma taxa por saque, no mesmo formato das plataformas concorrentes. Os valores abaixo estão no sistema e ficam num único arquivo de parâmetros, para serem calibrados depois do teste de uso **(hipótese)**:
+O Kriup cobra uma taxa por venda e uma taxa por saque, no mesmo formato das plataformas concorrentes. Os valores abaixo estão no sistema e ficam num único arquivo de parâmetros, para serem calibrados depois do teste de uso **(hipótese)**:
 
 | Cobrança | Valor | Quando |
 | --- | --- | --- |
@@ -106,7 +106,7 @@ Comparação com o mercado, segundo a pesquisa:
 | --- | --- | --- |
 | Cakto | 4,99% + R$ 2,49 | 0% + R$ 2,49 |
 | Kiwify | 8,99% + R$ 2,49 | Sem valor separado na pesquisa |
-| {{PRODUTO}} (MVP) | 5% + R$ 2,49 | 5% + R$ 2,49 |
+| Kriup (MVP) | 5% + R$ 2,49 | 5% + R$ 2,49 |
 
 A taxa fica perto da Cakto e bem abaixo da Kiwify. Cobrar a mesma taxa no Pix e no cartão simplifica a explicação ao produtor, mas deixa o Pix mais caro que na Cakto; o grupo pode revisar isso na calibragem.
 
@@ -144,7 +144,7 @@ A taxa fica perto da Cakto e bem abaixo da Kiwify. Cobrar a mesma taxa no Pix e 
 
 ### Comparativo de recursos
 
-| Recurso | Hotmart | Kiwify | Cakto | {{PRODUTO}} |
+| Recurso | Hotmart | Kiwify | Cakto | Kriup |
 | --- | --- | --- | --- | --- |
 | Criação guiada por modelo, com marca aplicada | Não verificado | Não verificado | Não verificado | Sim |
 | Motivo e data de liberação em cada valor retido | Não encontrado | Não encontrado | Não encontrado | Sim |

@@ -562,17 +562,19 @@ class Conversor:
         return "".join(saida)
 
 
-def capa():
+def capa(imagens):
     vazio = par("", "Capa")
+    logo = BASE.parent / "design" / "marca" / "kriup-logo.png"
     return (
         vazio * 6
         + par(run("DOCUMENTAÇÃO DO PROJETO", negrito=True), "Capa")
-        + par(run("{{PRODUTO}}", negrito=True), "Capa")
+        + vazio
+        + figura(logo, imagens, "Logo do Kriup", int(2.6 * 914400), int(1.4 * 914400))
         + vazio
         + par(run("Plataforma de venda de produtos digitais para quem não tem time técnico"), "Capa")
-        + vazio * 10
+        + vazio * 7
         + par(run("Cascavel"), "Capa")
-        + par(run("{{DATA_ENTREGA}}"), "Capa")
+        + par(run("23 de novembro de 2026"), "Capa")
     )
 
 
@@ -611,7 +613,7 @@ def main():
         raise SystemExit(f"{conv.diagrama} diagramas no texto, {len(LEGENDAS_DIAGRAMAS)} legendas no script")
 
     pacote["word/document.xml"] = (
-        raiz + "<w:body>" + capa() + sumario(conv.titulos) + corpo + secao + "</w:body></w:document>"
+        raiz + "<w:body>" + capa(conv.imagens) + sumario(conv.titulos) + corpo + secao + "</w:body></w:document>"
     ).encode("utf-8")
     pacote["word/styles.xml"] = montar_estilos(pacote["word/styles.xml"].decode("utf-8")).encode("utf-8")
     pacote["word/numbering.xml"] = montar_numeracao(conv.listas_numeradas).encode("utf-8")

@@ -1,6 +1,6 @@
 # 2. Engenharia e modelagem
 
-> **Summary.** Como o {{PRODUTO}} foi construído e modelado: método de trabalho,
+> **Summary.** Como o Kriup foi construído e modelado: método de trabalho,
 > requisitos funcionais e não funcionais, arquitetura (com diagramas de contexto,
 > contêineres, camadas e implantação) e modelagem (casos de uso, classes,
 > entidade-relacionamento, sequência, estados, atividade e navegação). Todos os
@@ -60,9 +60,9 @@ Cada fase foi dividida em lotes pequenos. Um lote só contava como pronto quando
 
 ### 2.1.4 Organização do grupo
 
-{{ORGANIZACAO_DO_GRUPO}}
-
 Integrantes: Camilo Fernando Bomfim, Joaquim Augusto Nardino e Luana Mackieviez.
+
+As decisões de produto foram tomadas em conjunto e são registradas nos documentos do repositório. Exemplos: o nome Kriup e a logo foram propostos por Camilo, e a troca do azul-marinho da logo por preto foi decisão de Joaquim.
 
 ## 2.2 Requisitos funcionais
 
@@ -184,7 +184,7 @@ flowchart LR
     Cop([Coprodutor])
     Sup([Suporte da plataforma])
 
-    Sis["{{PRODUTO}}<br/>plataforma de infoprodutos"]
+    Sis["Kriup<br/>plataforma de infoprodutos"]
 
     Pag[("Asaas<br/>(ou simulador em dev)")]
     Mail[("Resend<br/>(ou console em dev)")]
@@ -306,7 +306,7 @@ flowchart LR
     Sup["Suporte"]
     Job["Job diário"]
 
-    subgraph Sistema["{{PRODUTO}}"]
+    subgraph Sistema["Kriup"]
         UC01(["UC-01 Criar e publicar produto"])
         UC02(["UC-02 Comprar produto"])
         UC03(["UC-03 Assistir às aulas"])
@@ -346,7 +346,7 @@ flowchart LR
     Prod["Produtor"]
     Sup["Suporte"]
 
-    subgraph Sistema["{{PRODUTO}}"]
+    subgraph Sistema["Kriup"]
         UC04(["UC-04 Pedir reembolso"])
         AUTO(["Aprovar dentro da garantia"])
         UC05(["UC-05 Responder reembolso"])

@@ -1,7 +1,7 @@
 # 3. Ambiente de desenvolvimento
 
 > **Summary.** As ferramentas e tecnologias usadas para construir, testar e rodar
-> o {{PRODUTO}}, com a função de cada uma no projeto. Versões tiradas de
+> o Kriup, com a função de cada uma no projeto. Versões tiradas de
 > `package.json`, `docker-compose.yml` e `.github/workflows/ci.yml` em 19/11/2026.
 
 ## 3.1 Ferramentas e tecnologias
@@ -56,8 +56,7 @@ Números da última rodada completa [measured]: 276 testes unitários em 38 arqu
 | GitHub Actions | Integração contínua: a cada push e pull request roda lint, tipos, testes unitários, migrações, testes de integração, build e os testes de ponta a ponta. |
 | pnpm 11 | Gerenciador de pacotes, com versão fixada em `packageManager`. |
 | Docker Compose (com colima no macOS) | Sobe o PostgreSQL local em um contêiner, na porta 5433. |
-| {{EDITOR}} | Editor de código usado pelo grupo. |
-| Mermaid | Linguagem dos diagramas deste documento, renderizados com `@mermaid-js/mermaid-cli`. |
+| Mermaid | Linguagem dos diagramas deste documento, escritos como texto no próprio repositório e renderizados com `@mermaid-js/mermaid-cli`. |
 | Inter (fonte variável) | Tipografia da interface, servida pelo próprio sistema. |
 
 ### Como rodar
