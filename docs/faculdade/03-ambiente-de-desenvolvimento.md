@@ -52,8 +52,9 @@ Números da última rodada completa [measured]: 276 testes unitários em 38 arqu
 
 | Ferramenta | Para que serve no projeto |
 | --- | --- |
-| Git e GitHub | Controle de versão, com mensagens no padrão Conventional Commits. |
+| Git e GitHub | Controle de versão, com mensagens no padrão Conventional Commits. Repositório público em https://github.com/kitsuneislife/kriup. |
 | GitHub Actions | Integração contínua: a cada push e pull request roda lint, tipos, testes unitários, migrações, testes de integração, build e os testes de ponta a ponta. |
+| Trello | Quadro do projeto com a documentação, os recursos e as tarefas em aberto: https://trello.com/b/eCZtlNHZ/kriup. |
 | pnpm 11 | Gerenciador de pacotes, com versão fixada em `packageManager`. |
 | Docker Compose (com colima no macOS) | Sobe o PostgreSQL local em um contêiner, na porta 5433. |
 | Mermaid | Linguagem dos diagramas deste documento, escritos como texto no próprio repositório e renderizados com `@mermaid-js/mermaid-cli`. |
